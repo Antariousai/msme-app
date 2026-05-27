@@ -1,7 +1,7 @@
-import React from 'react';
-import { View, StyleSheet, Alert } from 'react-native';
+import React, { useState } from 'react';
+import { View, StyleSheet } from 'react-native';
 import { AppHeader } from '../../components/AppHeader';
-import { T, Card, Row, ScreenScroll, TierBadge, Divider } from '../../components/atoms';
+import { T, Card, Row, ScreenScroll, TierBadge, Divider, Btn } from '../../components/atoms';
 import { FeatureLauncherList } from '../../components/FeatureToolsSection';
 import { Colors, Spacing, TierConfig } from '../../theme';
 import {
@@ -17,12 +17,17 @@ interface MoreScreenProps {
 
 export const MoreScreen = ({ onSelectTier, onOpenBrandStudio }: MoreScreenProps) => {
   const { user, signOut } = useAuth();
+  const [confirmSignOut, setConfirmSignOut] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
 
-  const handleSignOut = () => {
-    Alert.alert('সাইন আউট', 'আপনি কি নিশ্চিত?', [
-      { text: 'না', style: 'cancel' },
-      { text: 'হ্যাঁ', onPress: signOut },
-    ]);
+  const handleSignOut = async () => {
+    setSigningOut(true);
+    try {
+      await signOut();
+    } finally {
+      setSigningOut(false);
+      setConfirmSignOut(false);
+    }
   };
 
   if (!user) return null;
@@ -86,12 +91,34 @@ export const MoreScreen = ({ onSelectTier, onOpenBrandStudio }: MoreScreenProps)
 
         <Divider style={{ marginVertical: Spacing.base }} />
 
-        <Card onPress={handleSignOut} style={{ marginBottom: Spacing.base }}>
-          <Row gap={Spacing.sm}>
-            <LogoutIcon size={20} color={Colors.error} />
-            <T size="sm" color={Colors.error} weight="medium">সাইন আউট</T>
-          </Row>
-        </Card>
+        {confirmSignOut ? (
+          <Card style={{ marginBottom: Spacing.base, borderWidth: 1.5, borderColor: Colors.error }}>
+            <T size="sm" weight="semibold" style={{ marginBottom: Spacing.sm }}>আপনি কি সাইন আউট করতে চান?</T>
+            <Row gap={Spacing.sm}>
+              <Btn
+                label="না"
+                onPress={() => setConfirmSignOut(false)}
+                variant="ghost"
+                fullWidth
+                disabled={signingOut}
+              />
+              <Btn
+                label="হ্যাঁ"
+                onPress={handleSignOut}
+                variant="danger"
+                fullWidth
+                loading={signingOut}
+              />
+            </Row>
+          </Card>
+        ) : (
+          <Card onPress={() => setConfirmSignOut(true)} style={{ marginBottom: Spacing.base }}>
+            <Row gap={Spacing.sm}>
+              <LogoutIcon size={20} color={Colors.error} />
+              <T size="sm" color={Colors.error} weight="medium">সাইন আউট</T>
+            </Row>
+          </Card>
+        )}
 
         <T size="xs" color={Colors.textTertiary} align="center">Antarious MSME v1.0 · Bangladesh</T>
       </ScreenScroll>
