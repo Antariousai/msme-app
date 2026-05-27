@@ -1,0 +1,147 @@
+export const Colors = {
+  primary: '#D94F00',
+  primaryLight: '#FF6B2B',
+  primaryDark: '#A83900',
+  secondary: '#1A7A4A',
+  secondaryLight: '#22A060',
+  secondaryDark: '#145C37',
+  accent: '#0E7490',
+  accentLight: '#0EA5C9',
+  warning: '#D97706',
+  warningLight: '#FEF3C7',
+  error: '#DC2626',
+  errorLight: '#FEE2E2',
+  success: '#16A34A',
+  successLight: '#DCFCE7',
+  bg: '#F7F5F2',
+  bgDark: '#EDE9E4',
+  surface: '#FFFFFF',
+  surfaceElevated: '#FFFFFF',
+  border: '#E5E0D8',
+  borderLight: '#F0EDE8',
+  textPrimary: '#1A1A1A',
+  textSecondary: '#6B6560',
+  textTertiary: '#A09890',
+  textInverse: '#FFFFFF',
+  tier0: '#64748B',
+  tier1: '#D94F00',
+  tier2: '#1A7A4A',
+  tier3: '#7C3AED',
+  tier4: '#0E7490',
+  brandStudio: '#BE185D',
+  overlay: 'rgba(0,0,0,0.5)',
+  skevy: '#F0EDE8',
+};
+
+export const Typography = {
+  fontFamily: {
+    regular: 'System',
+    medium: 'System',
+    semibold: 'System',
+    bold: 'System',
+  },
+  size: {
+    xs: 11,
+    sm: 13,
+    base: 15,
+    md: 16,
+    lg: 18,
+    xl: 20,
+    '2xl': 24,
+    '3xl': 28,
+    '4xl': 32,
+  },
+  lineHeight: {
+    tight: 1.2,
+    normal: 1.5,
+    relaxed: 1.75,
+  },
+};
+
+export const Spacing = {
+  xs: 4,
+  sm: 8,
+  md: 12,
+  base: 16,
+  lg: 20,
+  xl: 24,
+  '2xl': 32,
+  '3xl': 40,
+  '4xl': 48,
+};
+
+export const Radius = {
+  sm: 6,
+  md: 10,
+  lg: 14,
+  xl: 18,
+  '2xl': 24,
+  full: 9999,
+};
+
+export const Shadow = {
+  sm: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  md: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 4,
+  },
+  lg: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+};
+
+export const TierConfig = {
+  0: {
+    name: 'অফলাইন',
+    nameEn: 'Offline',
+    color: Colors.tier0,
+    price: '২০০',
+    priceEn: '200',
+    tagline: 'মৌলিক হিসাব রক্ষা',
+  },
+  1: {
+    name: 'স্টার্টার',
+    nameEn: 'Starter',
+    color: Colors.tier1,
+    price: '৭০০–৮০০',
+    priceEn: '700–800',
+    tagline: 'সোশ্যাল কমার্স ও অর্থ ব্যবস্থাপনা',
+  },
+  2: {
+    name: 'গ্রোথ',
+    nameEn: 'Growth',
+    color: Colors.tier2,
+    price: '১৫০০–১৭০০',
+    priceEn: '1500–1700',
+    tagline: 'ওয়েবসাইট ও ইনভেন্টরি ব্যবস্থাপনা',
+  },
+  3: {
+    name: 'প্রো',
+    nameEn: 'Pro',
+    color: Colors.tier3,
+    price: '৩০০০–৩৫০০',
+    priceEn: '3000–3500',
+    tagline: 'লিড ক্যাপচার ও গ্রাহক ব্যবস্থাপনা',
+  },
+  4: {
+    name: 'এন্টারপ্রাইজ',
+    nameEn: 'Enterprise',
+    color: Colors.tier4,
+    price: '৫০০০–৭০০০',
+    priceEn: '5000–7000',
+    tagline: 'সম্পূর্ণ বিশ্লেষণ ও রিপোর্টিং',
+  },
+};
