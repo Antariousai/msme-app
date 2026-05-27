@@ -98,7 +98,7 @@ export const MessagesScreen = () => {
           <Card style={{ marginTop: Spacing.base, borderWidth: 2, borderColor: Colors.primary }}>
             <T size="md" weight="bold" style={{ marginBottom: Spacing.sm }}>{selected.sender}</T>
             <T size="sm" color={Colors.textSecondary} style={{ marginBottom: Spacing.base }}>{selected.preview}</T>
-            <Row gap={Spacing.sm} style={{ flexWrap: 'wrap' }}>
+            <Row gap={Spacing.sm} wrap>
               {autoReplyOn && selected.status === 'new' && (
                 <Btn label="অটো রিপ্লাই" onPress={() => sendAutoReply(selected.id)} size="sm" variant="secondary" />
               )}
@@ -124,11 +124,11 @@ export const Tier1Home = () => {
           actionLabel="মেসেজ দেখুন"
         />
         <Row gap={Spacing.sm} style={{ marginTop: Spacing.base, marginBottom: Spacing.base }}>
-          <Card style={{ flex: 1 }}>
+          <Card style={{ flex: 1, minWidth: 0 }}>
             <T size="xs" color={Colors.textTertiary}>নতুন মেসেজ</T>
             <T size="2xl" weight="bold" color={Colors.primary}>{unread}</T>
           </Card>
-          <Card style={{ flex: 1 }}>
+          <Card style={{ flex: 1, minWidth: 0 }}>
             <T size="xs" color={Colors.textTertiary}>অর্ডার অপেক্ষমাণ</T>
             <T size="2xl" weight="bold" color={Colors.warning}>২</T>
           </Card>
@@ -146,7 +146,7 @@ export const Tier1Home = () => {
           </Card>
         ))}
 
-        <FeatureToolsSection title="টায়ার ০ সরঞ্জাম" />
+        <FeatureToolsSection />
       </ScreenScroll>
     </View>
   );

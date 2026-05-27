@@ -27,20 +27,64 @@ export type FeatureId =
   | 'reports'
   | 'complaints';
 
+export type FeatureCategory =
+  | 'accounting'
+  | 'sales'
+  | 'operations'
+  | 'customers'
+  | 'insights';
+
 export interface FeatureDef {
   id: FeatureId;
   label: string;
   subtitle: string;
+  category: FeatureCategory;
   introducedIn: UserTier;
   icon: React.ComponentType<{ size?: number; color?: string }>;
   component: React.ComponentType;
 }
+
+/** Display order and labels — grouped by business need, not tier */
+export const FEATURE_CATEGORY_ORDER: FeatureCategory[] = [
+  'accounting',
+  'sales',
+  'operations',
+  'customers',
+  'insights',
+];
+
+export const FEATURE_CATEGORY_META: Record<
+  FeatureCategory,
+  { title: string; description: string }
+> = {
+  accounting: {
+    title: 'হিসাব ও অর্থ',
+    description: 'আয়, ব্যয়, লাভ ও দৈনিক হিসাব',
+  },
+  sales: {
+    title: 'বিক্রয় ও যোগাযোগ',
+    description: 'মেসেজ, অর্ডার ও পরিকল্পনা',
+  },
+  operations: {
+    title: 'স্টক ও ডেলিভারি',
+    description: 'ইনভেন্টরি, কুরিয়ার, ওয়েবসাইট',
+  },
+  customers: {
+    title: 'গ্রাহক ব্যবস্থাপনা',
+    description: 'লিড, যোগাযোগ ও রূপান্তর',
+  },
+  insights: {
+    title: 'ব্যবসা বিশ্লেষণ',
+    description: 'ড্যাশবোর্ড, রিপোর্ট ও অভিযোগ',
+  },
+};
 
 export const FEATURES: FeatureDef[] = [
   {
     id: 'bookkeeping',
     label: 'হিসাব রক্ষা',
     subtitle: 'আয় ও ব্যয়',
+    category: 'accounting',
     introducedIn: 0,
     icon: BookIcon,
     component: BookkeepingScreen,
@@ -49,6 +93,7 @@ export const FEATURES: FeatureDef[] = [
     id: 'messages',
     label: 'মেসেজ',
     subtitle: 'Facebook + Instagram',
+    category: 'sales',
     introducedIn: 1,
     icon: MessageIcon,
     component: MessagesScreen,
@@ -57,6 +102,7 @@ export const FEATURES: FeatureDef[] = [
     id: 'finance',
     label: 'অর্থ',
     subtitle: 'আয়, ব্যয় ও লাভ',
+    category: 'accounting',
     introducedIn: 1,
     icon: FinanceIcon,
     component: FinanceScreen,
@@ -65,6 +111,7 @@ export const FEATURES: FeatureDef[] = [
     id: 'calendar',
     label: 'ক্যালেন্ডার',
     subtitle: 'দৈনিক ও সাপ্তাহিক',
+    category: 'sales',
     introducedIn: 1,
     icon: CalendarIcon,
     component: CalendarScreen,
@@ -73,6 +120,7 @@ export const FEATURES: FeatureDef[] = [
     id: 'orders',
     label: 'অর্ডার',
     subtitle: 'সব চ্যানেল',
+    category: 'sales',
     introducedIn: 2,
     icon: OrderIcon,
     component: OrdersScreen,
@@ -81,6 +129,7 @@ export const FEATURES: FeatureDef[] = [
     id: 'inventory',
     label: 'ইনভেন্টরি',
     subtitle: 'স্টক ইনফ্লো/আউটফ্লো',
+    category: 'operations',
     introducedIn: 2,
     icon: InventoryIcon,
     component: InventoryScreen,
@@ -89,6 +138,7 @@ export const FEATURES: FeatureDef[] = [
     id: 'courier',
     label: 'কুরিয়ার',
     subtitle: 'Pathao · RedX · Steadfast',
+    category: 'operations',
     introducedIn: 2,
     icon: CourierIcon,
     component: CourierScreen,
@@ -97,6 +147,7 @@ export const FEATURES: FeatureDef[] = [
     id: 'website',
     label: 'ওয়েবসাইট',
     subtitle: 'ইন্টিগ্রেশন ও হোস্টিং',
+    category: 'operations',
     introducedIn: 2,
     icon: WebsiteIcon,
     component: WebsiteScreen,
@@ -105,6 +156,7 @@ export const FEATURES: FeatureDef[] = [
     id: 'leads',
     label: 'লিড',
     subtitle: 'ক্যাপচার ও স্কোরিং',
+    category: 'customers',
     introducedIn: 3,
     icon: LeadIcon,
     component: LeadsScreen,
@@ -113,6 +165,7 @@ export const FEATURES: FeatureDef[] = [
     id: 'dashboard',
     label: 'ড্যাশবোর্ড',
     subtitle: 'ইনসাইট ও বিশ্লেষণ',
+    category: 'insights',
     introducedIn: 4,
     icon: ChartIcon,
     component: DashboardScreen,
@@ -121,6 +174,7 @@ export const FEATURES: FeatureDef[] = [
     id: 'reports',
     label: 'রিপোর্ট',
     subtitle: 'দৈনিক · সাপ্তাহিক · মাসিক',
+    category: 'insights',
     introducedIn: 4,
     icon: ReportIcon,
     component: ReportsScreen,
@@ -129,19 +183,12 @@ export const FEATURES: FeatureDef[] = [
     id: 'complaints',
     label: 'অভিযোগ',
     subtitle: 'ট্র্যাকিং ও সমাধান',
+    category: 'insights',
     introducedIn: 4,
     icon: ComplaintIcon,
     component: ComplaintsScreen,
   },
 ];
-
-export const TIER_GROUP_LABELS: Record<UserTier, string> = {
-  0: 'টায়ার ০ — অফলাইন',
-  1: 'টায়ার ১ — স্টার্টার',
-  2: 'টায়ার ২ — গ্রোথ',
-  3: 'টায়ার ৩ — প্রো',
-  4: 'টায়ার ৪ — এন্টারপ্রাইজ',
-};
 
 /** Features unlocked at or below the user's tier */
 export function getAccessibleFeatures(tier: UserTier): FeatureDef[] {
@@ -176,16 +223,24 @@ export function getFeatureById(id: FeatureId): FeatureDef | undefined {
   return FEATURES.find((f) => f.id === id);
 }
 
-export function getFeaturesByTierGroup(tier: UserTier): { tierLevel: UserTier; features: FeatureDef[] }[] {
+export function getFeaturesByCategory(
+  tier: UserTier,
+): { category: FeatureCategory; features: FeatureDef[] }[] {
   const accessible = getAccessibleFeatures(tier);
-  const groups: UserTier[] = [0, 1, 2, 3, 4];
-  return groups
-    .filter((t) => t <= tier)
-    .map((tierLevel) => ({
-      tierLevel,
-      features: accessible.filter((f) => f.introducedIn === tierLevel),
-    }))
-    .filter((g) => g.features.length > 0);
+  return FEATURE_CATEGORY_ORDER.map((category) => ({
+    category,
+    features: accessible.filter((f) => f.category === category),
+  })).filter((g) => g.features.length > 0);
+}
+
+export function getHubFeaturesByCategory(
+  tier: UserTier,
+): { category: FeatureCategory; features: FeatureDef[] }[] {
+  const hub = getHubFeatures(tier);
+  return FEATURE_CATEGORY_ORDER.map((category) => ({
+    category,
+    features: hub.filter((f) => f.category === category),
+  })).filter((g) => g.features.length > 0);
 }
 
 export function isInPrimaryTabs(tier: UserTier, featureId: FeatureId): boolean {

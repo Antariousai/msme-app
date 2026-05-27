@@ -19,7 +19,7 @@ export const FinanceScreen = () => {
     <View style={styles.container}>
       <AppHeader title="অর্থ" subtitle="আয়, ব্যয় ও লাভ" />
       <ScreenScroll>
-        <Row gap={Spacing.sm} style={{ marginBottom: Spacing.sm }}>
+        <Row gap={Spacing.sm} wrap style={{ marginBottom: Spacing.sm }}>
           {(['daily', 'weekly', 'monthly'] as const).map((p) => (
             <Chip
               key={p}

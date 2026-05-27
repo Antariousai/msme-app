@@ -2,13 +2,19 @@ import React, { useState } from 'react';
 import { View, Pressable } from 'react-native';
 import { useAuth } from '../auth/AuthContext';
 import { useFeatureNav } from '../navigation/FeatureNavContext';
-import { getHubFeatures, getAccessibleFeatures, TIER_GROUP_LABELS, FeatureDef } from '../navigation/features';
+import {
+  getHubFeatures,
+  getHubFeaturesByCategory,
+  getFeaturesByCategory,
+  FEATURE_CATEGORY_META,
+  FeatureDef,
+  FeatureCategory,
+} from '../navigation/features';
 import { T, Card, Row, SectionHeader } from './atoms';
 import { Colors, Spacing, Radius } from '../theme';
 import { ChevronDownIcon, ChevronRightIcon } from '../icons';
 
 interface FeatureToolsSectionProps {
-  /** Show only features introduced below the user's current tier focus (default: all hub features) */
   defaultExpanded?: boolean;
   title?: string;
 }
@@ -26,22 +32,16 @@ export const FeatureToolsSection = ({
   const hubFeatures = getHubFeatures(user.tier);
   if (hubFeatures.length === 0) return null;
 
-  const grouped = [0, 1, 2, 3, 4]
-    .filter((t) => t <= user.tier)
-    .map((tierLevel) => ({
-      tierLevel,
-      features: hubFeatures.filter((f) => f.introducedIn === tierLevel),
-    }))
-    .filter((g) => g.features.length > 0);
+  const grouped = getHubFeaturesByCategory(user.tier);
 
   return (
     <View style={{ marginBottom: Spacing.base }}>
       <Pressable onPress={() => setExpanded(!expanded)}>
         <Row justify="space-between" style={{ marginBottom: expanded ? Spacing.sm : 0 }}>
-          <View>
+          <View style={{ flex: 1, minWidth: 0 }}>
             <T size="md" weight="bold">{title}</T>
             <T size="xs" color={Colors.textTertiary}>
-              {hubFeatures.length}টি ফিচার · পূর্ববর্তী টায়ার সহ
+              {hubFeatures.length}টি সরঞ্জাম · ব্যবসার প্রয়োজন অনুযায়ী
             </T>
           </View>
           {expanded
@@ -50,21 +50,18 @@ export const FeatureToolsSection = ({
         </Row>
       </Pressable>
 
-      {expanded && grouped.map(({ tierLevel, features }) => (
-        <View key={tierLevel} style={{ marginTop: Spacing.sm }}>
-          <T size="xs" color={Colors.textTertiary} weight="semibold" style={{ marginBottom: Spacing.xs }}>
-            {TIER_GROUP_LABELS[tierLevel as keyof typeof TIER_GROUP_LABELS]}
-          </T>
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.sm }}>
-            {features.map((f) => (
-              <FeatureChip key={f.id} feature={f} onPress={() => openFeature(f.id)} />
-            ))}
-          </View>
-        </View>
+      {expanded && grouped.map(({ category, features }) => (
+        <CategoryGroup
+          key={category}
+          category={category}
+          features={features}
+          onOpen={openFeature}
+          compact
+        />
       ))}
 
       {!expanded && (
-        <Row gap={Spacing.sm} style={{ marginTop: Spacing.sm, flexWrap: 'wrap' }}>
+        <Row gap={Spacing.sm} wrap style={{ marginTop: Spacing.sm }}>
           {hubFeatures.slice(0, 4).map((f) => (
             <FeatureChip key={f.id} feature={f} onPress={() => openFeature(f.id)} compact />
           ))}
@@ -82,6 +79,35 @@ export const FeatureToolsSection = ({
           )}
         </Row>
       )}
+    </View>
+  );
+};
+
+const CategoryGroup = ({
+  category,
+  features,
+  onOpen,
+  compact = false,
+}: {
+  category: FeatureCategory;
+  features: FeatureDef[];
+  onOpen: (id: FeatureDef['id']) => void;
+  compact?: boolean;
+}) => {
+  const meta = FEATURE_CATEGORY_META[category];
+  return (
+    <View style={{ marginTop: Spacing.sm }}>
+      <T size="xs" color={Colors.textSecondary} weight="semibold" style={{ marginBottom: 2 }}>
+        {meta.title}
+      </T>
+      <T size="xs" color={Colors.textTertiary} style={{ marginBottom: Spacing.xs }}>
+        {meta.description}
+      </T>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.sm }}>
+        {features.map((f) => (
+          <FeatureChip key={f.id} feature={f} onPress={() => onOpen(f.id)} compact={compact} />
+        ))}
+      </View>
     </View>
   );
 };
@@ -116,48 +142,48 @@ const FeatureChip = ({
   );
 };
 
-/** Full feature list for More screen — all accessible features grouped by tier */
+/** Full feature list for More screen — grouped by business need */
 export const FeatureLauncherList = () => {
   const { user } = useAuth();
   const { openFeature, tabFeatureIds } = useFeatureNav();
 
   if (!user) return null;
 
-  const grouped = [0, 1, 2, 3, 4]
-    .filter((t) => t <= user.tier)
-    .map((tierLevel) => ({
-      tierLevel,
-      features: getAccessibleFeatures(user.tier).filter((f) => f.introducedIn === tierLevel),
-    }))
-    .filter((g) => g.features.length > 0);
+  const grouped = getFeaturesByCategory(user.tier);
 
   return (
     <View>
-      {grouped.map(({ tierLevel, features }: { tierLevel: number; features: FeatureDef[] }) => (
-        <View key={tierLevel} style={{ marginBottom: Spacing.base }}>
-          <SectionHeader title={TIER_GROUP_LABELS[tierLevel as keyof typeof TIER_GROUP_LABELS]} />
-          {features.map((f) => {
-            const inTab = tabFeatureIds.includes(f.id);
-            const Icon = f.icon;
-            return (
-              <Card key={f.id} onPress={() => openFeature(f.id)} style={{ marginBottom: Spacing.sm }} padding={Spacing.md}>
-                <Row justify="space-between">
-                  <Row gap={Spacing.sm}>
-                    <Icon size={20} color={Colors.secondary} />
-                    <View>
-                      <T size="sm" weight="semibold">{f.label}</T>
-                      <T size="xs" color={Colors.textTertiary}>{f.subtitle}</T>
-                    </View>
+      {grouped.map(({ category, features }) => {
+        const meta = FEATURE_CATEGORY_META[category];
+        return (
+          <View key={category} style={{ marginBottom: Spacing.base }}>
+            <SectionHeader title={meta.title} />
+            <T size="xs" color={Colors.textTertiary} style={{ marginBottom: Spacing.sm, marginTop: -Spacing.xs }}>
+              {meta.description}
+            </T>
+            {features.map((f) => {
+              const inTab = tabFeatureIds.includes(f.id);
+              const Icon = f.icon;
+              return (
+                <Card key={f.id} onPress={() => openFeature(f.id)} style={{ marginBottom: Spacing.sm }} padding={Spacing.md}>
+                  <Row justify="space-between" align="center" fill>
+                    <Row gap={Spacing.sm} style={{ flex: 1, minWidth: 0 }}>
+                      <Icon size={20} color={Colors.secondary} />
+                      <View style={{ flex: 1, minWidth: 0 }}>
+                        <T size="sm" weight="semibold" numberOfLines={1}>{f.label}</T>
+                        <T size="xs" color={Colors.textTertiary} numberOfLines={2}>{f.subtitle}</T>
+                      </View>
+                    </Row>
+                    <T size="xs" color={inTab ? Colors.accent : Colors.textTertiary} style={{ flexShrink: 0, marginLeft: Spacing.sm }}>
+                      {inTab ? 'ট্যাব' : 'খুলুন'}
+                    </T>
                   </Row>
-                  <T size="xs" color={inTab ? Colors.accent : Colors.textTertiary}>
-                    {inTab ? 'ট্যাব + এখানে' : 'খুলুন'}
-                  </T>
-                </Row>
-              </Card>
-            );
-          })}
-        </View>
-      ))}
+                </Card>
+              );
+            })}
+          </View>
+        );
+      })}
     </View>
   );
 };

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, Modal, Pressable } from 'react-native';
 import { AppHeader } from '../../components/AppHeader';
-import { T, Card, Row, Btn, ScreenScroll, StatCard, SectionHeader, Input, StatusPill } from '../../components/atoms';
+import { T, Card, Row, Btn, ScreenScroll, StatCard, SectionHeader, Input, StatusPill, BtnRow } from '../../components/atoms';
 import { Colors, Spacing, Radius } from '../../theme';
 import { BookIcon, PlusIcon, ArrowUpIcon, ArrowDownIcon } from '../../icons';
 import { seedTransactions, Transaction, TransactionType } from '../../data/seed';
@@ -54,10 +54,10 @@ export const BookkeepingScreen = () => {
           <T size="2xl" weight="bold" color={profit >= 0 ? Colors.success : Colors.error}>{bnTaka(profit)}</T>
         </Card>
 
-        <Row gap={Spacing.sm} style={{ marginBottom: Spacing.xl }}>
-          <Btn label="আয় যোগ" onPress={() => openAdd('income')} variant="secondary" fullWidth icon={<PlusIcon size={16} color={Colors.textInverse} />} />
-          <Btn label="ব্যয় যোগ" onPress={() => openAdd('expense')} variant="danger" fullWidth icon={<PlusIcon size={16} color={Colors.textInverse} />} />
-        </Row>
+        <BtnRow style={{ marginBottom: Spacing.xl }}>
+          <Btn label="আয় যোগ" onPress={() => openAdd('income')} variant="secondary" flex icon={<PlusIcon size={16} color={Colors.textInverse} />} />
+          <Btn label="ব্যয় যোগ" onPress={() => openAdd('expense')} variant="danger" flex icon={<PlusIcon size={16} color={Colors.textInverse} />} />
+        </BtnRow>
 
         <SectionHeader title="লেনদেন" />
         {transactions.map((tx) => (

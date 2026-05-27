@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { AppHeader } from '../../components/AppHeader';
-import { T, Card, Row, ScreenScroll, TierBadge, Divider, Btn } from '../../components/atoms';
+import { T, Card, Row, ScreenScroll, TierBadge, Divider, Btn, BtnRow } from '../../components/atoms';
 import { FeatureLauncherList } from '../../components/FeatureToolsSection';
 import { Colors, Spacing, TierConfig } from '../../theme';
 import {
@@ -55,12 +55,12 @@ export const MoreScreen = ({ onSelectTier, onOpenBrandStudio }: MoreScreenProps)
         </Card>
 
         <Card onPress={onSelectTier} style={{ marginBottom: Spacing.sm }}>
-          <Row justify="space-between">
-            <Row gap={Spacing.sm}>
+          <Row justify="space-between" fill>
+            <Row gap={Spacing.sm} style={{ flex: 1, minWidth: 0 }}>
               <CrownIcon size={20} color={cfg.color} />
-              <View>
+              <View style={{ flex: 1, minWidth: 0 }}>
                 <T size="sm" weight="semibold">প্যাকেজ পরিবর্তন</T>
-                <T size="xs" color={Colors.textTertiary}>বর্তমান: টায়ার {user.tier} — ৳{cfg.price}/মাস</T>
+                <T size="xs" color={Colors.textTertiary} numberOfLines={2}>বর্তমান: টায়ার {user.tier} — ৳{cfg.price}/মাস</T>
               </View>
             </Row>
             <ChevronRightIcon size={18} color={Colors.textTertiary} />
@@ -68,48 +68,37 @@ export const MoreScreen = ({ onSelectTier, onOpenBrandStudio }: MoreScreenProps)
         </Card>
 
         <Card onPress={onOpenBrandStudio} style={{ marginBottom: Spacing.base }}>
-          <Row justify="space-between">
-            <Row gap={Spacing.sm}>
+          <Row justify="space-between" fill>
+            <Row gap={Spacing.sm} style={{ flex: 1, minWidth: 0 }}>
               <BrandIcon size={20} color={Colors.brandStudio} />
-              <View>
+              <View style={{ flex: 1, minWidth: 0 }}>
                 <T size="sm" weight="semibold">Brand Studio</T>
-                <T size="xs" color={Colors.textTertiary}>লোগো · ক্যাপশন · কপিরাইটিং</T>
+                <T size="xs" color={Colors.textTertiary} numberOfLines={2}>লোগো · ক্যাপশন · কপিরাইটিং</T>
               </View>
             </Row>
             <ChevronRightIcon size={18} color={Colors.textTertiary} />
           </Row>
         </Card>
 
-        <T size="sm" weight="semibold" color={Colors.textSecondary} style={{ marginBottom: Spacing.xs }}>
-          সব ফিচার ({featureCount})
-        </T>
-        <T size="xs" color={Colors.textTertiary} style={{ marginBottom: Spacing.md }}>
-          টায়ার ০–{user.tier} এর সব ফিচার · ট্যাবে নেই এমনগুলো এখান থেকে খুলুন
-        </T>
-
-        <FeatureLauncherList />
-
-        <Divider style={{ marginVertical: Spacing.base }} />
-
         {confirmSignOut ? (
           <Card style={{ marginBottom: Spacing.base, borderWidth: 1.5, borderColor: Colors.error }}>
             <T size="sm" weight="semibold" style={{ marginBottom: Spacing.sm }}>আপনি কি সাইন আউট করতে চান?</T>
-            <Row gap={Spacing.sm}>
+            <BtnRow>
               <Btn
                 label="না"
                 onPress={() => setConfirmSignOut(false)}
                 variant="ghost"
-                fullWidth
+                flex
                 disabled={signingOut}
               />
               <Btn
-                label="হ্যাঁ"
+                label="হ্যাঁ, সাইন আউট"
                 onPress={handleSignOut}
                 variant="danger"
-                fullWidth
+                flex
                 loading={signingOut}
               />
-            </Row>
+            </BtnRow>
           </Card>
         ) : (
           <Card onPress={() => setConfirmSignOut(true)} style={{ marginBottom: Spacing.base }}>
@@ -120,7 +109,20 @@ export const MoreScreen = ({ onSelectTier, onOpenBrandStudio }: MoreScreenProps)
           </Card>
         )}
 
-        <T size="xs" color={Colors.textTertiary} align="center">Antarious MSME v1.0 · Bangladesh</T>
+        <Divider style={{ marginVertical: Spacing.base }} />
+
+        <T size="sm" weight="semibold" color={Colors.textSecondary} style={{ marginBottom: Spacing.xs }}>
+          আপনার সরঞ্জাম ({featureCount})
+        </T>
+        <T size="xs" color={Colors.textTertiary} style={{ marginBottom: Spacing.md }}>
+          ব্যবসার প্রয়োজন অনুযায়ী সব ফিচার এক জায়গায়
+        </T>
+
+        <FeatureLauncherList />
+
+        <T size="xs" color={Colors.textTertiary} align="center" style={{ marginTop: Spacing.base }}>
+          Antarious MSME v1.0 · Bangladesh
+        </T>
       </ScreenScroll>
     </View>
   );

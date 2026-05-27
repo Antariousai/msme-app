@@ -35,15 +35,15 @@ export const OrdersScreen = () => {
       <AppHeader title="অর্ডার" subtitle="সব চ্যানেল থেকে" />
       <ScreenScroll>
         <Row gap={Spacing.sm} style={{ marginBottom: Spacing.base }}>
-          <Card style={{ flex: 1 }}>
+          <Card style={{ flex: 1, minWidth: 0 }}>
             <T size="xs" color={Colors.textTertiary}>অপেক্ষমাণ</T>
             <T size="xl" weight="bold" color={Colors.warning}>{orders.filter((o) => o.status === 'pending').length}</T>
           </Card>
-          <Card style={{ flex: 1 }}>
+          <Card style={{ flex: 1, minWidth: 0 }}>
             <T size="xs" color={Colors.textTertiary}>কনফার্ম</T>
             <T size="xl" weight="bold" color={Colors.accent}>{orders.filter((o) => o.status === 'confirmed').length}</T>
           </Card>
-          <Card style={{ flex: 1 }}>
+          <Card style={{ flex: 1, minWidth: 0 }}>
             <T size="xs" color={Colors.textTertiary}>ডেলিভার্ড</T>
             <T size="xl" weight="bold" color={Colors.success}>{orders.filter((o) => o.status === 'delivered').length}</T>
           </Card>
@@ -136,15 +136,15 @@ export const Tier2Home = () => (
     <AppHeader showGreeting />
     <ScreenScroll>
       <Row gap={Spacing.sm} style={{ marginBottom: Spacing.base }}>
-        <Card style={{ flex: 1 }}>
+        <Card style={{ flex: 1, minWidth: 0 }}>
           <T size="xs" color={Colors.textTertiary}>ওয়েব অর্ডার</T>
           <T size="2xl" weight="bold" color={Colors.tier2}>১</T>
         </Card>
-        <Card style={{ flex: 1 }}>
+        <Card style={{ flex: 1, minWidth: 0 }}>
           <T size="xs" color={Colors.textTertiary}>কম স্টক</T>
           <T size="2xl" weight="bold" color={Colors.warning}>১</T>
         </Card>
-        <Card style={{ flex: 1 }}>
+        <Card style={{ flex: 1, minWidth: 0 }}>
           <T size="xs" color={Colors.textTertiary}>কুরিয়ারে</T>
           <T size="2xl" weight="bold" color={Colors.accent}>২</T>
         </Card>
@@ -161,7 +161,7 @@ export const Tier2Home = () => (
         </Card>
       ))}
 
-      <FeatureToolsSection title="টায়ার ০–১ সরঞ্জাম" defaultExpanded={false} />
+      <FeatureToolsSection defaultExpanded={false} />
     </ScreenScroll>
   </View>
 );

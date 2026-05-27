@@ -25,7 +25,7 @@ export const DashboardScreen = () => {
     <View style={styles.container}>
       <AppHeader title="ড্যাশবোর্ড" subtitle="ইনসাইট ও রিপোর্টিং" />
       <ScreenScroll>
-        <Row gap={Spacing.sm} style={{ marginBottom: Spacing.base }}>
+        <Row gap={Spacing.sm} wrap style={{ marginBottom: Spacing.base }}>
           {(['daily', 'weekly', 'monthly'] as const).map((p) => (
             <Chip
               key={p}
@@ -143,11 +143,11 @@ export const Tier4Home = () => (
         </Row>
       </Card>
       <Row gap={Spacing.sm} style={{ marginBottom: Spacing.base }}>
-        <Card style={{ flex: 1 }}>
+        <Card style={{ flex: 1, minWidth: 0 }}>
           <T size="xs" color={Colors.textTertiary}>আজকের আয়</T>
           <T size="xl" weight="bold" color={Colors.success}>{bnTaka(3500)}</T>
         </Card>
-        <Card style={{ flex: 1 }}>
+        <Card style={{ flex: 1, minWidth: 0 }}>
           <T size="xs" color={Colors.textTertiary}>খোলা অভিযোগ</T>
           <T size="xl" weight="bold" color={Colors.error}>১</T>
         </Card>
@@ -159,7 +159,7 @@ export const Tier4Home = () => (
         actionLabel="লিড দেখুন"
       />
 
-      <FeatureToolsSection title="টায়ার ০–৩ সরঞ্জাম" defaultExpanded={false} />
+      <FeatureToolsSection defaultExpanded={false} />
     </ScreenScroll>
   </View>
 );

@@ -101,7 +101,7 @@ export const LeadsScreen = () => {
                 <T size="xs" color={Colors.textTertiary}>{lead.source} · {lead.lastContact}</T>
               </Row>
               {lead.status === 'new' || lead.status === 'contacted' ? (
-                <Row gap={Spacing.sm} style={{ marginTop: Spacing.sm }}>
+                <Row gap={Spacing.sm} wrap style={{ marginTop: Spacing.sm }}>
                   <Btn label="কল/মেসেজ" onPress={() => contactLead(lead.id)} size="sm" variant="secondary" />
                   <Btn label="আপসেল অফার" onPress={() => {}} size="sm" variant="outline" icon={<UpsellIcon size={14} color={Colors.primary} />} />
                 </Row>
@@ -133,11 +133,11 @@ export const Tier3Home = () => {
       <AppHeader showGreeting />
       <ScreenScroll>
         <Row gap={Spacing.sm} style={{ marginBottom: Spacing.base }}>
-          <Card style={{ flex: 1 }}>
+          <Card style={{ flex: 1, minWidth: 0 }}>
             <T size="xs" color={Colors.textTertiary}>মোট লিড</T>
             <T size="2xl" weight="bold" color={Colors.tier3}>{seedLeads.length}</T>
           </Card>
-          <Card style={{ flex: 1 }}>
+          <Card style={{ flex: 1, minWidth: 0 }}>
             <T size="xs" color={Colors.textTertiary}>হট লিড</T>
             <T size="2xl" weight="bold" color={Colors.success}>{hotLeads}</T>
           </Card>
@@ -157,7 +157,7 @@ export const Tier3Home = () => {
           </Card>
         ))}
 
-        <FeatureToolsSection title="টায়ার ০–২ সরঞ্জাম" />
+        <FeatureToolsSection />
       </ScreenScroll>
     </View>
   );

@@ -3,6 +3,7 @@ import {
   View, Text, StyleSheet, ViewStyle, TextStyle,
   ActivityIndicator, ScrollView, TextInput, Pressable, StyleProp,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Spacing, Radius, Shadow, Typography } from '../theme';
 
 // ─── Text ────────────────────────────────────────────────────────────────────
@@ -73,6 +74,8 @@ interface BtnProps {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
   size?: 'sm' | 'md' | 'lg';
   fullWidth?: boolean;
+  /** Equal-width button inside a horizontal row (use instead of fullWidth in rows) */
+  flex?: boolean;
   loading?: boolean;
   disabled?: boolean;
   icon?: React.ReactNode;
@@ -81,7 +84,7 @@ interface BtnProps {
 
 export const Btn = ({
   label, onPress, variant = 'primary', size = 'md',
-  fullWidth = false, loading = false, disabled = false, icon, style,
+  fullWidth = false, flex = false, loading = false, disabled = false, icon, style,
 }: BtnProps) => {
   const heights = { sm: 36, md: 46, lg: 54 };
   const fontSizes = { sm: Typography.size.sm, md: Typography.size.base, lg: Typography.size.md };
@@ -111,7 +114,8 @@ export const Btn = ({
         alignItems: 'center',
         justifyContent: 'center',
         gap: Spacing.xs,
-        ...(fullWidth && { width: '100%' }),
+        ...(flex && { flex: 1, minWidth: 0, alignSelf: 'stretch' }),
+        ...(fullWidth && !flex && { width: '100%' }),
         opacity: disabled ? 0.5 : pressed ? 0.85 : 1,
       }, style]}
     >
@@ -120,7 +124,7 @@ export const Btn = ({
       ) : (
         <>
           {icon}
-          <T size={size === 'sm' ? 'sm' : size === 'lg' ? 'md' : 'base'} color={vs.text} weight="semibold">
+          <T size={size === 'sm' ? 'sm' : size === 'lg' ? 'md' : 'base'} color={vs.text} weight="semibold" numberOfLines={1}>
             {label}
           </T>
         </>
@@ -164,12 +168,31 @@ interface RowProps {
   gap?: number;
   align?: ViewStyle['alignItems'];
   justify?: ViewStyle['justifyContent'];
+  wrap?: boolean;
+  fill?: boolean;
 }
 
-export const Row = ({ children, style, gap = Spacing.sm, align = 'center', justify = 'flex-start' }: RowProps) => (
-  <View style={[{ flexDirection: 'row', alignItems: align, justifyContent: justify, gap }, style]}>
+export const Row = ({
+  children, style, gap = Spacing.sm, align = 'center',
+  justify = 'flex-start', wrap = false, fill = false,
+}: RowProps) => (
+  <View style={[{
+    flexDirection: 'row',
+    alignItems: align,
+    justifyContent: justify,
+    gap,
+    ...(wrap && { flexWrap: 'wrap' }),
+    ...(fill && { width: '100%' }),
+  }, style]}>
     {children}
   </View>
+);
+
+/** Side-by-side buttons that share width equally on mobile */
+export const BtnRow = ({ children, style }: { children: React.ReactNode; style?: ViewStyle }) => (
+  <Row fill style={style}>
+    {children}
+  </Row>
 );
 
 // ─── Divider ─────────────────────────────────────────────────────────────────
@@ -433,17 +456,25 @@ interface ScreenScrollProps {
   contentPadding?: boolean;
 }
 
-export const ScreenScroll = ({ children, style, contentPadding = true }: ScreenScrollProps) => (
-  <ScrollView
-    showsVerticalScrollIndicator={false}
-    contentContainerStyle={[
-      contentPadding && { padding: Spacing.base, paddingBottom: Spacing['4xl'] },
-      style,
-    ]}
-  >
-    {children}
-  </ScrollView>
-);
+export const ScreenScroll = ({ children, style, contentPadding = true }: ScreenScrollProps) => {
+  const insets = useSafeAreaInsets();
+  const tabBarClearance = 72;
+
+  return (
+    <ScrollView
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={[
+        contentPadding && {
+          padding: Spacing.base,
+          paddingBottom: tabBarClearance + insets.bottom + Spacing.xl,
+        },
+        style,
+      ]}
+    >
+      {children}
+    </ScrollView>
+  );
+};
 
 // ─── AI Suggestion Card ───────────────────────────────────────────────────────
 
