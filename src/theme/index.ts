@@ -145,3 +145,11 @@ export const TierConfig = {
     tagline: 'সম্পূর্ণ বিশ্লেষণ ও রিপোর্টিং',
   },
 };
+
+/** Brand Studio is a paid add-on (tiers 1–4), priced separately from the tier subscription */
+export const BrandStudioAddOn = {
+  price: '৩০০',
+  priceEn: '300',
+  tagline: 'লোগো, ক্যাপশন ও ওয়েব টেমপ্লেট',
+  color: Colors.brandStudio,
+};

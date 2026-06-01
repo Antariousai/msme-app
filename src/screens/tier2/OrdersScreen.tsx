@@ -161,7 +161,7 @@ export const Tier2Home = () => (
         </Card>
       ))}
 
-      <FeatureToolsSection defaultExpanded={false} />
+      <FeatureToolsSection defaultExpanded />
     </ScreenScroll>
   </View>
 );

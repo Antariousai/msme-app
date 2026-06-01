@@ -4,6 +4,11 @@ import { STORAGE_KEYS } from '../utils/helpers';
 
 export type UserTier = 0 | 1 | 2 | 3 | 4;
 
+export interface AddOns {
+  /** Brand Studio is a paid add-on available on tiers 1–4 */
+  brandStudio: boolean;
+}
+
 export interface AuthUser {
   id: string;
   name: string;
@@ -11,6 +16,7 @@ export interface AuthUser {
   businessName: string;
   tier: UserTier;
   location: string;
+  addOns: AddOns;
 }
 
 interface AuthContextType {
@@ -19,6 +25,7 @@ interface AuthContextType {
   signIn: (phone: string, pin: string) => Promise<boolean>;
   signOut: () => Promise<void>;
   updateTier: (tier: UserTier) => Promise<void>;
+  setBrandStudioAddOn: (enabled: boolean) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -27,6 +34,7 @@ const AuthContext = createContext<AuthContextType>({
   signIn: async () => false,
   signOut: async () => {},
   updateTier: async () => {},
+  setBrandStudioAddOn: async () => {},
 });
 
 const DEMO_USERS: Record<string, { pin: string; user: AuthUser }> = {
@@ -39,6 +47,7 @@ const DEMO_USERS: Record<string, { pin: string; user: AuthUser }> = {
       businessName: 'রাহেলা বুটিক হাউস',
       tier: 0,
       location: 'ঢাকা',
+      addOns: { brandStudio: false },
     },
   },
   '01800000001': {
@@ -50,6 +59,7 @@ const DEMO_USERS: Record<string, { pin: string; user: AuthUser }> = {
       businessName: 'ফয়সাল ইলেকট্রনিক্স',
       tier: 1,
       location: 'চট্টগ্রাম',
+      addOns: { brandStudio: false },
     },
   },
   '01900000002': {
@@ -61,6 +71,7 @@ const DEMO_USERS: Record<string, { pin: string; user: AuthUser }> = {
       businessName: 'সুমাইয়া ফ্যাশন',
       tier: 2,
       location: 'সিলেট',
+      addOns: { brandStudio: true },
     },
   },
   '01700000003': {
@@ -72,6 +83,7 @@ const DEMO_USERS: Record<string, { pin: string; user: AuthUser }> = {
       businessName: 'করিম এন্টারপ্রাইজ',
       tier: 3,
       location: 'রাজশাহী',
+      addOns: { brandStudio: false },
     },
   },
   '01800000004': {
@@ -83,6 +95,7 @@ const DEMO_USERS: Record<string, { pin: string; user: AuthUser }> = {
       businessName: 'নাসরিন টেক্সটাইল',
       tier: 4,
       location: 'ময়মনসিংহ',
+      addOns: { brandStudio: true },
     },
   },
 };
@@ -95,7 +108,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const restore = async () => {
       try {
         const stored = await AsyncStorage.getItem(STORAGE_KEYS.AUTH_USER);
-        if (stored) setUser(JSON.parse(stored));
+        if (stored) {
+          const parsed = JSON.parse(stored) as AuthUser;
+          if (!parsed.addOns) parsed.addOns = { brandStudio: false };
+          setUser(parsed);
+        }
       } catch {
         // ignore
       } finally {
@@ -125,8 +142,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(updated);
   };
 
+  const setBrandStudioAddOn = async (enabled: boolean) => {
+    if (!user) return;
+    const updated = { ...user, addOns: { ...user.addOns, brandStudio: enabled } };
+    await AsyncStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(updated));
+    setUser(updated);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, signOut, updateTier }}>
+    <AuthContext.Provider value={{ user, loading, signIn, signOut, updateTier, setBrandStudioAddOn }}>
       {children}
     </AuthContext.Provider>
   );

@@ -28,6 +28,12 @@ export const LeadsScreen = () => {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
+  const [automationOn, setAutomationOn] = useState(true);
+  const [upsellSent, setUpsellSent] = useState<Set<string>>(new Set());
+
+  const sendUpsell = (id: string) => {
+    setUpsellSent((prev) => new Set(prev).add(id));
+  };
 
   const addLead = () => {
     if (!name || !phone) return;
@@ -68,6 +74,21 @@ export const LeadsScreen = () => {
           style={{ marginBottom: Spacing.base }}
         />
 
+        <Card style={{ marginBottom: Spacing.base }}>
+          <Row justify="space-between">
+            <Row gap={Spacing.sm} style={{ flex: 1, minWidth: 0 }}>
+              <UpsellIcon size={20} color={Colors.tier3} />
+              <View style={{ flex: 1, minWidth: 0 }}>
+                <T size="sm" weight="semibold">আপসেল ও ক্রস-সেল অটোমেশন</T>
+                <T size="xs" color={Colors.textTertiary}>যোগ্য লিডে স্বয়ংক্রিয় অফার পাঠান</T>
+              </View>
+            </Row>
+            <Pressable onPress={() => setAutomationOn(!automationOn)}>
+              <StatusPill label={automationOn ? 'চালু' : 'বন্ধ'} type={automationOn ? 'success' : 'neutral'} />
+            </Pressable>
+          </Row>
+        </Card>
+
         {aiSuggestions.leads.map((s, i) => (
           <View key={i} style={{ marginBottom: Spacing.sm }}>
             <AISuggestion title={s.title} message={s.message} actionLabel="কাজ করুন" />
@@ -100,10 +121,21 @@ export const LeadsScreen = () => {
                 <StatusPill label={st.label} type={st.type} />
                 <T size="xs" color={Colors.textTertiary}>{lead.source} · {lead.lastContact}</T>
               </Row>
+              {upsellSent.has(lead.id) && (
+                <View style={{ marginTop: Spacing.sm }}>
+                  <StatusPill label="আপসেল অফার পাঠানো হয়েছে" type="success" />
+                </View>
+              )}
               {lead.status === 'new' || lead.status === 'contacted' ? (
                 <Row gap={Spacing.sm} wrap style={{ marginTop: Spacing.sm }}>
                   <Btn label="কল/মেসেজ" onPress={() => contactLead(lead.id)} size="sm" variant="secondary" />
-                  <Btn label="আপসেল অফার" onPress={() => {}} size="sm" variant="outline" icon={<UpsellIcon size={14} color={Colors.primary} />} />
+                  <Btn
+                    label={upsellSent.has(lead.id) ? 'আবার পাঠান' : 'আপসেল অফার'}
+                    onPress={() => sendUpsell(lead.id)}
+                    size="sm"
+                    variant="outline"
+                    icon={<UpsellIcon size={14} color={Colors.primary} />}
+                  />
                 </Row>
               ) : null}
             </Card>
@@ -157,7 +189,7 @@ export const Tier3Home = () => {
           </Card>
         ))}
 
-        <FeatureToolsSection />
+        <FeatureToolsSection defaultExpanded />
       </ScreenScroll>
     </View>
   );

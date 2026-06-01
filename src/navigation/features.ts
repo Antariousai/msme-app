@@ -2,13 +2,14 @@ import React from 'react';
 import { UserTier } from '../auth/AuthContext';
 import { Tier0Home, BookkeepingScreen } from '../screens/tier0/BookkeepingScreen';
 import { MessagesScreen } from '../screens/tier1/MessagesScreen';
-import { FinanceScreen, CalendarScreen } from '../screens/tier1/FinanceScreen';
+import { CommentsScreen } from '../screens/tier1/CommentsScreen';
+import { CalendarScreen } from '../screens/tier1/CalendarScreen';
 import { OrdersScreen, WebsiteScreen } from '../screens/tier2/OrdersScreen';
 import { InventoryScreen, CourierScreen } from '../screens/tier2/InventoryScreen';
 import { LeadsScreen } from '../screens/tier3/LeadsScreen';
 import { DashboardScreen, ReportsScreen, ComplaintsScreen } from '../screens/tier4/DashboardScreen';
 import {
-  BookIcon, MessageIcon, FinanceIcon, CalendarIcon, OrderIcon,
+  BookIcon, MessageIcon, CommentIcon, CalendarIcon, OrderIcon,
   InventoryIcon, CourierIcon, WebsiteIcon, LeadIcon, ChartIcon,
   ReportIcon, ComplaintIcon,
 } from '../icons';
@@ -16,7 +17,7 @@ import {
 export type FeatureId =
   | 'bookkeeping'
   | 'messages'
-  | 'finance'
+  | 'comments'
   | 'calendar'
   | 'orders'
   | 'inventory'
@@ -59,11 +60,11 @@ export const FEATURE_CATEGORY_META: Record<
 > = {
   accounting: {
     title: 'হিসাব ও অর্থ',
-    description: 'আয়, ব্যয়, লাভ ও দৈনিক হিসাব',
+    description: 'আয়, ব্যয়, লাভ, জার্নাল ও বিশ্লেষণ',
   },
   sales: {
     title: 'বিক্রয় ও যোগাযোগ',
-    description: 'মেসেজ, অর্ডার ও পরিকল্পনা',
+    description: 'মেসেজ, কমেন্ট ও অর্ডার',
   },
   operations: {
     title: 'স্টক ও ডেলিভারি',
@@ -71,7 +72,7 @@ export const FEATURE_CATEGORY_META: Record<
   },
   customers: {
     title: 'গ্রাহক ব্যবস্থাপনা',
-    description: 'লিড, যোগাযোগ ও রূপান্তর',
+    description: 'পরিকল্পনা, লিড ও রূপান্তর',
   },
   insights: {
     title: 'ব্যবসা বিশ্লেষণ',
@@ -83,7 +84,7 @@ export const FEATURES: FeatureDef[] = [
   {
     id: 'bookkeeping',
     label: 'হিসাব রক্ষা',
-    subtitle: 'আয় ও ব্যয়',
+    subtitle: 'আয়, ব্যয়, জার্নাল ও বিশ্লেষণ',
     category: 'accounting',
     introducedIn: 0,
     icon: BookIcon,
@@ -99,19 +100,19 @@ export const FEATURES: FeatureDef[] = [
     component: MessagesScreen,
   },
   {
-    id: 'finance',
-    label: 'অর্থ',
-    subtitle: 'আয়, ব্যয় ও লাভ',
-    category: 'accounting',
+    id: 'comments',
+    label: 'কমেন্ট',
+    subtitle: 'স্বয়ংক্রিয় কমেন্ট রিপ্লাই',
+    category: 'sales',
     introducedIn: 1,
-    icon: FinanceIcon,
-    component: FinanceScreen,
+    icon: CommentIcon,
+    component: CommentsScreen,
   },
   {
     id: 'calendar',
     label: 'ক্যালেন্ডার',
-    subtitle: 'দৈনিক ও সাপ্তাহিক',
-    category: 'sales',
+    subtitle: 'দৈনিক ও সাপ্তাহিক পরিকল্পনা',
+    category: 'customers',
     introducedIn: 1,
     icon: CalendarIcon,
     component: CalendarScreen,
@@ -201,13 +202,13 @@ export function getPrimaryTabIds(tier: UserTier): FeatureId[] {
     case 0:
       return ['bookkeeping'];
     case 1:
-      return ['messages', 'finance', 'calendar'];
+      return ['bookkeeping', 'messages', 'comments'];
     case 2:
       return ['orders', 'inventory', 'courier'];
     case 3:
-      return ['leads', 'messages', 'finance'];
+      return ['leads', 'messages', 'bookkeeping'];
     case 4:
-      return ['dashboard', 'leads', 'finance'];
+      return ['dashboard', 'leads', 'bookkeeping'];
     default:
       return [];
   }

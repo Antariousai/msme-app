@@ -3,7 +3,7 @@ import { View, StyleSheet } from 'react-native';
 import { AppHeader } from '../../components/AppHeader';
 import { T, Card, Row, ScreenScroll, TierBadge, Divider, Btn, BtnRow } from '../../components/atoms';
 import { FeatureLauncherList } from '../../components/FeatureToolsSection';
-import { Colors, Spacing, TierConfig } from '../../theme';
+import { Colors, Spacing, TierConfig, BrandStudioAddOn } from '../../theme';
 import {
   ProfileIcon, LogoutIcon, CrownIcon, BrandIcon, ChevronRightIcon,
 } from '../../icons';
@@ -67,18 +67,25 @@ export const MoreScreen = ({ onSelectTier, onOpenBrandStudio }: MoreScreenProps)
           </Row>
         </Card>
 
-        <Card onPress={onOpenBrandStudio} style={{ marginBottom: Spacing.base }}>
-          <Row justify="space-between" fill>
-            <Row gap={Spacing.sm} style={{ flex: 1, minWidth: 0 }}>
-              <BrandIcon size={20} color={Colors.brandStudio} />
-              <View style={{ flex: 1, minWidth: 0 }}>
-                <T size="sm" weight="semibold">Brand Studio</T>
-                <T size="xs" color={Colors.textTertiary} numberOfLines={2}>লোগো · ক্যাপশন · কপিরাইটিং</T>
-              </View>
+        {user.tier >= 1 && (
+          <Card onPress={onOpenBrandStudio} style={{ marginBottom: Spacing.base }}>
+            <Row justify="space-between" fill>
+              <Row gap={Spacing.sm} style={{ flex: 1, minWidth: 0 }}>
+                <BrandIcon size={20} color={Colors.brandStudio} />
+                <View style={{ flex: 1, minWidth: 0 }}>
+                  <T size="sm" weight="semibold">Brand Studio</T>
+                  <T size="xs" color={Colors.textTertiary} numberOfLines={2}>লোগো · ক্যাপশন · ওয়েব টেমপ্লেট</T>
+                </View>
+              </Row>
+              <Row gap={Spacing.sm}>
+                <T size="xs" weight="bold" color={Colors.brandStudio}>
+                  {user.addOns.brandStudio ? 'চালু' : `অ্যাড-অন · ৳${BrandStudioAddOn.price}/মাস`}
+                </T>
+                <ChevronRightIcon size={18} color={Colors.textTertiary} />
+              </Row>
             </Row>
-            <ChevronRightIcon size={18} color={Colors.textTertiary} />
-          </Row>
-        </Card>
+          </Card>
+        )}
 
         {confirmSignOut ? (
           <Card style={{ marginBottom: Spacing.base, borderWidth: 1.5, borderColor: Colors.error }}>

@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { AppHeader } from '../../components/AppHeader';
-import { T, Card, Row, ScreenScroll, SectionHeader, StatCard, StatusPill, Chip, AISuggestion } from '../../components/atoms';
+import { T, Card, Row, ScreenScroll, SectionHeader, StatCard, StatusPill, Chip, AISuggestion, Btn } from '../../components/atoms';
 import { FeatureToolsSection } from '../../components/FeatureToolsSection';
 import { Colors, Spacing } from '../../theme';
-import { ChartIcon, TrendUpIcon, TrendDownIcon, PeakIcon, ReportIcon } from '../../icons';
-import { seedTransactions, seedComplaints, aiSuggestions } from '../../data/seed';
+import { ChartIcon, TrendUpIcon, TrendDownIcon, PeakIcon, ReportIcon, DownloadIcon } from '../../icons';
+import { seedTransactions, seedComplaints, aiSuggestions, productSales, peakHours } from '../../data/seed';
 import { bnTaka, calcProfit, toBn } from '../../utils/helpers';
+import { useAuth } from '../../auth/AuthContext';
+import { buildBusinessReport, shareReport, periodLabel, ReportPeriod } from '../../utils/report';
 
 export const DashboardScreen = () => {
+  const { user } = useAuth();
   const [period, setPeriod] = useState<'daily' | 'weekly' | 'monthly'>('daily');
   const income = seedTransactions.filter((t) => t.type === 'income').reduce((s, t) => s + t.amount, 0);
   const expense = seedTransactions.filter((t) => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
@@ -20,6 +23,26 @@ export const DashboardScreen = () => {
     monthly: { revenue: 72000, orders: 89, messages: 245, label: 'এই মাস' },
   };
   const s = summaries[period];
+
+  const best = productSales[0];
+  const worst = productSales[productSales.length - 1];
+  const peak = [...peakHours].sort((a, b) => b.orders - a.orders)[0];
+  const maxPeak = Math.max(...peakHours.map((p) => p.orders));
+
+  const exportSummary = async () => {
+    const rp: ReportPeriod = period === 'weekly' ? 'weekly' : 'monthly';
+    const content = buildBusinessReport({
+      businessName: user?.businessName ?? 'আমার ব্যবসা',
+      period: rp,
+      income: s.revenue,
+      expense,
+      breakdown: [
+        { label: `বেস্ট সেলার (${best.name})`, amount: best.revenue },
+        { label: `ওয়ার্স সেলার (${worst.name})`, amount: worst.revenue },
+      ],
+    });
+    await shareReport(`${periodLabel(rp)}-dashboard`, content);
+  };
 
   return (
     <View style={styles.container}>
@@ -53,11 +76,20 @@ export const DashboardScreen = () => {
               <T size="lg" weight="bold" color={Colors.success}>{bnTaka(profit)}</T>
             </View>
           </Row>
+          <Btn
+            label="সারাংশ এক্সপোর্ট"
+            onPress={exportSummary}
+            variant="outline"
+            size="sm"
+            icon={<DownloadIcon size={14} color={Colors.primary} />}
+            style={{ marginTop: Spacing.md, alignSelf: 'flex-start' }}
+          />
         </Card>
 
+        <SectionHeader title="বেস্ট ও ওয়ার্স সেলিং" />
         <Row gap={Spacing.sm} style={{ marginBottom: Spacing.base }}>
-          <StatCard label="বেস্ট সেলার" value="কটন কুর্তি" subtitle="৪৫ ইউনিট" color={Colors.success} icon={<TrendUpIcon size={16} color={Colors.success} />} />
-          <StatCard label="ওয়ার্স সেলার" value="স্কার্ফ" subtitle="৩ ইউনিট" color={Colors.error} icon={<TrendDownIcon size={16} color={Colors.error} />} />
+          <StatCard label="বেস্ট সেলার" value={best.name} subtitle={`${toBn(best.units)} ইউনিট`} color={Colors.success} icon={<TrendUpIcon size={16} color={Colors.success} />} />
+          <StatCard label="ওয়ার্স সেলার" value={worst.name} subtitle={`${toBn(worst.units)} ইউনিট`} color={Colors.error} icon={<TrendDownIcon size={16} color={Colors.error} />} />
         </Row>
 
         <Card style={{ marginBottom: Spacing.base }}>
@@ -65,8 +97,18 @@ export const DashboardScreen = () => {
             <PeakIcon size={20} color={Colors.accent} />
             <T size="md" weight="bold">পিক আওয়ার বিশ্লেষণ</T>
           </Row>
-          <T size="sm" color={Colors.textSecondary}>সর্বোচ্চ কার্যকলাপ: সন্ধ্যা ৭:০০ – ৯:০০</T>
-          <T size="xs" color={Colors.textTertiary} style={{ marginTop: Spacing.xs }}>শুক্র ও শনিবারে ৩৫% বেশি অর্ডার</T>
+          {peakHours.map((p) => (
+            <Row key={p.slot} gap={Spacing.sm} align="center" style={{ marginBottom: Spacing.xs }}>
+              <T size="xs" color={Colors.textSecondary} style={{ width: 96 }}>{p.slot}</T>
+              <View style={{ flex: 1, height: 8, borderRadius: 4, backgroundColor: Colors.bgDark }}>
+                <View style={{ width: `${(p.orders / maxPeak) * 100}%`, height: 8, borderRadius: 4, backgroundColor: p.orders === maxPeak ? Colors.accent : Colors.tier4 }} />
+              </View>
+              <T size="xs" weight="semibold" color={Colors.textSecondary}>{toBn(p.orders)}</T>
+            </Row>
+          ))}
+          <T size="xs" color={Colors.textTertiary} style={{ marginTop: Spacing.xs }}>
+            সর্বোচ্চ কার্যকলাপ: {peak.slot}
+          </T>
         </Card>
 
         <SectionHeader title="AI ইনসাইট" />
@@ -159,7 +201,7 @@ export const Tier4Home = () => (
         actionLabel="লিড দেখুন"
       />
 
-      <FeatureToolsSection defaultExpanded={false} />
+      <FeatureToolsSection defaultExpanded />
     </ScreenScroll>
   </View>
 );

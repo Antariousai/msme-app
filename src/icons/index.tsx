@@ -318,6 +318,35 @@ export const AutoReplyIcon = ({ size = 24, color = '#1A1A1A', strokeWidth = 1.8 
   </Svg>
 );
 
+export const CommentIcon = ({ size = 24, color = '#1A1A1A', strokeWidth = 1.8 }: IconProps) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <Path d="M21 11.5C21.0034 12.8199 20.6951 14.1219 20.1 15.3C19.3944 16.7118 18.3098 17.8992 16.9674 18.7293C15.6251 19.5594 14.0782 19.9994 12.5 20C11.1801 20.0035 9.87812 19.6951 8.7 19.1L3 21L4.9 15.3C4.30493 14.1219 3.99656 12.8199 4 11.5C4.00061 9.92179 4.44061 8.37488 5.27072 7.03258C6.10083 5.69028 7.28825 4.6056 8.7 3.9C9.87812 3.30493 11.1801 2.99656 12.5 3H13C15.0843 3.11502 17.053 3.99479 18.5291 5.47089C20.0052 6.94699 20.885 8.91568 21 11V11.5Z" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round"/>
+    <Circle cx="9" cy="11.5" r="0.6" fill={color}/>
+    <Circle cx="12.5" cy="11.5" r="0.6" fill={color}/>
+    <Circle cx="16" cy="11.5" r="0.6" fill={color}/>
+  </Svg>
+);
+
+export const DownloadIcon = ({ size = 24, color = '#1A1A1A', strokeWidth = 1.8 }: IconProps) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <Path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round"/>
+    <Path d="M7 10L12 15L17 10M12 15V3" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round"/>
+  </Svg>
+);
+
+export const JournalIcon = ({ size = 24, color = '#1A1A1A', strokeWidth = 1.8 }: IconProps) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <Rect x="4" y="3" width="16" height="18" rx="2" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round"/>
+    <Path d="M8 7H16M8 11H16M8 15H13" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round"/>
+  </Svg>
+);
+
+export const ScaleIcon = ({ size = 24, color = '#1A1A1A', strokeWidth = 1.8 }: IconProps) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <Path d="M12 3V21M7 21H17M5 7H19M5 7L2 13H8L5 7ZM19 7L16 13H22L19 7Z" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round"/>
+  </Svg>
+);
+
 export const DotIcon = ({ size = 8, color = '#1A1A1A' }: IconProps) => (
   <Svg width={size} height={size} viewBox="0 0 8 8" fill="none">
     <Circle cx="4" cy="4" r="4" fill={color}/>

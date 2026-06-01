@@ -7,8 +7,19 @@ export interface Transaction {
   type: TransactionType;
   amount: number;
   category: string;
+  /** Product / item name (optional — used for journal & accounting output) */
+  product?: string;
   note: string;
   date: string;
+}
+
+/** Simple offline stock entry for Tier 0 (category, product, quantity, purchase price) */
+export interface SimpleStockItem {
+  id: string;
+  category: string;
+  name: string;
+  quantity: number;
+  purchasePrice: number;
 }
 
 export interface Message {
@@ -19,6 +30,23 @@ export interface Message {
   time: string;
   unread: boolean;
   status: 'new' | 'replied' | 'escalated' | 'confirmed';
+}
+
+export interface Comment {
+  id: string;
+  platform: 'facebook' | 'instagram';
+  author: string;
+  post: string;
+  text: string;
+  time: string;
+  status: 'new' | 'replied' | 'hidden';
+}
+
+/** Reusable auto-reply templates the user can apply to messages & comments */
+export interface ReplyTemplate {
+  id: string;
+  trigger: string;
+  reply: string;
 }
 
 export interface Order {
@@ -71,11 +99,17 @@ export interface Complaint {
 }
 
 export const seedTransactions: Transaction[] = [
-  { id: generateId(), type: 'income', amount: 3500, category: 'বিক্রয়', note: '৩টি শাড়ি', date: '2026-05-27' },
-  { id: generateId(), type: 'expense', amount: 800, category: 'কাঁচামাল', note: 'কাপড় ক্রয়', date: '2026-05-27' },
-  { id: generateId(), type: 'income', amount: 1200, category: 'বিক্রয়', note: 'লাঞ্জ কম্বো', date: '2026-05-26' },
+  { id: generateId(), type: 'income', amount: 3500, category: 'বিক্রয়', product: 'জামদানি শাড়ি', note: '৩টি শাড়ি', date: '2026-05-27' },
+  { id: generateId(), type: 'expense', amount: 800, category: 'কাঁচামাল', product: 'কাপড়', note: 'কাপড় ক্রয়', date: '2026-05-27' },
+  { id: generateId(), type: 'income', amount: 1200, category: 'বিক্রয়', product: 'লাঞ্জ সেট', note: 'লাঞ্জ কম্বো', date: '2026-05-26' },
   { id: generateId(), type: 'expense', amount: 450, category: 'পরিবহন', note: 'রিকশা ভাড়া', date: '2026-05-26' },
-  { id: generateId(), type: 'income', amount: 5600, category: 'বিক্রয়', note: 'হাট দিবস', date: '2026-05-25' },
+  { id: generateId(), type: 'income', amount: 5600, category: 'বিক্রয়', product: 'কটন কুর্তি', note: 'হাট দিবস', date: '2026-05-25' },
+];
+
+export const seedSimpleStock: SimpleStockItem[] = [
+  { id: generateId(), category: 'পোশাক', name: 'কটন কুর্তি', quantity: 24, purchasePrice: 520 },
+  { id: generateId(), category: 'পোশাক', name: 'জামদানি শাড়ি', quantity: 8, purchasePrice: 1800 },
+  { id: generateId(), category: 'অ্যাকসেসরিজ', name: 'স্কার্ফ', quantity: 45, purchasePrice: 120 },
 ];
 
 export const seedMessages: Message[] = [
@@ -83,6 +117,20 @@ export const seedMessages: Message[] = [
   { id: 'm2', platform: 'instagram', sender: 'তানিয়া রহমান', preview: 'অর্ডার কনফার্ম করুন ০১৭XXXXXXXX', time: '৩০ মিনিট', unread: true, status: 'new' },
   { id: 'm3', platform: 'facebook', sender: 'মোঃ রফিক', preview: 'ডেলিভারি চার্জ কত?', time: '১ ঘণ্টা', unread: false, status: 'replied' },
   { id: 'm4', platform: 'instagram', sender: 'নুসরাত জাহান', preview: 'পণ্য পেয়েছি, ধন্যবাদ!', time: '২ ঘণ্টা', unread: false, status: 'confirmed' },
+];
+
+export const seedComments: Comment[] = [
+  { id: 'cm1', platform: 'facebook', author: 'রিয়া আক্তার', post: 'নতুন কালেকশন পোস্ট', text: 'দাম কত? 😍', time: '৫ মিনিট', status: 'new' },
+  { id: 'cm2', platform: 'instagram', author: 'shopno_bd', post: 'ঈদ অফার রিল', text: 'ডেলিভারি কি ঢাকার বাইরে আছে?', time: '২০ মিনিট', status: 'new' },
+  { id: 'cm3', platform: 'facebook', author: 'মাহিন', post: 'কটন কুর্তি ছবি', text: 'সাইজ চার্ট দেন প্লিজ', time: '১ ঘণ্টা', status: 'replied' },
+  { id: 'cm4', platform: 'instagram', author: 'fashion.lover', post: 'স্কার্ফ পোস্ট', text: 'খুব সুন্দর! 🔥', time: '৩ ঘণ্টা', status: 'replied' },
+];
+
+export const replyTemplates: ReplyTemplate[] = [
+  { id: 'rt1', trigger: 'দাম / প্রাইস', reply: 'আসসালামু আলাইকুম! দাম জানতে ইনবক্সে পণ্যের নাম লিখুন, আমরা দ্রুত জানাচ্ছি। ধন্যবাদ।' },
+  { id: 'rt2', trigger: 'ডেলিভারি', reply: 'আমরা সারা বাংলাদেশে হোম ডেলিভারি করি। ঢাকার ভিতরে ৳৬০, ঢাকার বাইরে ৳১২০।' },
+  { id: 'rt3', trigger: 'সাইজ', reply: 'সাইজ চার্ট কমেন্টে দেওয়া আছে। আপনার মাপ জানালে আমরা সঠিক সাইজ সাজেস্ট করব।' },
+  { id: 'rt4', trigger: 'স্টক / available', reply: 'জি, পণ্যটি স্টকে আছে। অর্ডার কনফার্ম করতে নাম, ঠিকানা ও মোবাইল নম্বর দিন।' },
 ];
 
 export const seedOrders: Order[] = [
@@ -131,6 +179,22 @@ export const aiSuggestions = {
     { title: 'আপসেল', message: 'তানিয়া রহমান শাড়ি কিনেছেন — ম্যাচিং স্কার্ফ অফার করুন।' },
   ],
 };
+
+export const productSales = [
+  { name: 'কটন কুর্তি', units: 142, revenue: 120700, trend: 'up' as const },
+  { name: 'জামদানি শাড়ি', units: 38, revenue: 68400, trend: 'up' as const },
+  { name: 'স্কার্ফ', units: 96, revenue: 28800, trend: 'neutral' as const },
+  { name: 'লাঞ্জ সেট', units: 12, revenue: 14400, trend: 'down' as const },
+  { name: 'হাতের ব্যাগ', units: 5, revenue: 6000, trend: 'down' as const },
+];
+
+export const peakHours = [
+  { slot: 'সকাল ৮–১২', orders: 12 },
+  { slot: 'দুপুর ১২–৪', orders: 18 },
+  { slot: 'বিকেল ৪–৭', orders: 26 },
+  { slot: 'সন্ধ্যা ৭–১০', orders: 41 },
+  { slot: 'রাত ১০–১২', orders: 22 },
+];
 
 export const calendarEvents = [
   { id: 'e1', title: 'হাট দিবস — মিরপুর', date: '২৮ মে', type: 'market' },
