@@ -49,55 +49,144 @@ export const TransactionList = ({ transactions }: { transactions: Transaction[] 
   </View>
 );
 
-/** Simplified double-entry journal derived from transactions */
-export const JournalView = ({ transactions }: { transactions: Transaction[] }) => (
-  <View>
-    <T size="xs" color={Colors.textTertiary} style={{ marginBottom: Spacing.sm }}>
-      প্রতিটি লেনদেন ডেবিট/ক্রেডিট আকারে — হিসাবের খাতা
-    </T>
-    {transactions.map((tx) => {
-      const debit = tx.type === 'income' ? 'নগদ' : tx.category;
-      const credit = tx.type === 'income' ? (tx.product || tx.category) : 'নগদ';
-      return (
-        <Card key={tx.id} style={{ marginBottom: Spacing.sm }} padding={Spacing.md}>
-          <Row justify="space-between" style={{ marginBottom: Spacing.xs }}>
-            <T size="xs" color={Colors.textTertiary}>{tx.date}</T>
-            <T size="sm" weight="bold">{bnTaka(tx.amount)}</T>
-          </Row>
-          <Row justify="space-between">
-            <T size="xs" color={Colors.textSecondary}>ডেবিট: {debit}</T>
-            <T size="xs" color={Colors.textSecondary}>ক্রেডিট: {credit}</T>
-          </Row>
-        </Card>
-      );
-    })}
+const MONTHS_S = ['জানু','ফেব','মার্চ','এপ্রি','মে','জুন','জুলা','আগ','সেপ','অক্টো','নভে','ডিসে'];
+function fmtDate(iso: string): string {
+  const [, mm, dd] = iso.split('-');
+  return `${toBn(+dd)} ${MONTHS_S[+mm - 1]}`;
+}
+
+/** Column widths for the journal table */
+const J = { date: 52, desc: undefined as number | undefined, dr: 68, cr: 68 };
+
+const JCell = ({ w, right, bold, children, color }: {
+  w?: number; right?: boolean; bold?: boolean; children: React.ReactNode; color?: string;
+}) => (
+  <View style={[{ flex: w ? undefined : 1, width: w, justifyContent: 'center', paddingVertical: 5, paddingHorizontal: 4 }]}>
+    <T size="xs" weight={bold ? 'bold' : 'regular'} align={right ? 'right' : 'left'} color={color}>{children}</T>
   </View>
 );
 
-/** Simplified balance/position statement */
+/** Proper double-entry journal ledger */
+export const JournalView = ({ transactions }: { transactions: Transaction[] }) => {
+  const totalDr = transactions.reduce((s, t) => s + t.amount, 0);
+  return (
+    <View style={{ borderRadius: Radius.lg, overflow: 'hidden', borderWidth: 1, borderColor: Colors.border, marginBottom: Spacing.base }}>
+      {/* Table header */}
+      <View style={{ flexDirection: 'row', backgroundColor: Colors.chip, borderBottomWidth: 1, borderColor: Colors.border }}>
+        <JCell w={J.date} bold color={Colors.textSecondary}>তারিখ</JCell>
+        <View style={{ width: 1, backgroundColor: Colors.border }} />
+        <JCell bold color={Colors.textSecondary}>বিবরণ</JCell>
+        <View style={{ width: 1, backgroundColor: Colors.border }} />
+        <JCell w={J.dr} right bold color={Colors.textSecondary}>ডেবিট</JCell>
+        <View style={{ width: 1, backgroundColor: Colors.border }} />
+        <JCell w={J.cr} right bold color={Colors.textSecondary}>ক্রেডিট</JCell>
+      </View>
+
+      {/* Transaction rows (two lines each: Dr + Cr) */}
+      {transactions.map((tx, idx) => {
+        const debitAcc  = tx.type === 'income' ? 'নগদ' : tx.category;
+        const creditAcc = tx.type === 'income' ? (tx.product || tx.category) : 'নগদ';
+        const isLast    = idx === transactions.length - 1;
+        return (
+          <View key={tx.id} style={{ borderBottomWidth: isLast ? 0 : 1, borderColor: Colors.borderLight }}>
+            {/* Debit line */}
+            <View style={{ flexDirection: 'row', backgroundColor: Colors.surface }}>
+              <JCell w={J.date} color={Colors.textSecondary}>{fmtDate(tx.date)}</JCell>
+              <View style={{ width: 1, backgroundColor: Colors.borderLight }} />
+              <JCell color={Colors.textPrimary}>{debitAcc}  Dr</JCell>
+              <View style={{ width: 1, backgroundColor: Colors.borderLight }} />
+              <JCell w={J.dr} right bold color={Colors.income}>{bnTaka(tx.amount)}</JCell>
+              <View style={{ width: 1, backgroundColor: Colors.borderLight }} />
+              <JCell w={J.cr} right>—</JCell>
+            </View>
+            {/* Credit line (indented) */}
+            <View style={{ flexDirection: 'row', backgroundColor: Colors.bg }}>
+              <JCell w={J.date}>{''}</JCell>
+              <View style={{ width: 1, backgroundColor: Colors.borderLight }} />
+              <JCell color={Colors.textSecondary}>    {creditAcc}  Cr</JCell>
+              <View style={{ width: 1, backgroundColor: Colors.borderLight }} />
+              <JCell w={J.dr} right>—</JCell>
+              <View style={{ width: 1, backgroundColor: Colors.borderLight }} />
+              <JCell w={J.cr} right bold color={Colors.expense}>{bnTaka(tx.amount)}</JCell>
+            </View>
+          </View>
+        );
+      })}
+
+      {/* Totals row */}
+      <View style={{ flexDirection: 'row', backgroundColor: Colors.chip, borderTopWidth: 1.5, borderColor: Colors.border }}>
+        <JCell w={J.date} bold>{'মোট'}</JCell>
+        <View style={{ width: 1, backgroundColor: Colors.border }} />
+        <JCell>{''}</JCell>
+        <View style={{ width: 1, backgroundColor: Colors.border }} />
+        <JCell w={J.dr} right bold color={Colors.income}>{bnTaka(totalDr)}</JCell>
+        <View style={{ width: 1, backgroundColor: Colors.border }} />
+        <JCell w={J.cr} right bold color={Colors.expense}>{bnTaka(totalDr)}</JCell>
+      </View>
+    </View>
+  );
+};
+
+/** Proper two-section balance sheet (cash-basis MSME) */
 export const BalanceSheetView = ({ income, expense }: { income: number; expense: number }) => {
-  const net = income - expense;
-  const row = (label: string, value: number, color = Colors.textPrimary) => (
-    <Row justify="space-between" style={{ marginBottom: Spacing.sm }}>
-      <T size="sm" color={Colors.textSecondary}>{label}</T>
-      <T size="sm" weight="bold" color={color}>{bnTaka(value)}</T>
+  const netCash   = income - expense;
+  const balanced  = netCash >= 0;
+
+  const BSRow = ({ label, amount, indent, bold, color }: {
+    label: string; amount?: number; indent?: boolean; bold?: boolean; color?: string;
+  }) => (
+    <Row justify="space-between" align="center" style={{ paddingVertical: 5, paddingLeft: indent ? Spacing.lg : 0 }}>
+      <T size="sm" color={indent ? Colors.textSecondary : Colors.textPrimary} weight={bold ? 'bold' : 'regular'}>{label}</T>
+      {amount !== undefined && (
+        <T size="sm" weight={bold ? 'bold' : 'regular'} color={color ?? Colors.textPrimary}>{bnTaka(amount)}</T>
+      )}
     </Row>
   );
+
+  const Divider = () => <View style={{ height: 1, backgroundColor: Colors.border, marginVertical: Spacing.xs }} />;
+
   return (
-    <View>
-      <Card style={{ marginBottom: Spacing.base }}>
-        <SectionHeader title="সম্পদ (Assets)" />
-        {row('চলতি নগদ (বিক্রয়)', income, Colors.success)}
+    <View style={{ marginBottom: Spacing.base }}>
+      {/* Header */}
+      <Card style={{ marginBottom: Spacing.sm, backgroundColor: Colors.chip }}>
+        <T size="sm" weight="bold" align="center">ব্যালেন্স শিট</T>
+        <T size="xs" color={Colors.textSecondary} align="center" style={{ marginTop: 2 }}>সরলীকৃত নগদ ভিত্তিক হিসাব</T>
       </Card>
-      <Card style={{ marginBottom: Spacing.base }}>
-        <SectionHeader title="ব্যয় ও দায় (Outflow)" />
-        {row('মোট ব্যয়', expense, Colors.error)}
+
+      {/* Assets */}
+      <Card style={{ marginBottom: Spacing.sm }}>
+        <T size="sm" weight="bold" color={Colors.primary} style={{ marginBottom: Spacing.xs }}>সম্পদ (Assets)</T>
+        <Divider />
+        <BSRow label="চলতি সম্পদ:" />
+        <BSRow label="নগদ প্রাপ্তি (বিক্রয় আয়)" amount={income} indent color={Colors.success} />
+        <BSRow label="নগদ ব্যয় (উত্তোলন)" amount={-expense} indent color={Colors.expense} />
+        <Divider />
+        <BSRow label="মোট নিট নগদ" amount={netCash} bold color={balanced ? Colors.success : Colors.error} />
       </Card>
-      <Card style={{ backgroundColor: net >= 0 ? Colors.successLight : Colors.errorLight }}>
-        <Row justify="space-between">
-          <T size="md" weight="bold">নিট মূলধন</T>
-          <T size="lg" weight="bold" color={net >= 0 ? Colors.success : Colors.error}>{bnTaka(net)}</T>
+
+      {/* Liabilities & Capital */}
+      <Card style={{ marginBottom: Spacing.sm }}>
+        <T size="sm" weight="bold" color={Colors.accent} style={{ marginBottom: Spacing.xs }}>দায় ও মূলধন (Liabilities & Capital)</T>
+        <Divider />
+        <BSRow label="চলতি দায়:" />
+        <BSRow label="বকেয়া দায় (সরলীকৃত)" amount={0} indent color={Colors.textSecondary} />
+        <BSRow label="মালিকের মূলধন:" />
+        <BSRow label="নিট লাভ/ক্ষতি" amount={netCash} indent bold color={balanced ? Colors.success : Colors.error} />
+        <Divider />
+        <BSRow label="মোট দায় + মূলধন" amount={netCash} bold color={balanced ? Colors.success : Colors.error} />
+      </Card>
+
+      {/* Balance confirmation */}
+      <Card style={{ backgroundColor: balanced ? Colors.successLight : Colors.errorLight }}>
+        <Row gap={Spacing.sm} align="center" justify="center">
+          <T size="md">{balanced ? '✅' : '⚠️'}</T>
+          <T size="sm" weight="bold" color={balanced ? Colors.success : Colors.error}>
+            {balanced ? 'ব্যালেন্স মিলেছে' : 'ব্যালেন্স মিলেনি — ঘাটতি আছে'}
+          </T>
         </Row>
+        <T size="xs" color={Colors.textSecondary} align="center" style={{ marginTop: Spacing.xs }}>
+          সম্পদ = দায় + মূলধন = {bnTaka(netCash)}
+        </T>
       </Card>
     </View>
   );

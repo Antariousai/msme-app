@@ -196,11 +196,24 @@ export const peakHours = [
   { slot: 'রাত ১০–১২', orders: 22 },
 ];
 
-export const calendarEvents = [
-  { id: 'e1', title: 'হাট দিবস — মিরপুর', date: '২৮ মে', type: 'market' },
-  { id: 'e2', title: 'স্টক রিফিল', date: '২৯ মে', type: 'inventory' },
-  { id: 'e3', title: 'FB লাইভ সেল', date: '৩০ মে', type: 'promo' },
-  { id: 'e4', title: 'মাসিক হিসাব', date: '৩১ মে', type: 'finance' },
+export interface CalendarEvent {
+  id: string;
+  title: string;
+  date: string; // ISO: YYYY-MM-DD
+  type: 'market' | 'inventory' | 'promo' | 'finance';
+}
+
+export const calendarEvents: CalendarEvent[] = [
+  { id: 'e1', title: 'হাট দিবস — মিরপুর', date: '2026-05-28', type: 'market' },
+  { id: 'e2', title: 'স্টক রিফিল', date: '2026-05-29', type: 'inventory' },
+  { id: 'e3', title: 'FB লাইভ সেল', date: '2026-05-30', type: 'promo' },
+  { id: 'e4', title: 'মাসিক হিসাব', date: '2026-05-31', type: 'finance' },
+  { id: 'e5', title: 'নতুন স্টক আনা', date: '2026-06-03', type: 'inventory' },
+  { id: 'e6', title: 'ঈদ প্রস্তুতি লাইভ', date: '2026-06-05', type: 'promo' },
+  { id: 'e7', title: 'সাপ্তাহিক হিসাব', date: '2026-06-07', type: 'finance' },
+  { id: 'e8', title: 'হাট দিবস — গাজীপুর', date: '2026-06-10', type: 'market' },
+  { id: 'e9', title: 'অর্ডার রিভিউ', date: '2026-06-14', type: 'finance' },
+  { id: 'e10', title: 'ইনস্টাগ্রাম রিল', date: '2026-06-18', type: 'promo' },
 ];
 
 export const brandCaptions = [
