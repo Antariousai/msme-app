@@ -16,7 +16,9 @@ import Animated, {
 import { useTheme } from '../theme/ThemeContext';
 import { Motion } from '../theme';
 
-const pressSpring = { damping: 15, stiffness: 320, mass: 0.7 };
+// Slower spring so the press-down animation is actually visible before the
+// finger lifts. stiffness 180 gives ~180ms settle time vs ~80ms at 320.
+const pressSpring = { damping: 18, stiffness: 180, mass: 0.8 };
 
 /** Press interaction styles — mirror the studio's :hover/:active transforms */
 export type PressEffect = 'scale' | 'lift' | 'tool' | 'slideX' | 'none';
@@ -77,11 +79,11 @@ export const RipplePressable = ({
   const animStyle = useAnimatedStyle(() => {
     const v = p.value;
     switch (fx) {
-      case 'lift':    return { transform: [{ translateY: -3 * v }, { scale: 1 - 0.04 * v }] };
-      case 'tool':    return { transform: [{ translateY: -4 * v }, { rotateZ: `${-1.5 * v}deg` }, { scale: 1 - 0.02 * v }] };
-      case 'slideX':  return { transform: [{ translateX: 4 * v }] };
+      case 'lift':    return { transform: [{ translateY: -6 * v }, { scale: 1 - 0.04 * v }] };
+      case 'tool':    return { transform: [{ translateY: -7 * v }, { rotateZ: `${-4 * v}deg` }, { scale: 1 - 0.02 * v }] };
+      case 'slideX':  return { transform: [{ translateX: 6 * v }] };
       case 'none':    return {};
-      default:        return { transform: [{ scale: 1 - 0.015 * v }] };
+      default:        return { transform: [{ scale: 1 - 0.06 * v }] };  // 6% scale-down — visible
     }
   });
 

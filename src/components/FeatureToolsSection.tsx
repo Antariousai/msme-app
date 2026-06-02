@@ -140,8 +140,9 @@ const FeatureChip = ({
 }) => {
   const { colors } = useTheme();
   return (
-    <RipplePressable onPress={onPress}>
-      <View style={{
+    <RipplePressable
+      onPress={onPress}
+      style={{
         flexDirection: 'row',
         alignItems: 'center',
         gap: Spacing.xs,
@@ -151,10 +152,10 @@ const FeatureChip = ({
         backgroundColor: colors.surface,
         borderWidth: 1,
         borderColor: colors.border,
-      }}>
-        <EmojiIcon emoji={feature.emoji} size={16} />
-        <T size="xs" weight="medium">{feature.label}</T>
-      </View>
+      }}
+    >
+      <EmojiIcon emoji={feature.emoji} size={16} />
+      <T size="xs" weight="medium">{feature.label}</T>
     </RipplePressable>
   );
 };
