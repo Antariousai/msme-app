@@ -19,7 +19,7 @@ interface GuidanceSideNavProps {
   accentColor: string;
 }
 
-const GuidanceSideNav = ({
+export const GuidanceSideNav = ({
   side,
   onPress,
   disabled,
