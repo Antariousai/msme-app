@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, Switch, Pressable, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { T, Card, Row, ScreenScroll, Btn, BtnRow } from '../../components/atoms';
+import { T, Card, Row, ScreenScroll } from '../../components/atoms';
 import { Colors, Spacing, Radius, TierConfig } from '../../theme';
 import { useTheme } from '../../theme/ThemeContext';
 import { useAuth } from '../../auth/AuthContext';
 import { XIcon } from '../../icons';
+import { LoanProfileSettings } from '../../components/LoanProfileSettings';
 
 interface SettingsScreenProps {
   onClose: () => void;
@@ -14,24 +15,11 @@ interface SettingsScreenProps {
 }
 
 export const SettingsScreen = ({ onClose, onSelectTier, onOpenBrandStudio }: SettingsScreenProps) => {
-  const { user, signOut } = useAuth();
+  const { user, resetTierGuidance, resetTierTutorial } = useAuth();
   const { colors, isDark, toggleMode } = useTheme();
-  const [confirmSignOut, setConfirmSignOut] = useState(false);
-  const [signingOut, setSigningOut] = useState(false);
 
   if (!user) return null;
   const cfg = TierConfig[user.tier];
-
-  const handleSignOut = async () => {
-    setSigningOut(true);
-    try {
-      await signOut();
-      onClose();
-    } finally {
-      setSigningOut(false);
-      setConfirmSignOut(false);
-    }
-  };
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.bg }]} edges={['top', 'bottom']}>
@@ -61,6 +49,8 @@ export const SettingsScreen = ({ onClose, onSelectTier, onOpenBrandStudio }: Set
           </Row>
         </Card>
 
+        <LoanProfileSettings />
+
         <Card onPress={onSelectTier} effect="slideX" style={{ marginBottom: Spacing.sm }}>
           <Row justify="space-between" fill>
             <Row gap={Spacing.md} style={{ flex: 1, minWidth: 0 }}>
@@ -73,6 +63,34 @@ export const SettingsScreen = ({ onClose, onSelectTier, onOpenBrandStudio }: Set
               </View>
             </Row>
             <T size="sm" color={colors.textTertiary}>›</T>
+          </Row>
+        </Card>
+
+        <Card
+          onPress={() => { resetTierTutorial(); onClose(); }}
+          effect="slideX"
+          style={{ marginBottom: Spacing.sm }}
+        >
+          <Row gap={Spacing.md}>
+            <T size="xl">📱</T>
+            <View style={{ flex: 1 }}>
+              <T size="sm" weight="bold">অ্যাপ টিউটোরিয়াল আবার দেখুন</T>
+              <T size="xs" color={colors.textTertiary}>নিচের কোচ কার্ড — প্রতিটি পেজ</T>
+            </View>
+          </Row>
+        </Card>
+
+        <Card
+          onPress={() => { resetTierGuidance(); onClose(); }}
+          effect="slideX"
+          style={{ marginBottom: Spacing.sm }}
+        >
+          <Row gap={Spacing.md}>
+            <T size="xl">👋</T>
+            <View style={{ flex: 1 }}>
+              <T size="sm" weight="bold">গ্রাহক সেটআপ + টিউটোরিয়াল</T>
+              <T size="xs" color={colors.textTertiary}>সম্পূর্ণ অনবোর্ডিং পুনরায় শুরু</T>
+            </View>
           </Row>
         </Card>
 
@@ -93,22 +111,6 @@ export const SettingsScreen = ({ onClose, onSelectTier, onOpenBrandStudio }: Set
           </Card>
         )}
 
-        {confirmSignOut ? (
-          <Card style={{ borderWidth: 1.5, borderColor: colors.error }}>
-            <T size="sm" weight="semibold" style={{ marginBottom: Spacing.sm }}>আপনি কি সাইন আউট করতে চান?</T>
-            <BtnRow>
-              <Btn label="না" onPress={() => setConfirmSignOut(false)} variant="ghost" flex disabled={signingOut} />
-              <Btn label="হ্যাঁ, সাইন আউট" onPress={handleSignOut} variant="danger" flex loading={signingOut} />
-            </BtnRow>
-          </Card>
-        ) : (
-          <Card onPress={() => setConfirmSignOut(true)} effect="slideX">
-            <Row gap={Spacing.md}>
-              <T size="xl">🚪</T>
-              <T size="sm" color={colors.error} weight="bold">সাইন আউট</T>
-            </Row>
-          </Card>
-        )}
       </ScreenScroll>
     </SafeAreaView>
   );

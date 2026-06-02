@@ -15,9 +15,11 @@ import { FeatureToolsSection } from '../../components/FeatureToolsSection';
 import { IncomeExpenseQuickActions } from '../../components/IncomeExpenseQuickActions';
 import { ScreenFrame } from '../../components/ScreenFrame';
 import { HeroCard } from '../../components/HeroCard';
+import { HomeLoanCreditBanner } from '../../components/HomeLoanCreditBanner';
 import { Colors, Spacing, Radius } from '../../theme';
 import { seedLeads, Lead, aiSuggestions } from '../../data/seed';
 import { toBn, generateId } from '../../utils/helpers';
+import { useFeatureNav } from '../../navigation/FeatureNavContext';
 
 const WIDE_BREAKPOINT = 720;
 const TAB_BAR = 68;
@@ -528,12 +530,14 @@ export const LeadsScreen = () => {
 };
 
 export const Tier3Home = () => {
+  const { openFeature } = useFeatureNav();
   const hotLeads = seedLeads.filter((l) => l.score >= 70).length;
   const converted = seedLeads.filter((l) => l.status === 'converted').length;
   return (
     <ScreenFrame>
       <AppHeader showGreeting />
       <ScreenScroll>
+        <HomeLoanCreditBanner />
         <HeroCard
           title="🎯 প্রো ড্যাশবোর্ড"
           metric={toBn(seedLeads.length)}
@@ -548,6 +552,7 @@ export const Tier3Home = () => {
           title="🔥 লিড ক্লোজিং"
           message="আয়েশা সিদ্দিকা (স্কোর ৯২) — আজ কল করলে রূপান্তর সম্ভাবনা ৮৫%। 🚀"
           actionLabel="লিড দেখুন"
+          onAction={() => openFeature('leads')}
         />
         <FeatureToolsSection layout="grid" scope="all" />
       </ScreenScroll>

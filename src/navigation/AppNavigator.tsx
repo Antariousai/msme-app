@@ -16,6 +16,8 @@ import { Tier3Home } from '../screens/tier3/LeadsScreen';
 import { Tier4Home } from '../screens/tier4/DashboardScreen';
 import { POPortalNavigator } from '../screens/po/POPortalNavigator';
 import { FeatureNavProvider, RootTabParamList } from './FeatureNavContext';
+import { TransactionsProvider } from '../context/TransactionsContext';
+import { AppGuidance } from './AppGuidance';
 import type { NavigationContainerRef } from '@react-navigation/native';
 import { getPrimaryTabIds, getFeatureById } from './features';
 import { T } from '../components/atoms';
@@ -171,10 +173,11 @@ export const AppNavigator = () => {
   }
 
   return (
-    <FeatureNavProvider navigationRef={navigationRef}>
-      <NavigationContainer ref={navigationRef} theme={navTheme}>
-        <MainTabs onOpenSettings={() => setShowSettings(true)} />
-      </NavigationContainer>
+    <TransactionsProvider>
+      <FeatureNavProvider navigationRef={navigationRef}>
+        <NavigationContainer ref={navigationRef} theme={navTheme}>
+          <MainTabs onOpenSettings={() => setShowSettings(true)} />
+        </NavigationContainer>
 
       <Modal visible={showSettings} animationType="slide">
         <SettingsScreen
@@ -191,7 +194,10 @@ export const AppNavigator = () => {
       <Modal visible={showBrandStudio} animationType="slide">
         <BrandStudioScreen onBack={() => setShowBrandStudio(false)} />
       </Modal>
-    </FeatureNavProvider>
+
+      <AppGuidance />
+      </FeatureNavProvider>
+    </TransactionsProvider>
   );
 };
 

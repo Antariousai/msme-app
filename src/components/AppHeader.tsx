@@ -6,6 +6,7 @@ import { Spacing, Shadow, TierConfig } from '../theme';
 import { useTheme } from '../theme/ThemeContext';
 import { getGreeting } from '../utils/helpers';
 import { useAuth } from '../auth/AuthContext';
+import { useFeatureNav } from '../navigation/FeatureNavContext';
 
 const LOGO_MAIN  = require('../../assets/logos/antarious-main.png');
 const LOGO_WHITE = require('../../assets/logos/antarious-white.png');
@@ -24,7 +25,13 @@ export const AppHeader = ({
 }: AppHeaderProps) => {
   const insets = useSafeAreaInsets();
   const { user, officer } = useAuth();
+  const { openFeature } = useFeatureNav();
   const { colors, isDark } = useTheme();
+
+  const defaultNotificationPress = user
+    ? () => openFeature(user.tier >= 1 ? 'messages' : 'bookkeeping')
+    : undefined;
+  const handleNotificationPress = onNotificationPress ?? defaultNotificationPress;
   const tierTagline = user ? TierConfig[user.tier].tagline : undefined;
   const greetingName = user?.name ?? officer?.name;
   const defaultSubtitle = user
@@ -48,7 +55,8 @@ export const AppHeader = ({
             resizeMode="stretch"
           />
         <Pressable
-          onPress={onNotificationPress}
+          onPress={handleNotificationPress}
+          disabled={!handleNotificationPress}
           style={{
             width: 40,
             height: 40,

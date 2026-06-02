@@ -6,10 +6,12 @@ import { FeatureToolsSection } from '../../components/FeatureToolsSection';
 import { IncomeExpenseQuickActions } from '../../components/IncomeExpenseQuickActions';
 import { ScreenFrame } from '../../components/ScreenFrame';
 import { HeroCard } from '../../components/HeroCard';
+import { HomeLoanCreditBanner } from '../../components/HomeLoanCreditBanner';
 import { Colors, Spacing } from '../../theme';
 import { FacebookIcon, InstagramIcon, AutoReplyIcon, EscalateIcon, OrderIcon, CheckIcon } from '../../icons';
-import { seedMessages, replyTemplates, Message } from '../../data/seed';
+import { seedMessages, seedOrders, replyTemplates, Message } from '../../data/seed';
 import { toBn } from '../../utils/helpers';
+import { useFeatureNav } from '../../navigation/FeatureNavContext';
 
 const platformIcon = (p: Message['platform']) =>
   p === 'facebook'
@@ -132,17 +134,21 @@ export const MessagesScreen = () => {
 };
 
 export const Tier1Home = () => {
+  const { openFeature } = useFeatureNav();
   const unread = seedMessages.filter((m) => m.unread).length;
+  const pendingOrders = seedOrders.filter((o) => o.status === 'pending').length;
+
   return (
     <ScreenFrame>
       <AppHeader showGreeting notificationCount={unread} />
       <ScreenScroll>
+        <HomeLoanCreditBanner />
         <HeroCard
           title="💬 স্টার্টার হোম"
           metric={toBn(unread)}
           metricLabel="নতুন মেসেজ"
           stats={[
-            { label: 'অর্ডার অপেক্ষমাণ', value: '২ 📋' },
+            { label: 'অর্ডার অপেক্ষমাণ', value: `${toBn(pendingOrders)} 📋` },
           ]}
         />
         <IncomeExpenseQuickActions />
@@ -150,6 +156,7 @@ export const Tier1Home = () => {
           title="🔥 আজকের পরামর্শ"
           message="সন্ধ্যা ৭–৯টায় সবচেয়ে বেশি মেসেজ আসে — এই সময়ে সক্রিয় থাকুন।"
           actionLabel="মেসেজ দেখুন"
+          onAction={() => openFeature('messages')}
         />
         <FeatureToolsSection layout="grid" scope="all" />
       </ScreenScroll>

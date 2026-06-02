@@ -2,12 +2,13 @@ import React, { useState } from 'react';
 import { View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { AppHeader } from '../../components/AppHeader';
-import { T, Card, Row, ScreenScroll, TierBadge, Divider } from '../../components/atoms';
+import { T, Card, Row, ScreenScroll, TierBadge, Divider, Btn, BtnRow } from '../../components/atoms';
 import { FeatureLauncherList } from '../../components/FeatureToolsSection';
 import { ScreenFrame } from '../../components/ScreenFrame';
 import { Spacing, Gradients } from '../../theme';
 import { useTheme } from '../../theme/ThemeContext';
 import { useAuth } from '../../auth/AuthContext';
+import { userHasLoan } from '../../auth/onboarding';
 import { getLauncherFeatures } from '../../navigation/features';
 import { useFeatureNav } from '../../navigation/FeatureNavContext';
 import { AccountCreditScoreRow } from './CreditScoreScreen';
@@ -17,9 +18,21 @@ interface MoreScreenProps {
 }
 
 export const MoreScreen = ({ onOpenSettings }: MoreScreenProps) => {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const { openFeature } = useFeatureNav();
   const { colors } = useTheme();
+  const [confirmSignOut, setConfirmSignOut] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
+
+  const handleSignOut = async () => {
+    setSigningOut(true);
+    try {
+      await signOut();
+    } finally {
+      setSigningOut(false);
+      setConfirmSignOut(false);
+    }
+  };
 
   if (!user) return null;
   const featureCount = getLauncherFeatures(user.tier).length;
@@ -54,7 +67,9 @@ export const MoreScreen = ({ onOpenSettings }: MoreScreenProps) => {
             </View>
           </Row>
 
-          <AccountCreditScoreRow onPress={() => openFeature('creditScore')} />
+          {userHasLoan(user) ? (
+            <AccountCreditScoreRow onPress={() => openFeature('creditScore')} />
+          ) : null}
         </Card>
 
         <Card onPress={onOpenSettings} effect="slideX" style={{ marginBottom: Spacing.base }}>
@@ -63,7 +78,7 @@ export const MoreScreen = ({ onOpenSettings }: MoreScreenProps) => {
               <T size="xl">⚙️</T>
               <View style={{ flex: 1, minWidth: 0 }}>
                 <T size="sm" weight="bold">সেটিংস</T>
-                <T size="xs" color={colors.textTertiary}>ডার্ক মোড · প্যাকেজ · সাইন আউট</T>
+                <T size="xs" color={colors.textTertiary}>ডার্ক মোড · প্যাকেজ · ঋণ</T>
               </View>
             </Row>
             <T size="sm" color={colors.textTertiary}>›</T>
@@ -80,6 +95,25 @@ export const MoreScreen = ({ onOpenSettings }: MoreScreenProps) => {
         </T>
 
         <FeatureLauncherList />
+
+        {confirmSignOut ? (
+          <Card style={{ marginTop: Spacing.base, borderWidth: 1.5, borderColor: colors.error }}>
+            <T size="sm" weight="semibold" style={{ marginBottom: Spacing.sm }}>
+              আপনি কি সাইন আউট করতে চান?
+            </T>
+            <BtnRow>
+              <Btn label="না" onPress={() => setConfirmSignOut(false)} variant="ghost" flex disabled={signingOut} />
+              <Btn label="হ্যাঁ, সাইন আউট" onPress={handleSignOut} variant="danger" flex loading={signingOut} />
+            </BtnRow>
+          </Card>
+        ) : (
+          <Card onPress={() => setConfirmSignOut(true)} effect="slideX" style={{ marginTop: Spacing.base }}>
+            <Row gap={Spacing.md} align="center">
+              <T size="xl">🚪</T>
+              <T size="sm" color={colors.error} weight="bold">সাইন আউট</T>
+            </Row>
+          </Card>
+        )}
 
         <T size="xs" color={colors.textTertiary} align="center" style={{ marginTop: Spacing.base }}>
           Antarious MSME v1.0 · Bangladesh

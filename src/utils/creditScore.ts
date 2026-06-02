@@ -4,6 +4,7 @@ import {
   seedInventory,
   seedLeads,
   seedComplaints,
+  Transaction,
 } from '../data/seed';
 import { bnTaka, toBn } from './helpers';
 
@@ -45,9 +46,11 @@ function gradeFromScore(score: number): Pick<BusinessCreditProfile, 'grade' | 'g
 }
 
 /** MSME account credit score from in-app business signals (demo model). */
-export function computeBusinessCreditScore(): BusinessCreditProfile {
-  const income = seedTransactions.filter((t) => t.type === 'income').reduce((s, t) => s + t.amount, 0);
-  const expense = seedTransactions.filter((t) => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+export function computeBusinessCreditScore(
+  transactions: Transaction[] = seedTransactions,
+): BusinessCreditProfile {
+  const income = transactions.filter((t) => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+  const expense = transactions.filter((t) => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
   const profit = income - expense;
   const marginPct = income > 0 ? (profit / income) * 100 : 0;
 
@@ -76,7 +79,7 @@ export function computeBusinessCreditScore(): BusinessCreditProfile {
   const openComplaints = seedComplaints.filter((c) => c.status !== 'resolved').length;
   const complaintPoints = clamp(100 - openComplaints * 35);
 
-  const txnCount = seedTransactions.length;
+  const txnCount = transactions.length;
   const recordPoints = clamp(txnCount >= 5 ? 90 : txnCount >= 3 ? 75 : 50);
 
   const factors: CreditFactor[] = [

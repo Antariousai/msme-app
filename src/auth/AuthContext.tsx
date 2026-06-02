@@ -1,6 +1,12 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { STORAGE_KEYS } from '../utils/helpers';
+import { LoanLenderId } from '../data/loanLenders';
+import type { TierOnboardingState, UserLoanProfile } from './onboarding';
+
+export type { UserLoanProfile };
+
+export type { TierOnboardingState } from './onboarding';
 
 export type UserTier = 0 | 1 | 2 | 3 | 4;
 export type AuthRole = 'msme' | 'po';
@@ -17,6 +23,10 @@ export interface AuthUser {
   tier: UserTier;
   location: string;
   addOns: AddOns;
+  /** Per-tier first-time onboarding completion */
+  tierOnboarding?: Partial<Record<UserTier, TierOnboardingState>>;
+  /** Set during onboarding when user declares a business loan */
+  loanProfile?: UserLoanProfile;
 }
 
 export interface ProgramOfficer {
@@ -41,6 +51,14 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   updateTier: (tier: UserTier) => Promise<void>;
   setBrandStudioAddOn: (enabled: boolean) => Promise<void>;
+  completeTierOnboarding: (
+    tier: UserTier,
+    loan?: { hasLoan: boolean; lenderId?: LoanLenderId },
+  ) => Promise<void>;
+  completeTierTutorial: (tier: UserTier) => Promise<void>;
+  resetTierGuidance: (tier?: UserTier) => Promise<void>;
+  resetTierTutorial: (tier?: UserTier) => Promise<void>;
+  updateLoanProfile: (loan: UserLoanProfile) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -53,6 +71,11 @@ const AuthContext = createContext<AuthContextType>({
   signOut: async () => {},
   updateTier: async () => {},
   setBrandStudioAddOn: async () => {},
+  completeTierOnboarding: async () => {},
+  completeTierTutorial: async () => {},
+  resetTierGuidance: async () => {},
+  resetTierTutorial: async () => {},
+  updateLoanProfile: async () => {},
 });
 
 const DEMO_MSME: Record<string, { pin: string; user: AuthUser }> = {
@@ -138,6 +161,7 @@ function parseStoredSession(raw: string): AuthSession | null {
     if (s.role === 'po' && s.officer) return s;
     if (s.role === 'msme' && s.user) {
       if (!s.user.addOns) s.user.addOns = { brandStudio: false };
+      if (!s.user.tierOnboarding) s.user.tierOnboarding = {};
       return s;
     }
     return null;
@@ -145,6 +169,7 @@ function parseStoredSession(raw: string): AuthSession | null {
   const legacy = parsed as AuthUser;
   if (legacy?.phone && legacy?.tier !== undefined) {
     if (!legacy.addOns) legacy.addOns = { brandStudio: false };
+    if (!legacy.tierOnboarding) legacy.tierOnboarding = {};
     return { role: 'msme', user: legacy };
   }
   return null;
@@ -213,6 +238,94 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     await persist(updated);
   };
 
+  const completeTierOnboarding = async (
+    tier: UserTier,
+    loan?: { hasLoan: boolean; lenderId?: LoanLenderId },
+  ) => {
+    if (!session || session.role !== 'msme') return;
+    const tierOnboarding = {
+      ...session.user.tierOnboarding,
+      [tier]: {
+        completed: true,
+        customerCompleted: true,
+        tutorialCompleted: session.user.tierOnboarding?.[tier]?.tutorialCompleted ?? false,
+      },
+    };
+    let loanProfile = session.user.loanProfile;
+    if (loan !== undefined) {
+      loanProfile = loan.hasLoan
+        ? { hasLoan: true, lenderId: loan.lenderId }
+        : { hasLoan: false };
+    }
+    const updated = {
+      role: 'msme' as const,
+      user: {
+        ...session.user,
+        tierOnboarding,
+        loanProfile,
+      },
+    };
+    await persist(updated);
+  };
+
+  const completeTierTutorial = async (tier: UserTier) => {
+    if (!session || session.role !== 'msme') return;
+    const prev = session.user.tierOnboarding?.[tier];
+    const tierOnboarding = {
+      ...session.user.tierOnboarding,
+      [tier]: {
+        ...prev,
+        completed: true,
+        customerCompleted: true,
+        tutorialCompleted: true,
+      },
+    };
+    await persist({
+      role: 'msme',
+      user: { ...session.user, tierOnboarding },
+    });
+  };
+
+  const resetTierGuidance = async (tier?: UserTier) => {
+    if (!session || session.role !== 'msme') return;
+    const t = tier ?? session.user.tier;
+    const tierOnboarding = { ...session.user.tierOnboarding };
+    delete tierOnboarding[t];
+    await persist({
+      role: 'msme',
+      user: { ...session.user, tierOnboarding },
+    });
+  };
+
+  const resetTierTutorial = async (tier?: UserTier) => {
+    if (!session || session.role !== 'msme') return;
+    const t = tier ?? session.user.tier;
+    const prev = session.user.tierOnboarding?.[t];
+    if (!prev?.customerCompleted && !prev?.completed) return;
+    const tierOnboarding = {
+      ...session.user.tierOnboarding,
+      [t]: {
+        ...prev,
+        completed: true,
+        customerCompleted: true,
+        tutorialCompleted: false,
+      },
+    };
+    await persist({
+      role: 'msme',
+      user: { ...session.user, tierOnboarding },
+    });
+  };
+
+  const updateLoanProfile = async (loan: UserLoanProfile) => {
+    if (!session || session.role !== 'msme') return;
+    const updated = {
+      role: 'msme' as const,
+      user: { ...session.user, loanProfile: loan },
+    };
+    await persist(updated);
+  };
+
   const user = session?.role === 'msme' ? session.user : null;
   const officer = session?.role === 'po' ? session.officer : null;
   const role = session?.role ?? null;
@@ -229,6 +342,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         signOut,
         updateTier,
         setBrandStudioAddOn,
+        completeTierOnboarding,
+        completeTierTutorial,
+        resetTierGuidance,
+        resetTierTutorial,
+        updateLoanProfile,
       }}
     >
       {children}

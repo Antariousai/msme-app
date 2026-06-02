@@ -1,15 +1,17 @@
 import React, { useState, useMemo } from 'react';
 import { View, StyleSheet, Modal, Pressable, ScrollView } from 'react-native';
 import { AppHeader } from '../../components/AppHeader';
-import { T, Card, Row, ScreenScroll, SectionHeader, StatusPill, Btn, Chip } from '../../components/atoms';
+import { T, Card, Row, ScreenScroll, SectionHeader, StatusPill, Btn, Chip, AISuggestion } from '../../components/atoms';
 import { FeatureToolsSection } from '../../components/FeatureToolsSection';
 import { IncomeExpenseQuickActions } from '../../components/IncomeExpenseQuickActions';
 import { ScreenFrame } from '../../components/ScreenFrame';
 import { HeroCard } from '../../components/HeroCard';
+import { HomeLoanCreditBanner } from '../../components/HomeLoanCreditBanner';
 import { Colors, Spacing, Radius } from '../../theme';
 import { WebsiteIcon, FacebookIcon, InstagramIcon } from '../../icons';
-import { seedOrders, Order, ORDER_CATEGORIES } from '../../data/seed';
-import { bnTaka } from '../../utils/helpers';
+import { seedOrders, seedInventory, Order, ORDER_CATEGORIES } from '../../data/seed';
+import { bnTaka, toBn } from '../../utils/helpers';
+import { useFeatureNav } from '../../navigation/FeatureNavContext';
 
 const sourceIcon = (s: Order['source']) => {
   if (s === 'facebook') return <FacebookIcon size={16} color="#1877F2" />;
@@ -300,24 +302,42 @@ export const WebsiteScreen = () => (
   </View>
 );
 
-export const Tier2Home = () => (
-  <ScreenFrame>
-    <AppHeader showGreeting />
-    <ScreenScroll>
-      <HeroCard
-        title="📦 গ্রোথ ড্যাশবোর্ড"
-        metric="৩"
-        metricLabel="সক্রিয় অর্ডার"
-        stats={[
-          { label: 'কম স্টক', value: '১ ⚠️' },
-          { label: 'কুরিয়ারে', value: '২ 🛵' },
-        ]}
-      />
-      <IncomeExpenseQuickActions />
-      <FeatureToolsSection layout="grid" scope="all" />
-    </ScreenScroll>
-  </ScreenFrame>
-);
+export const Tier2Home = () => {
+  const { openFeature } = useFeatureNav();
+  const activeOrders = seedOrders.filter((o) => o.status === 'pending' || o.status === 'confirmed').length;
+  const lowStock = seedInventory.filter((i) => i.stock <= i.minStock).length;
+  const inCourier = seedOrders.filter((o) => o.status === 'shipped').length;
+
+  return (
+    <ScreenFrame>
+      <AppHeader showGreeting />
+      <ScreenScroll>
+        <HomeLoanCreditBanner />
+        <HeroCard
+          title="📦 গ্রোথ ড্যাশবোর্ড"
+          metric={toBn(activeOrders)}
+          metricLabel="সক্রিয় অর্ডার"
+          stats={[
+            { label: 'কম স্টক', value: `${toBn(lowStock)} ⚠️` },
+            { label: 'কুরিয়ারে', value: `${toBn(inCourier)} 🛵` },
+          ]}
+        />
+        <IncomeExpenseQuickActions />
+        <AISuggestion
+          title="📦 স্টক সতর্কতা"
+          message={
+            lowStock > 0
+              ? `${toBn(lowStock)}টি পণ্যে স্টক কম — আজই রিপ্লেনিশ করুন।`
+              : 'স্টক স্বাভাবিক — নতুন অর্ডার প্রসেস করতে পারেন।'
+          }
+          actionLabel="মজুদ দেখুন"
+          onAction={() => openFeature('inventory')}
+        />
+        <FeatureToolsSection layout="grid" scope="all" />
+      </ScreenScroll>
+    </ScreenFrame>
+  );
+};
 
 const styles = StyleSheet.create({
   container:      { flex: 1, backgroundColor: Colors.bg },

@@ -6,20 +6,21 @@ import { T, Card, Row, ScreenScroll, SectionHeader, StatCard, StatusPill, Chip, 
 import { FeatureToolsSection } from '../../components/FeatureToolsSection';
 import { IncomeExpenseQuickActions } from '../../components/IncomeExpenseQuickActions';
 import { HeroCard } from '../../components/HeroCard';
+import { HomeLoanCreditBanner } from '../../components/HomeLoanCreditBanner';
 import { ScreenFrame } from '../../components/ScreenFrame';
 import { Colors, Spacing, Gradients } from '../../theme';
 import { TrendUpIcon, TrendDownIcon, ReportIcon } from '../../icons';
-import { seedTransactions, seedComplaints, aiSuggestions, productSales, peakHours } from '../../data/seed';
-import { bnTaka, calcProfit, toBn } from '../../utils/helpers';
+import { seedComplaints, aiSuggestions, productSales, peakHours } from '../../data/seed';
+import { bnTaka, toBn } from '../../utils/helpers';
 import { useAuth } from '../../auth/AuthContext';
+import { useTransactions } from '../../context/TransactionsContext';
+import { useFeatureNav } from '../../navigation/FeatureNavContext';
 import { buildBusinessReport, shareReport, periodLabel, ReportPeriod } from '../../utils/report';
 
 export const DashboardScreen = () => {
   const { user } = useAuth();
+  const { expense, profit } = useTransactions();
   const [period, setPeriod] = useState<'daily' | 'weekly' | 'monthly'>('daily');
-  const income = seedTransactions.filter((t) => t.type === 'income').reduce((s, t) => s + t.amount, 0);
-  const expense = seedTransactions.filter((t) => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
-  const profit = calcProfit(income, expense);
 
   const summaries = {
     daily: { revenue: 3500, orders: 4, messages: 12, label: 'আজ' },
@@ -52,6 +53,7 @@ export const DashboardScreen = () => {
     <ScreenFrame>
       <AppHeader title="ড্যাশবোর্ড" subtitle="ইনসাইট ও রিপোর্টিং" />
       <ScreenScroll>
+        <HomeLoanCreditBanner />
         <Row gap={Spacing.sm} wrap style={{ marginBottom: Spacing.base }}>
           {(['daily', 'weekly', 'monthly'] as const).map((p) => (
             <Chip
@@ -169,29 +171,38 @@ export const ComplaintsScreen = () => (
   </ScreenFrame>
 );
 
-export const Tier4Home = () => (
-  <ScreenFrame>
-    <AppHeader showGreeting />
-    <ScreenScroll>
-      <HeroCard
-        title="📊 এন্টারপ্রাইজ ড্যাশবোর্ড"
-        metric={bnTaka(3500)}
-        metricLabel="আজকের আয়"
-        stats={[
-          { label: 'খোলা অভিযোগ', value: '১ ⚠️' },
-          { label: 'অর্ডার', value: '৪ 📦' },
-        ]}
-      />
+export const Tier4Home = () => {
+  const { openFeature } = useFeatureNav();
+  const { profit } = useTransactions();
+  const openComplaints = seedComplaints.filter((c) => c.status === 'open').length;
+  const hotLeads = 3;
 
-      <IncomeExpenseQuickActions />
+  return (
+    <ScreenFrame>
+      <AppHeader showGreeting />
+      <ScreenScroll>
+        <HomeLoanCreditBanner />
+        <HeroCard
+          title="📊 এন্টারপ্রাইজ ড্যাশবোর্ড"
+          metric={bnTaka(3500)}
+          metricLabel="আজকের আয়"
+          stats={[
+            { label: 'খোলা অভিযোগ', value: `${toBn(openComplaints)} ⚠️` },
+            { label: 'মোট লাভ', value: bnTaka(profit) },
+          ]}
+        />
 
-      <AISuggestion
-        title="🔥 লিড ক্লোজিং সাপোর্ট"
-        message="৩টি হট লিড অপেক্ষমাণ — আজ ফলো-আপ করলে ২টি রূপান্তর সম্ভব। 🚀"
-        actionLabel="লিড দেখুন"
-      />
+        <IncomeExpenseQuickActions />
 
-      <FeatureToolsSection layout="grid" scope="all" />
-    </ScreenScroll>
-  </ScreenFrame>
-);
+        <AISuggestion
+          title="🔥 লিড ক্লোজিং সাপোর্ট"
+          message={`${toBn(hotLeads)}টি হট লিড অপেক্ষমাণ — আজ ফলো-আপ করলে ২টি রূপান্তর সম্ভব। 🚀`}
+          actionLabel="লিড দেখুন"
+          onAction={() => openFeature('leads')}
+        />
+
+        <FeatureToolsSection layout="grid" scope="all" />
+      </ScreenScroll>
+    </ScreenFrame>
+  );
+};

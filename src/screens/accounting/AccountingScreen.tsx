@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, StyleSheet, Modal, Pressable } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { AppHeader } from '../../components/AppHeader';
 import { T, Card, Row, Btn, ScreenScroll, StatCard, Input, BtnRow, Chip } from '../../components/atoms';
@@ -8,9 +9,11 @@ import { HeroCard } from '../../components/HeroCard';
 import { ScreenFrame } from '../../components/ScreenFrame';
 import { Colors, Spacing, Radius } from '../../theme';
 import { useTheme } from '../../theme/ThemeContext';
-import { seedTransactions, seedSimpleStock, Transaction, SimpleStockItem, TransactionType } from '../../data/seed';
+import { seedSimpleStock, SimpleStockItem, TransactionType } from '../../data/seed';
 import { bnTaka, generateId } from '../../utils/helpers';
 import { useAuth } from '../../auth/AuthContext';
+import { useTransactions } from '../../context/TransactionsContext';
+import { useFeatureNav } from '../../navigation/FeatureNavContext';
 import { buildBusinessReport, shareReport, periodLabel, ReportPeriod } from '../../utils/report';
 import {
   TransactionList, JournalView, BalanceSheetView, InsightsView, SimpleStockSection, NGOReportCard,
@@ -28,10 +31,11 @@ const VIEW_TABS: { id: AccountView; label: string }[] = [
 export const AccountingScreen = () => {
   const { user } = useAuth();
   const { colors } = useTheme();
+  const { transactions, addTransaction: saveTransaction, income, expense, profit } = useTransactions();
+  const { consumeBookkeepingIntent } = useFeatureNav();
   const tier = user?.tier ?? 0;
   const isFull = tier >= 1;
 
-  const [transactions, setTransactions] = useState<Transaction[]>(seedTransactions);
   const [stock, setStock] = useState<SimpleStockItem[]>(seedSimpleStock);
   const [view, setView] = useState<AccountView>('entry');
 
@@ -42,29 +46,33 @@ export const AccountingScreen = () => {
   const [product, setProduct] = useState('');
   const [busy, setBusy] = useState(false);
 
-  const income = transactions.filter((t) => t.type === 'income').reduce((s, t) => s + t.amount, 0);
-  const expense = transactions.filter((t) => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
-  const profit = income - expense;
-
   const openAdd = (type: TransactionType) => {
     setFormType(type);
     setModalVisible(true);
   };
 
-  const addTransaction = () => {
+  useFocusEffect(
+    useCallback(() => {
+      const action = consumeBookkeepingIntent();
+      if (action) {
+        setView('entry');
+        openAdd(action);
+      }
+    }, [consumeBookkeepingIntent]),
+  );
+
+  const submitTransaction = () => {
     if (!amount || !category) return;
-    const newTx: Transaction = {
-      id: generateId(),
+    saveTransaction({
       type: formType,
       amount: parseFloat(amount),
       category,
       product: product || undefined,
-      note: '',
-      date: new Date().toISOString().split('T')[0],
-    };
-    setTransactions([newTx, ...transactions]);
+    });
     setModalVisible(false);
-    setAmount(''); setCategory(''); setProduct('');
+    setAmount('');
+    setCategory('');
+    setProduct('');
   };
 
   const exportReport = async (period: ReportPeriod, recipient?: string) => {
@@ -140,7 +148,12 @@ export const AccountingScreen = () => {
             <Input label="পরিমাণ (৳)" value={amount} onChangeText={setAmount} keyboardType="numeric" placeholder="০" style={{ marginBottom: Spacing.md }} />
             <Input label="ক্যাটাগরি" value={category} onChangeText={setCategory} placeholder="যেমন: বিক্রয়, কাঁচামাল" style={{ marginBottom: Spacing.md }} />
             <Input label="পণ্যের নাম (ঐচ্ছিক)" value={product} onChangeText={setProduct} placeholder="যেমন: কটন কুর্তি" style={{ marginBottom: Spacing.xl }} />
-            <Btn label="সংরক্ষণ" onPress={addTransaction} fullWidth variant={formType === 'income' ? 'secondary' : 'danger'} />
+            <Btn
+              label="সংরক্ষণ"
+              onPress={submitTransaction}
+              fullWidth
+              variant={formType === 'income' ? 'income' : 'expense'}
+            />
           </Pressable>
         </Pressable>
       </Modal>

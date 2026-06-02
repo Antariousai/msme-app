@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Modal } from 'react-native';
+import { View, StyleSheet, Modal, Alert } from 'react-native';
+import * as Clipboard from 'expo-clipboard';
 import { AppHeader } from '../../components/AppHeader';
 import { T, Card, Row, ScreenScroll, SectionHeader, Btn, Input, StatusPill } from '../../components/atoms';
 import { Colors, Spacing, Radius, BrandStudioAddOn } from '../../theme';
@@ -15,12 +16,27 @@ export const BrandStudioScreen = ({ onBack }: { onBack: () => void }) => {
   const [generatedCaption, setGeneratedCaption] = useState('');
   const [subscribing, setSubscribing] = useState(false);
   const [previewId, setPreviewId] = useState<string | null>(null);
+  const [logoReady, setLogoReady] = useState(false);
 
   const subscribed = user?.addOns.brandStudio ?? false;
 
   const generateCaption = () => {
     const base = brandCaptions[Math.floor(Math.random() * brandCaptions.length)];
     setGeneratedCaption(productName ? base.replace('কটন কুর্তি', productName) : base);
+  };
+
+  const copyCaption = async () => {
+    if (!generatedCaption) return;
+    await Clipboard.setStringAsync(generatedCaption);
+    Alert.alert('কপি হয়েছে', 'ক্যাপশন ক্লিপবোর্ডে সংরক্ষিত হয়েছে।');
+  };
+
+  const selectLogo = () => {
+    Alert.alert(
+      'লোগো',
+      'ডেমো সংস্করণে আপনার ব্যবসার নামের প্রাথমিক অক্ষর ডিফল্ট লোগো হিসেবে ব্যবহার হচ্ছে।',
+      [{ text: 'ঠিক আছে', onPress: () => setLogoReady(true) }],
+    );
   };
 
   const subscribe = async () => {
@@ -82,10 +98,24 @@ export const BrandStudioScreen = ({ onBack }: { onBack: () => void }) => {
         <SectionHeader title="লোগো সাপোর্ট" />
         <Card style={{ marginBottom: Spacing.base }}>
           <View style={styles.logoPlaceholder}>
-            <BrandIcon size={40} color={Colors.textTertiary} />
-            <T size="sm" color={Colors.textTertiary} style={{ marginTop: Spacing.sm }}>লোগো আপলোড করুন</T>
+            {logoReady ? (
+              <T size="2xl" weight="bold" color={Colors.brandStudio}>
+                {(user?.businessName ?? 'A').charAt(0)}
+              </T>
+            ) : (
+              <>
+                <BrandIcon size={40} color={Colors.textTertiary} />
+                <T size="sm" color={Colors.textTertiary} style={{ marginTop: Spacing.sm }}>লোগো আপলোড করুন</T>
+              </>
+            )}
           </View>
-          <Btn label="লোগো নির্বাচন" onPress={() => {}} variant="outline" fullWidth style={{ marginTop: Spacing.md }} />
+          <Btn
+            label={logoReady ? 'লোগো পরিবর্তন' : 'লোগো নির্বাচন'}
+            onPress={selectLogo}
+            variant="outline"
+            fullWidth
+            style={{ marginTop: Spacing.md }}
+          />
         </Card>
 
         <SectionHeader title="ক্যাপশন ও কপিরাইটিং" />
@@ -107,7 +137,7 @@ export const BrandStudioScreen = ({ onBack }: { onBack: () => void }) => {
           <Card style={{ marginBottom: Spacing.base, backgroundColor: Colors.bgDark }}>
             <T size="sm" weight="semibold" style={{ marginBottom: Spacing.sm }}>প্রস্তাবিত ক্যাপশন</T>
             <T size="sm" color={Colors.textSecondary}>{generatedCaption}</T>
-            <Btn label="কপি করুন" onPress={() => {}} variant="ghost" size="sm" style={{ marginTop: Spacing.md, alignSelf: 'flex-start' }} />
+            <Btn label="কপি করুন" onPress={copyCaption} variant="ghost" size="sm" style={{ marginTop: Spacing.md, alignSelf: 'flex-start' }} />
           </Card>
         ) : null}
 

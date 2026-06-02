@@ -20,8 +20,8 @@ export const IncomeExpenseQuickActions = ({
 }: IncomeExpenseQuickActionsProps) => {
   const { openFeature } = useFeatureNav();
 
-  const goIncome = onIncome ?? (() => openFeature('bookkeeping'));
-  const goExpense = onExpense ?? (() => openFeature('bookkeeping'));
+  const goIncome = onIncome ?? (() => openFeature('bookkeeping', { bookkeepingAction: 'income' }));
+  const goExpense = onExpense ?? (() => openFeature('bookkeeping', { bookkeepingAction: 'expense' }));
 
   return (
     <Row gap={Spacing.base} style={[{ marginBottom: Spacing.base }, style]}>

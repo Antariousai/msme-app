@@ -3,6 +3,7 @@ import React, {
   useContext,
   useState,
   useEffect,
+  useCallback,
   ReactNode,
   RefObject,
 } from 'react';
@@ -17,8 +18,17 @@ import {
   getPrimaryTabIds,
   isInPrimaryTabs,
 } from './features';
-import { Colors, Spacing, Radius } from '../theme';
+import { Spacing, Radius } from '../theme';
+import { useTheme } from '../theme/ThemeContext';
 import { XIcon } from '../icons';
+
+export type BookkeepingIntent = 'income' | 'expense';
+
+export type OpenFeatureOptions = {
+  bookkeepingAction?: BookkeepingIntent;
+  /** After onboarding, jump to Home tab before opening feature */
+  fromOnboarding?: boolean;
+};
 
 export type RootTabParamList = {
   Home: undefined;
@@ -26,8 +36,11 @@ export type RootTabParamList = {
 } & Partial<Record<FeatureId, undefined>>;
 
 interface FeatureNavContextType {
-  openFeature: (id: FeatureId) => void;
+  openFeature: (id: FeatureId, options?: OpenFeatureOptions) => void;
   closeFeature: () => void;
+  navigateHome: () => void;
+  navigateAccount: () => void;
+  consumeBookkeepingIntent: () => BookkeepingIntent | null;
   hubFeatureIds: FeatureId[];
   tabFeatureIds: FeatureId[];
 }
@@ -35,6 +48,9 @@ interface FeatureNavContextType {
 const FeatureNavContext = createContext<FeatureNavContextType>({
   openFeature: () => {},
   closeFeature: () => {},
+  consumeBookkeepingIntent: () => null,
+  navigateHome: () => {},
+  navigateAccount: () => {},
   hubFeatureIds: [],
   tabFeatureIds: [],
 });
@@ -48,8 +64,10 @@ interface FeatureNavProviderProps {
 
 export const FeatureNavProvider = ({ children, navigationRef }: FeatureNavProviderProps) => {
   const { user } = useAuth();
+  const { colors } = useTheme();
   const tier = user?.tier ?? 0;
   const [activeFeature, setActiveFeature] = useState<FeatureId | null>(null);
+  const [bookkeepingIntent, setBookkeepingIntent] = useState<BookkeepingIntent | null>(null);
 
   const hubFeatures = getHubFeatures(tier);
   const tabFeatureIds = getPrimaryTabIds(tier);
@@ -61,7 +79,23 @@ export const FeatureNavProvider = ({ children, navigationRef }: FeatureNavProvid
     return true;
   };
 
-  const openFeature = (id: FeatureId) => {
+  const navigateHome = useCallback(() => {
+    const nav = navigationRef.current;
+    if (nav?.isReady()) nav.navigate('Home');
+  }, [navigationRef]);
+
+  const navigateAccount = useCallback(() => {
+    const nav = navigationRef.current;
+    if (nav?.isReady()) nav.navigate('Account');
+  }, [navigationRef]);
+
+  const openFeature = (id: FeatureId, options?: OpenFeatureOptions) => {
+    if (options?.bookkeepingAction) {
+      setBookkeepingIntent(options.bookkeepingAction);
+    }
+    if (options?.fromOnboarding) {
+      navigateHome();
+    }
     if (isInPrimaryTabs(tier, id)) {
       setActiveFeature(null);
       navigateToTab(id);
@@ -71,6 +105,12 @@ export const FeatureNavProvider = ({ children, navigationRef }: FeatureNavProvid
   };
 
   const closeFeature = () => setActiveFeature(null);
+
+  const consumeBookkeepingIntent = useCallback(() => {
+    const action = bookkeepingIntent;
+    setBookkeepingIntent(null);
+    return action;
+  }, [bookkeepingIntent]);
 
   useEffect(() => {
     setActiveFeature(null);
@@ -84,6 +124,9 @@ export const FeatureNavProvider = ({ children, navigationRef }: FeatureNavProvid
       value={{
         openFeature,
         closeFeature,
+        consumeBookkeepingIntent,
+        navigateHome,
+        navigateAccount,
         hubFeatureIds: hubFeatures.map((f) => f.id),
         tabFeatureIds,
       }}
@@ -91,9 +134,19 @@ export const FeatureNavProvider = ({ children, navigationRef }: FeatureNavProvid
       {children}
 
       <Modal visible={!!activeFeature} animationType="slide" presentationStyle="fullScreen">
-        <SafeAreaView style={styles.modalSafe} edges={['top', 'bottom']}>
-          <Pressable onPress={closeFeature} style={styles.closeFab}>
-            <XIcon size={18} color={Colors.textPrimary} />
+        <SafeAreaView style={[styles.modalSafe, { backgroundColor: colors.bg }]} edges={['top', 'bottom']}>
+          <Pressable
+            onPress={closeFeature}
+            style={[
+              styles.closeFab,
+              {
+                backgroundColor: colors.chip,
+                borderColor: colors.borderLight,
+                shadowColor: colors.primary,
+              },
+            ]}
+          >
+            <XIcon size={18} color={colors.textPrimary} />
           </Pressable>
           <View style={styles.modalBody}>
             {ActiveComponent ? <ActiveComponent /> : null}
@@ -105,7 +158,7 @@ export const FeatureNavProvider = ({ children, navigationRef }: FeatureNavProvid
 };
 
 const styles = StyleSheet.create({
-  modalSafe: { flex: 1, backgroundColor: Colors.bg },
+  modalSafe: { flex: 1 },
   closeFab: {
     position: 'absolute',
     top: Spacing.sm + 44,
@@ -114,12 +167,9 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: Radius.full,
-    backgroundColor: Colors.chip,
     borderWidth: 1,
-    borderColor: Colors.borderLight,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: Colors.primary,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.12,
     shadowRadius: 4,

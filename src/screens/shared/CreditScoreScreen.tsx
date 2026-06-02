@@ -16,6 +16,9 @@ import { ScreenFrame } from '../../components/ScreenFrame';
 import { Colors, Spacing, Radius, Gradients } from '../../theme';
 import { useTheme } from '../../theme/ThemeContext';
 import { useAuth } from '../../auth/AuthContext';
+import { userHasLoan } from '../../auth/onboarding';
+import { useTransactions } from '../../context/TransactionsContext';
+import { getLoanLenderLabel } from '../../data/loanLenders';
 import {
   computeBusinessCreditScore,
   creditScoreColor,
@@ -51,11 +54,27 @@ const FactorRow = ({ factor }: { factor: CreditFactor }) => {
 export const CreditScoreScreen = () => {
   const { user } = useAuth();
   const { colors } = useTheme();
+  const { transactions } = useTransactions();
   const [exporting, setExporting] = useState(false);
 
-  const profile = useMemo(() => computeBusinessCreditScore(), []);
+  const profile = useMemo(() => computeBusinessCreditScore(transactions), [transactions]);
   const scoreColor = creditScoreColor(profile.score);
   const canExport = (user?.tier ?? 0) >= 3;
+
+  if (!userHasLoan(user)) {
+    return (
+      <ScreenFrame>
+        <AppHeader title="ক্রেডিট স্কোর" subtitle="ঋণগ্রহীতাদের জন্য" />
+        <ScreenScroll>
+          <Card style={{ marginBottom: Spacing.base }}>
+            <T size="sm" color={colors.textSecondary}>
+              ক্রেডিট স্কোর শুধু যারা ব্যবসায়িক ঋণ নিয়েছেন তাদের দেখানো হয়। সেটিংস → ব্যবসায়িক ঋণ থেকে আপডেট করুন।
+            </T>
+          </Card>
+        </ScreenScroll>
+      </ScreenFrame>
+    );
+  }
 
   const exportReport = async () => {
     setExporting(true);
@@ -137,7 +156,8 @@ export const CreditScoreScreen = () => {
 /** Inline row inside the account profile card */
 export const AccountCreditScoreRow = ({ onPress }: { onPress: () => void }) => {
   const { colors } = useTheme();
-  const profile = useMemo(() => computeBusinessCreditScore(), []);
+  const { transactions } = useTransactions();
+  const profile = useMemo(() => computeBusinessCreditScore(transactions), [transactions]);
   const color = creditScoreColor(profile.score);
 
   return (
@@ -169,12 +189,20 @@ export const CreditScoreSummaryCard = ({ onPress }: { onPress: () => void }) => 
 
 /** Credit score summary for home / dashboard screens */
 export const DashboardCreditScoreCard = ({ onPress }: { onPress: () => void }) => {
+  const { user } = useAuth();
   const { colors } = useTheme();
-  const profile = useMemo(() => computeBusinessCreditScore(), []);
+  const { transactions } = useTransactions();
+  const profile = useMemo(() => computeBusinessCreditScore(transactions), [transactions]);
   const color = creditScoreColor(profile.score);
+  const lenderLabel = getLoanLenderLabel(user?.loanProfile?.lenderId);
 
   return (
     <Card onPress={onPress} style={{ marginBottom: Spacing.base }} padding={Spacing.md}>
+      {lenderLabel ? (
+        <T size="xs" color={colors.textTertiary} style={{ marginBottom: Spacing.xs }}>
+          ঋণ সূত্র: {lenderLabel}
+        </T>
+      ) : null}
       <Row justify="space-between" align="center">
         <Row gap={Spacing.sm} style={{ flex: 1, minWidth: 0 }}>
           <View style={[styles.miniRing, { borderColor: color }]}>

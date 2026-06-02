@@ -237,7 +237,7 @@ export const Chip = ({ label, color, bg, onPress, active = false }: ChipProps) =
 
 interface RowProps {
   children: React.ReactNode;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   gap?: number;
   align?: ViewStyle['alignItems'];
   justify?: ViewStyle['justifyContent'];

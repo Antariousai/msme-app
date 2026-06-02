@@ -17,7 +17,7 @@ export const InventoryScreen = () => {
   // Form fields
   const [inflowName, setInflowName] = useState('');
   const [inflowQty, setInflowQty] = useState('');
-  const [inflowCategory, setInflowCategory] = useState(INVENTORY_CATEGORIES[0]);
+  const [inflowCategory, setInflowCategory] = useState<(typeof INVENTORY_CATEGORIES)[number]>(INVENTORY_CATEGORIES[0]);
   const [inflowSku, setInflowSku] = useState('');
 
   const isAdvanced = (user?.tier ?? 0) >= 2;
