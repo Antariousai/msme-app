@@ -5,12 +5,12 @@ import { AppHeader } from '../../components/AppHeader';
 import { T, Card, Row, ScreenScroll, TierBadge, Divider, Btn, BtnRow } from '../../components/atoms';
 import { FeatureLauncherList } from '../../components/FeatureToolsSection';
 import { ScreenFrame } from '../../components/ScreenFrame';
-import { Spacing, Gradients, TierConfig, BrandStudioAddOn } from '../../theme';
+import { Spacing, Gradients, TierConfig } from '../../theme';
 import { useTheme } from '../../theme/ThemeContext';
 import { useAuth } from '../../auth/AuthContext';
 import { getAccessibleFeatures } from '../../navigation/features';
 import { useFeatureNav } from '../../navigation/FeatureNavContext';
-import { CreditScoreSummaryCard } from './CreditScoreScreen';
+import { AccountCreditScoreRow } from './CreditScoreScreen';
 
 interface MoreScreenProps {
   onSelectTier: () => void;
@@ -40,9 +40,9 @@ export const MoreScreen = ({ onSelectTier, onOpenBrandStudio }: MoreScreenProps)
 
   return (
     <ScreenFrame>
-      <AppHeader title="আরও" showGreeting={false} />
+      <AppHeader title="অ্যাকাউন্ট" subtitle={user.businessName} showGreeting={false} />
       <ScreenScroll>
-        <Card style={{ marginBottom: Spacing.base }}>
+        <Card style={{ marginBottom: Spacing.base, overflow: 'hidden' }}>
           <Row gap={Spacing.base}>
             <View style={{
               width: 60, height: 60, borderRadius: 30,
@@ -58,18 +58,22 @@ export const MoreScreen = ({ onSelectTier, onOpenBrandStudio }: MoreScreenProps)
               />
               <T size="2xl" color="#ffffff">👤</T>
             </View>
-            <View style={{ flex: 1 }}>
+            <View style={{ flex: 1, minWidth: 0 }}>
               <T size="lg" weight="bold">{user.name}</T>
               <T size="sm" color={colors.textSecondary}>{user.businessName}</T>
               <T size="xs" color={colors.textTertiary}>{user.phone} · {user.location}</T>
+              <View style={{ marginTop: Spacing.sm }}>
+                <TierBadge tier={user.tier} />
+              </View>
             </View>
           </Row>
-          <View style={{ marginTop: Spacing.md }}>
-            <TierBadge tier={user.tier} />
-          </View>
+
+          <AccountCreditScoreRow onPress={() => openFeature('creditScore')} />
         </Card>
 
-        <CreditScoreSummaryCard onPress={() => openFeature('creditScore')} />
+        <T size="xs" weight="semibold" color={colors.textTertiary} style={{ marginBottom: Spacing.sm, marginLeft: Spacing.xs }}>
+          সেটিংস
+        </T>
 
         <Card style={{ marginBottom: Spacing.sm }}>
           <Row justify="space-between" fill>

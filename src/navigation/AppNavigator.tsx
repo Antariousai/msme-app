@@ -23,7 +23,7 @@ import { Bounce } from '../components/motion';
 
 const Tab = createBottomTabNavigator();
 const HomeIcon = makeEmojiIcon(NAV_EMOJI.home);
-const MoreIcon = makeEmojiIcon(NAV_EMOJI.more);
+const AccountIcon = makeEmojiIcon(NAV_EMOJI.account);
 
 const HOME_COMPONENTS: Record<UserTier, React.ComponentType> = {
   0: Tier0Home,
@@ -76,7 +76,7 @@ function MainTabs({ onSelectTier, onOpenBrandStudio }: { onSelectTier: () => voi
       const feat = getFeatureById(id)!;
       return { name: feat.id, label: feat.label, component: feat.component, icon: feat.icon };
     }),
-    { name: 'More', label: 'আরও', component: makeMoreScreen(onSelectTier, onOpenBrandStudio), icon: MoreIcon },
+    { name: 'Account', label: 'অ্যাকাউন্ট', component: makeMoreScreen(onSelectTier, onOpenBrandStudio), icon: AccountIcon },
   ];
 
   return (

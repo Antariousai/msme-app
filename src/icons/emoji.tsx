@@ -25,7 +25,7 @@ export const FEATURE_EMOJI: Record<FeatureId, string> = {
 
 export const NAV_EMOJI = {
   home: '🏠',
-  more: '⚙️',
+  account: '👤',
 };
 
 export const CATEGORY_EMOJI: Record<FeatureCategory, string> = {

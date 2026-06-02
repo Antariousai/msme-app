@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Pressable } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { AppHeader } from '../../components/AppHeader';
 import {
@@ -142,31 +142,39 @@ export const CreditScoreScreen = () => {
   );
 };
 
-/** Compact card for More / Home */
-export const CreditScoreSummaryCard = ({ onPress }: { onPress: () => void }) => {
+/** Inline row inside the account profile card */
+export const AccountCreditScoreRow = ({ onPress }: { onPress: () => void }) => {
+  const { colors } = useTheme();
   const profile = useMemo(() => computeBusinessCreditScore(), []);
   const color = creditScoreColor(profile.score);
 
   return (
-    <Card onPress={onPress} effect="lift" style={{ marginBottom: Spacing.base }}>
-      <Row justify="space-between" align="center">
-        <Row gap={Spacing.md}>
-          <View style={[styles.miniRing, { borderColor: color }]}>
-            <T size="lg" weight="bold" color={color}>{toBn(profile.score)}</T>
-          </View>
-          <View>
-            <T size="sm" weight="bold">ক্রেডিট স্কোর</T>
-            <T size="xs" color={Colors.textSecondary}>
-              {profile.gradeEmoji} {profile.gradeLabel}
-              {profile.pksfEligible ? ' · PKSF যোগ্য' : ''}
-            </T>
-          </View>
-        </Row>
-        <T size="sm" color={Colors.primary} weight="semibold">বিস্তারিত ›</T>
-      </Row>
-    </Card>
+    <Pressable onPress={onPress} style={({ pressed }) => [
+      styles.accountCreditRow,
+      { borderTopColor: colors.border, opacity: pressed ? 0.85 : 1 },
+    ]}>
+      <View style={[styles.miniRing, { borderColor: color }]}>
+        <T size="lg" weight="bold" color={color}>{toBn(profile.score)}</T>
+      </View>
+      <View style={{ flex: 1, minWidth: 0 }}>
+        <T size="sm" weight="bold">🏦 ক্রেডিট স্কোর</T>
+        <T size="xs" color={colors.textSecondary} numberOfLines={1}>
+          {profile.gradeEmoji} {profile.gradeLabel}
+          {profile.pksfEligible ? ' · PKSF যোগ্য' : ''}
+        </T>
+      </View>
+      <View style={[styles.creditBarMini, { backgroundColor: colors.bg }]}>
+        <View style={[styles.creditBarMiniFill, { width: `${profile.score}%`, backgroundColor: color }]} />
+      </View>
+      <T size="lg" color={colors.textTertiary}>›</T>
+    </Pressable>
   );
 };
+
+/** Standalone card (legacy — prefer AccountCreditScoreRow) */
+export const CreditScoreSummaryCard = ({ onPress }: { onPress: () => void }) => (
+  <AccountCreditScoreRow onPress={onPress} />
+);
 
 const styles = StyleSheet.create({
   scoreHero: {
@@ -210,5 +218,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: Colors.surface,
+  },
+  accountCreditRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.md,
+    marginTop: Spacing.md,
+    paddingTop: Spacing.md,
+    paddingBottom: Spacing.xs,
+    borderTopWidth: 1,
+  },
+  creditBarMini: {
+    width: 48,
+    height: 6,
+    borderRadius: 3,
+    overflow: 'hidden',
+  },
+  creditBarMiniFill: {
+    height: 6,
+    borderRadius: 3,
   },
 });

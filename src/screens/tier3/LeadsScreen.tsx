@@ -13,8 +13,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppHeader } from '../../components/AppHeader';
 import { T, Card, Row, ScreenScroll, SectionHeader, StatusPill, Btn, Input, AISuggestion, Chip } from '../../components/atoms';
 import { FeatureToolsSection } from '../../components/FeatureToolsSection';
-import { CreditScoreSummaryCard } from '../shared/CreditScoreScreen';
-import { useFeatureNav } from '../../navigation/FeatureNavContext';
 import { ScreenFrame } from '../../components/ScreenFrame';
 import { HeroCard } from '../../components/HeroCard';
 import { Colors, Spacing, Radius } from '../../theme';
@@ -560,14 +558,12 @@ export const LeadsScreen = () => {
 };
 
 export const Tier3Home = () => {
-  const { openFeature } = useFeatureNav();
   const hotLeads = seedLeads.filter((l) => l.score >= 70).length;
   const converted = seedLeads.filter((l) => l.status === 'converted').length;
   return (
     <ScreenFrame>
       <AppHeader showGreeting />
       <ScreenScroll>
-        <CreditScoreSummaryCard onPress={() => openFeature('creditScore')} />
         <HeroCard
           title="🎯 প্রো ড্যাশবোর্ড"
           metric={toBn(seedLeads.length)}
