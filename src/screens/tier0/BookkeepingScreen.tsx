@@ -12,12 +12,11 @@ export const Tier0Home = () => (
     <AppHeader showGreeting />
     <ScreenScroll>
       <HeroCard
-        title="অফলাইন মোড"
-        titleEmoji="📒"
+        title="📒 অফলাইন মোড"
         metric="সক্রিয়"
         metricLabel="ইন্টারনেট ছাড়াই হিসাব"
         stats={[
-          { label: 'আজকের লেনদেন', value: '৫', emoji: '✅' },
+          { label: 'আজকের লেনদেন', value: '৫ ✅' },
         ]}
       />
       <FeatureToolsSection layout="grid" scope="all" />

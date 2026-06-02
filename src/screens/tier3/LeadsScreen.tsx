@@ -167,12 +167,11 @@ export const Tier3Home = () => {
       <AppHeader showGreeting />
       <ScreenScroll>
         <HeroCard
-          title="প্রো ড্যাশবোর্ড"
-          titleEmoji="🎯"
+          title="🎯 প্রো ড্যাশবোর্ড"
           metric={toBn(seedLeads.length)}
           metricLabel="মোট লিড"
           stats={[
-            { label: 'হট লিড', value: toBn(hotLeads), emoji: '🔥' },
+            { label: 'হট লিড', value: `${toBn(hotLeads)} 🔥` },
           ]}
         />
         <AISuggestion

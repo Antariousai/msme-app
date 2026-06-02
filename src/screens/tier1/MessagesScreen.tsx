@@ -137,12 +137,11 @@ export const Tier1Home = () => {
       <AppHeader showGreeting notificationCount={unread} />
       <ScreenScroll>
         <HeroCard
-          title="স্টার্টার হোম"
-          titleEmoji="💬"
+          title="💬 স্টার্টার হোম"
           metric={toBn(unread)}
           metricLabel="নতুন মেসেজ"
           stats={[
-            { label: 'অর্ডার অপেক্ষমাণ', value: '২', emoji: '📋' },
+            { label: 'অর্ডার অপেক্ষমাণ', value: '২ 📋' },
           ]}
         />
         <AISuggestion

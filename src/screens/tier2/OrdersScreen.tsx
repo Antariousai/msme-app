@@ -138,13 +138,12 @@ export const Tier2Home = () => (
     <AppHeader showGreeting />
     <ScreenScroll>
       <HeroCard
-        title="গ্রোথ ড্যাশবোর্ড"
-        titleEmoji="📦"
+        title="📦 গ্রোথ ড্যাশবোর্ড"
         metric="৩"
         metricLabel="সক্রিয় অর্ডার"
         stats={[
-          { label: 'কম স্টক', value: '১', emoji: '⚠️' },
-          { label: 'কুরিয়ারে', value: '২', emoji: '🛵' },
+          { label: 'কম স্টক', value: '১ ⚠️' },
+          { label: 'কুরিয়ারে', value: '২ 🛵' },
         ]}
       />
       <FeatureToolsSection layout="grid" scope="all" />

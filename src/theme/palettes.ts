@@ -33,6 +33,10 @@ export type ColorPalette = {
   textSecondary: string;
   textTertiary: string;
   textInverse: string;
+  chipInk: string;
+  aiBg: string;
+  incomeSoft: string;
+  expenseSoft: string;
   tier0: string;
   tier1: string;
   tier2: string;
@@ -77,6 +81,10 @@ export const lightPalette: ColorPalette = {
   textSecondary: '#6b94a8',
   textTertiary: '#6b94a8',
   textInverse: '#ffffff',
+  chipInk: '#1976a3',
+  aiBg: '#e3f4fc',
+  incomeSoft: '#dcf4ec',
+  expenseSoft: '#ffe1e7',
   tier0: '#6b94a8',
   tier1: '#4eb7e6',
   tier2: '#27a7e1',
@@ -121,6 +129,10 @@ export const darkPalette: ColorPalette = {
   textSecondary: '#a8dbf4',
   textTertiary: '#6fc4ec',
   textInverse: '#0f3a52',
+  chipInk: '#a8dbf4',
+  aiBg: '#15384a',
+  incomeSoft: '#10362c',
+  expenseSoft: '#3d1622',
   tier0: '#6b94a8',
   tier1: '#6fc4ec',
   tier2: '#a8dbf4',

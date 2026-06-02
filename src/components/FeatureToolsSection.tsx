@@ -111,17 +111,15 @@ const CategoryGrid = ({
             style={{
               width: tileW,
               backgroundColor: colors.surface,
-              borderRadius: Radius.lg,
-              paddingVertical: Spacing.md,
-              paddingHorizontal: Spacing.xs,
+              borderRadius: Radius.btn,
+              paddingVertical: Spacing.base,
+              paddingHorizontal: Spacing.sm,
               alignItems: 'center',
-              borderWidth: 1,
-              borderColor: colors.borderLight,
-              ...Shadow.sm,
+              ...Shadow.card,
             }}
           >
-            <EmojiIcon emoji={f.emoji} size={28} />
-            <T size="xs" weight="semibold" align="center" style={{ marginTop: Spacing.xs }} numberOfLines={2}>
+            <EmojiIcon emoji={f.emoji} size={24} />
+            <T size="xs" weight="bold" align="center" style={{ marginTop: Spacing.sm }} numberOfLines={2}>
               {f.label}
             </T>
           </RipplePressable>

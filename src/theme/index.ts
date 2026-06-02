@@ -82,6 +82,8 @@ export const Radius = {
   lg: 20,
   xl: 20,
   '2xl': 24,
+  /** Button radius — studio --btn-radius */
+  btn: 16,
   full: 9999,
 };
 
@@ -92,6 +94,22 @@ export const Shadow = {
     shadowOpacity: 0.08,
     shadowRadius: 8,
     elevation: 2,
+  },
+  /** studio --shadow-card: 0 4px 18px -6px rgba(0,0,0,.12) */
+  card: {
+    shadowColor: '#1f1633',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 14,
+    elevation: 3,
+  },
+  /** studio --shadow-soft: 0 8px 24px -8px rgba(0,0,0,.18) */
+  soft: {
+    shadowColor: '#1f1633',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.18,
+    shadowRadius: 18,
+    elevation: 6,
   },
   md: {
     shadowColor: '#27a7e1',

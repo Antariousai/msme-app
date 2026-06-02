@@ -22,11 +22,6 @@ const fontForWeight = (weight: TextWeight = 'regular') => {
   return map[weight];
 };
 
-const weightToNumeric = (weight: TextWeight = 'regular') => {
-  const map = { regular: '400', medium: '500', semibold: '600', bold: '700' };
-  return map[weight] as TextStyle['fontWeight'];
-};
-
 // ─── Text ────────────────────────────────────────────────────────────────────
 
 interface TProps {
@@ -71,16 +66,13 @@ interface CardProps {
   padding?: number;
 }
 
-export const Card = ({ children, style, onPress, elevated = false, padding = Spacing.base }: CardProps) => {
+export const Card = ({ children, style, onPress, elevated = false, padding = Spacing.lg }: CardProps) => {
   const { colors } = useTheme();
   const baseStyle: ViewStyle = {
     backgroundColor: colors.surface,
     borderRadius: Radius.lg,
     padding,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
-    overflow: 'hidden',
-    ...(elevated ? Shadow.md : Shadow.sm),
+    ...(elevated ? Shadow.md : Shadow.card),
   };
   if (onPress) {
     return (
@@ -113,13 +105,13 @@ export const Btn = ({
   fullWidth = false, flex = false, loading = false, disabled = false, icon, style,
 }: BtnProps) => {
   const { colors } = useTheme();
-  const heights = { sm: 32, md: 40, lg: 48 };
+  const heights = { sm: 36, md: 50, lg: 56 };
 
   const variantStyles: Record<string, { bg: string; text: string; border?: string }> = {
     primary: { bg: colors.primary, text: colors.textInverse },
-    secondary: { bg: colors.secondary, text: colors.textInverse },
+    secondary: { bg: colors.accent, text: colors.textInverse },
     outline: { bg: 'transparent', text: colors.primary, border: colors.primary },
-    ghost: { bg: colors.chip, text: colors.textPrimary },
+    ghost: { bg: colors.chip, text: colors.chipInk },
     danger: { bg: colors.expense, text: colors.textInverse },
   };
 
@@ -133,7 +125,7 @@ export const Btn = ({
       ) : (
         <>
           {icon}
-          <T size={size === 'sm' ? 'sm' : size === 'lg' ? 'md' : 'base'} color={vs.text} weight="semibold" numberOfLines={1}>
+          <T size={size === 'sm' ? 'sm' : 'md'} color={vs.text} weight="bold" numberOfLines={1}>
             {label}
           </T>
         </>
@@ -144,7 +136,7 @@ export const Btn = ({
   const boxStyle: ViewStyle = {
     height: heights[size],
     paddingHorizontal: size === 'sm' ? Spacing.md : Spacing.lg,
-    borderRadius: Radius.lg,
+    borderRadius: Radius.btn,
     backgroundColor: useGradient ? 'transparent' : vs.bg,
     borderWidth: vs.border ? 1.5 : 0,
     borderColor: vs.border,
@@ -196,13 +188,14 @@ export const Chip = ({ label, color, bg, onPress, active = false }: ChipProps) =
     <RipplePressable
       onPress={onPress}
       style={{
-        paddingHorizontal: Spacing.md,
-        paddingVertical: Spacing.xs,
+        paddingHorizontal: Spacing.base,
+        paddingVertical: Spacing.sm,
         borderRadius: Radius.full,
-        backgroundColor: active ? (bg ?? colors.primary) : colors.chip,
+        backgroundColor: active ? (bg ?? colors.primary) : colors.surface,
+        ...Shadow.card,
       }}
     >
-      <T size="sm" color={active ? (color ?? colors.textInverse) : colors.textSecondary} weight="medium">
+      <T size="sm" color={active ? (color ?? colors.textInverse) : colors.textSecondary} weight="bold">
         {label}
       </T>
     </RipplePressable>
@@ -456,21 +449,16 @@ const tierLabels: Record<number, string> = {
 
 export const TierBadge = ({ tier, compact = false }: TierBadgeProps) => {
   const { colors } = useTheme();
-  const tierColors: Record<number, string> = {
-    0: colors.tier0, 1: colors.tier1, 2: colors.tier2, 3: colors.tier3, 4: colors.tier4,
-  };
-  const tc = tierColors[tier];
   return (
   <View style={{
-    paddingHorizontal: compact ? Spacing.sm : Spacing.md,
-    paddingVertical: compact ? 2 : Spacing.xs,
+    alignSelf: 'flex-start',
+    paddingHorizontal: Spacing.base,
+    paddingVertical: 7,
     borderRadius: Radius.full,
-    backgroundColor: tc + '22',
-    borderWidth: 1,
-    borderColor: tc + '44',
+    backgroundColor: colors.chip,
   }}>
-    <T size="xs" color={tc} weight="bold">
-      {compact ? `👑 T${tier}` : `👑 টায়ার ${tier} — ${tierLabels[tier]}`}
+    <T size="sm" color={colors.chipInk} weight="bold">
+      {compact ? `👑 টায়ার ${tier}` : `👑 টায়ার ${tier} — ${tierLabels[tier]}`}
     </T>
   </View>
   );
@@ -562,26 +550,27 @@ export const AISuggestion = ({ title, message, onAction, actionLabel }: AISugges
   const { colors } = useTheme();
   return (
   <View style={{
-    backgroundColor: colors.chip,
+    backgroundColor: colors.aiBg,
     borderRadius: Radius.lg,
-    padding: Spacing.base,
-    borderLeftWidth: 3,
+    padding: Spacing.lg,
+    borderLeftWidth: 4,
     borderLeftColor: colors.ai,
+    marginBottom: Spacing.base,
     gap: Spacing.xs,
   }}>
-    <Row gap={Spacing.xs}>
+    <Row gap={Spacing.sm} align="center" style={{ flexWrap: 'wrap' }}>
       <View style={{
-        width: 20, height: 20, borderRadius: Radius.full,
+        paddingHorizontal: Spacing.sm, paddingVertical: 3, borderRadius: Radius.full,
         backgroundColor: colors.ai, alignItems: 'center', justifyContent: 'center',
       }}>
-        <T size="xs" color={colors.textInverse} weight="bold">AI</T>
+        <T size="xs" color="#ffffff" weight="bold">AI</T>
       </View>
-      <T size="sm" weight="semibold" color={colors.ai}>{title}</T>
+      <T size="sm" weight="bold" color={colors.textPrimary}>{title}</T>
     </Row>
-    <T size="sm" color={colors.textSecondary}>{message}</T>
+    <T size="sm" color={colors.textPrimary} style={{ opacity: 0.92 }}>{message}</T>
     {onAction && actionLabel && (
       <Pressable onPress={onAction}>
-        <T size="sm" color={colors.ai} weight="semibold">{actionLabel} →</T>
+        <T size="sm" color={colors.ai} weight="bold">{actionLabel} →</T>
       </Pressable>
     )}
   </View>

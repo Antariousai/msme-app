@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { AppHeader } from '../../components/AppHeader';
 import { T, Card, Row, ScreenScroll, SectionHeader, StatCard, StatusPill, Chip, AISuggestion, Btn } from '../../components/atoms';
 import { FeatureToolsSection } from '../../components/FeatureToolsSection';
 import { HeroCard } from '../../components/HeroCard';
 import { ScreenFrame } from '../../components/ScreenFrame';
-import { Colors, Spacing } from '../../theme';
-import { TrendUpIcon, TrendDownIcon, PeakIcon, ReportIcon, DownloadIcon } from '../../icons';
+import { Colors, Spacing, Gradients } from '../../theme';
+import { TrendUpIcon, TrendDownIcon, ReportIcon } from '../../icons';
 import { seedTransactions, seedComplaints, aiSuggestions, productSales, peakHours } from '../../data/seed';
 import { bnTaka, calcProfit, toBn } from '../../utils/helpers';
 import { useAuth } from '../../auth/AuthContext';
@@ -61,61 +62,53 @@ export const DashboardScreen = () => {
           ))}
         </Row>
 
-        <Card style={{ marginBottom: Spacing.base, backgroundColor: Colors.tier4 + '15' }}>
-          <T size="sm" color={Colors.textSecondary}>{s.label}র সারাংশ</T>
-          <T size="3xl" weight="bold" color={Colors.tier4}>{bnTaka(s.revenue)}</T>
-          <Row gap={Spacing.xl} style={{ marginTop: Spacing.sm }}>
-            <View>
-              <T size="xs" color={Colors.textTertiary}>অর্ডার</T>
-              <T size="lg" weight="bold">{toBn(s.orders)}</T>
-            </View>
-            <View>
-              <T size="xs" color={Colors.textTertiary}>মেসেজ</T>
-              <T size="lg" weight="bold">{toBn(s.messages)}</T>
-            </View>
-            <View>
-              <T size="xs" color={Colors.textTertiary}>লাভ</T>
-              <T size="lg" weight="bold" color={Colors.success}>{bnTaka(profit)}</T>
-            </View>
-          </Row>
-          <Btn
-            label="সারাংশ এক্সপোর্ট"
-            onPress={exportSummary}
-            variant="outline"
-            size="sm"
-            icon={<DownloadIcon size={14} color={Colors.primary} />}
-            style={{ marginTop: Spacing.md, alignSelf: 'flex-start' }}
-          />
-        </Card>
+        <HeroCard
+          sparkle="🌟"
+          title={`${s.label}র সারাংশ`}
+          metric={bnTaka(s.revenue)}
+          metricLabel="মোট আয়"
+          stats={[
+            { label: 'অর্ডার', value: toBn(s.orders) },
+            { label: 'মেসেজ', value: toBn(s.messages) },
+            { label: 'লাভ', value: bnTaka(profit) },
+          ]}
+        />
 
-        <SectionHeader title="বেস্ট ও ওয়ার্স সেলিং" />
+        <SectionHeader title="🏆 বেস্ট ও ওয়ার্স সেলিং" />
         <Row gap={Spacing.sm} style={{ marginBottom: Spacing.base }}>
           <StatCard label="বেস্ট সেলার" value={best.name} subtitle={`${toBn(best.units)} ইউনিট`} color={Colors.success} icon={<TrendUpIcon size={16} color={Colors.success} />} />
           <StatCard label="ওয়ার্স সেলার" value={worst.name} subtitle={`${toBn(worst.units)} ইউনিট`} color={Colors.error} icon={<TrendDownIcon size={16} color={Colors.error} />} />
         </Row>
 
         <Card style={{ marginBottom: Spacing.base }}>
-          <Row gap={Spacing.sm} style={{ marginBottom: Spacing.sm }}>
-            <PeakIcon size={20} color={Colors.accent} />
-            <T size="md" weight="bold">পিক আওয়ার বিশ্লেষণ</T>
-          </Row>
+          <T size="sm" weight="bold" style={{ marginBottom: Spacing.sm }}>📈 পিক আওয়ার বিশ্লেষণ</T>
           {peakHours.map((p) => (
-            <Row key={p.slot} gap={Spacing.sm} align="center" style={{ marginBottom: Spacing.xs }}>
-              <T size="xs" color={Colors.textSecondary} style={{ width: 96 }}>{p.slot}</T>
-              <View style={{ flex: 1, height: 8, borderRadius: 4, backgroundColor: Colors.bgDark }}>
-                <View style={{ width: `${(p.orders / maxPeak) * 100}%`, height: 8, borderRadius: 4, backgroundColor: p.orders === maxPeak ? Colors.accent : Colors.tier4 }} />
+            <Row key={p.slot} gap={Spacing.sm} align="center" style={{ marginVertical: Spacing.xs }}>
+              <T size="xs" color={Colors.textSecondary} style={{ width: 88 }}>{p.slot}</T>
+              <View style={{ flex: 1, height: 11, borderRadius: 99, backgroundColor: Colors.bgDark, overflow: 'hidden' }}>
+                <LinearGradient
+                  colors={[...Gradients.hero]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={{ width: `${(p.orders / maxPeak) * 100}%`, height: 11, borderRadius: 99 }}
+                />
               </View>
-              <T size="xs" weight="semibold" color={Colors.textSecondary}>{toBn(p.orders)}</T>
+              <T size="xs" weight="bold" color={Colors.textPrimary} style={{ width: 28, textAlign: 'right' }}>{toBn(p.orders)}</T>
             </Row>
           ))}
-          <T size="xs" color={Colors.textTertiary} style={{ marginTop: Spacing.xs }}>
-            সর্বোচ্চ কার্যকলাপ: {peak.slot}
-          </T>
         </Card>
+
+        <Btn
+          label="⬇️ সারাংশ এক্সপোর্ট"
+          onPress={exportSummary}
+          variant="primary"
+          fullWidth
+          style={{ marginBottom: Spacing.base }}
+        />
 
         <SectionHeader title="AI ইনসাইট" />
         {[...aiSuggestions.finance, ...aiSuggestions.performance].map((item, i) => (
-          <View key={i} style={{ marginBottom: Spacing.sm }}>
+          <View key={i}>
             <AISuggestion title={item.title} message={item.message} />
           </View>
         ))}
@@ -178,13 +171,12 @@ export const Tier4Home = () => (
     <AppHeader showGreeting />
     <ScreenScroll>
       <HeroCard
-        title="এন্টারপ্রাইজ ড্যাশবোর্ড"
-        titleEmoji="📊"
-        metric={bnTaka(83500)}
+        title="📊 এন্টারপ্রাইজ ড্যাশবোর্ড"
+        metric={bnTaka(3500)}
         metricLabel="আজকের আয়"
         stats={[
-          { label: 'খোলা অভিযোগ', value: '১', emoji: '⚠️' },
-          { label: 'অর্ডার', value: '৪', emoji: '📦' },
+          { label: 'খোলা অভিযোগ', value: '১ ⚠️' },
+          { label: 'অর্ডার', value: '৪ 📦' },
         ]}
       />
 

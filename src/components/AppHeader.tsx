@@ -39,7 +39,7 @@ export const AppHeader = ({
           {showGreeting && user && (
             <T size="sm" color={colors.textSecondary}>{getGreeting()}, {user.name.split(' ')[0]}</T>
           )}
-          <T size="xl" weight="bold" numberOfLines={2}>
+          <T size="2xl" weight="bold" numberOfLines={2}>
             {title ?? user?.businessName ?? 'Antarious'}
           </T>
           {displaySubtitle && (
