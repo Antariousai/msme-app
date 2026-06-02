@@ -1,11 +1,10 @@
-import React, { useState, useMemo, useRef, useCallback } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   StyleSheet,
   Modal,
   Pressable,
   ScrollView,
-  SectionList,
   Linking,
   useWindowDimensions,
 } from 'react-native';
@@ -191,11 +190,73 @@ const scoreColor = (score: number) => {
   return Colors.textTertiary;
 };
 
-// ─── Mobile: vertical pipeline (single scroll) ─────────────────────────────────
+// ─── Mobile: accordion Kanban (5 categories, tap to expand) ──────────────────
 
-type PipelineSection = { stage: StageDef; data: Lead[] };
+const StageAccordion = ({
+  stage,
+  leads,
+  expanded,
+  onToggle,
+  onMovePress,
+  onMove,
+}: {
+  stage: StageDef;
+  leads: Lead[];
+  expanded: boolean;
+  onToggle: () => void;
+  onMovePress: (lead: Lead) => void;
+  onMove: (id: string, status: Lead['status']) => void;
+}) => (
+  <View style={[styles.accordionSection, { borderColor: stage.color + '44' }]}>
+    <Pressable
+      onPress={onToggle}
+      style={[
+        styles.accordionHeader,
+        { borderLeftColor: stage.color, backgroundColor: expanded ? stage.color + '14' : Colors.surface },
+      ]}
+    >
+      <View style={[styles.accordionIcon, { backgroundColor: stage.color + '22' }]}>
+        <T size="lg">{stage.emoji}</T>
+      </View>
+      <View style={{ flex: 1, minWidth: 0 }}>
+        <T size="md" weight="bold">{stage.label}</T>
+        <T size="xs" color={Colors.textSecondary}>
+          {leads.length === 0 ? 'কোনো লিড নেই' : `${toBn(leads.length)} লিড`}
+        </T>
+      </View>
+      <View style={[styles.accordionBadge, { backgroundColor: stage.color }]}>
+        <T size="sm" weight="bold" color="#fff">{toBn(leads.length)}</T>
+      </View>
+      <T size="lg" color={Colors.textTertiary} style={{ marginLeft: Spacing.sm }}>
+        {expanded ? '▾' : '▸'}
+      </T>
+    </Pressable>
 
-const MobilePipelineKanban = ({
+    {expanded && (
+      <View style={styles.accordionBody}>
+        {leads.length === 0 ? (
+          <View style={styles.emptySection}>
+            <T size="sm" color={Colors.textTertiary}>এই বিভাগে লিড নেই</T>
+            <T size="xs" color={Colors.textTertiary} style={{ marginTop: 4 }}>
+              অন্য বিভাগ থেকে «আরও» দিয়ে সরান
+            </T>
+          </View>
+        ) : (
+          leads.map((lead) => (
+            <MobileLeadCard
+              key={lead.id}
+              lead={lead}
+              onMovePress={onMovePress}
+              onMove={onMove}
+            />
+          ))
+        )}
+      </View>
+    )}
+  </View>
+);
+
+const MobileAccordionKanban = ({
   leads,
   onMovePress,
   onMove,
@@ -205,135 +266,43 @@ const MobilePipelineKanban = ({
   onMove: (id: string, status: Lead['status']) => void;
 }) => {
   const insets = useSafeAreaInsets();
-  const listRef = useRef<SectionList<Lead, PipelineSection>>(null);
-  const [jumpIndex, setJumpIndex] = useState(0);
+  const [expanded, setExpanded] = useState<Lead['status'] | null>(null);
 
-  const sections: PipelineSection[] = useMemo(
-    () => STAGES.map((stage) => ({
-      stage,
-      data: leads.filter((l) => l.status === stage.key),
-    })),
-    [leads],
-  );
-
-  const totalByStage = useMemo(() => {
-    const m: Record<string, number> = {};
-    STAGES.forEach((s) => { m[s.key] = leads.filter((l) => l.status === s.key).length; });
+  const leadsByStage = useMemo(() => {
+    const m = {} as Record<Lead['status'], Lead[]>;
+    STAGES.forEach((s) => { m[s.key] = leads.filter((l) => l.status === s.key); });
     return m;
   }, [leads]);
 
-  const scrollToStage = (index: number) => {
-    setJumpIndex(index);
-    listRef.current?.scrollToLocation({
-      sectionIndex: index,
-      itemIndex: 0,
-      viewOffset: 8,
-      animated: true,
-    });
+  const toggleStage = (key: Lead['status']) => {
+    setExpanded((prev) => (prev === key ? null : key));
   };
 
-  const renderSectionHeader = useCallback(({ section }: { section: PipelineSection }) => {
-    const { stage } = section;
-    const count = section.data.length;
-    return (
-      <View style={[styles.sectionHeader, { borderLeftColor: stage.color }]}>
-        <View style={[styles.sectionIcon, { backgroundColor: stage.color + '22' }]}>
-          <T size="lg">{stage.emoji}</T>
-        </View>
-        <View style={{ flex: 1 }}>
-          <T size="md" weight="bold">{stage.label}</T>
-          <T size="xs" color={Colors.textSecondary}>
-            {count === 0 ? 'কোনো লিড নেই' : `${toBn(count)} লিড`}
-          </T>
-        </View>
-        <View style={[styles.sectionCount, { backgroundColor: stage.color }]}>
-          <T size="sm" weight="bold" color="#fff">{toBn(count)}</T>
-        </View>
-      </View>
-    );
-  }, []);
-
-  const renderItem = useCallback(({ item }: { item: Lead }) => (
-    <MobileLeadCard lead={item} onMovePress={onMovePress} onMove={onMove} />
-  ), [onMovePress, onMove]);
-
-  const renderSectionFooter = useCallback(({ section }: { section: PipelineSection }) => {
-    if (section.data.length > 0) return <View style={{ height: Spacing.sm }} />;
-    return (
-      <View style={styles.emptySection}>
-        <T size="sm" color={Colors.textTertiary}>এখানে লিড নেই</T>
-        <T size="xs" color={Colors.textTertiary} style={{ marginTop: 4 }}>
-          অন্য স্তর থেকে «আরও» দিয়ে সরান
-        </T>
-      </View>
-    );
-  }, []);
-
   return (
-    <View style={styles.mobilePipeline}>
-      {/* Tap-to-jump pipeline strip */}
-      <View style={styles.pipelineStripWrap}>
-        <T size="xs" color={Colors.textTertiary} style={styles.pipelineHint}>
-          স্তরে যেতে ট্যাপ করুন · নিচে স্ক্রল করুন
-        </T>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.pipelineStrip}
-        >
-          {STAGES.map((stage, i) => {
-            const active = jumpIndex === i;
-            const count = totalByStage[stage.key];
-            return (
-              <Pressable
-                key={stage.key}
-                onPress={() => scrollToStage(i)}
-                style={[
-                  styles.pipelineStep,
-                  active && { backgroundColor: stage.color, borderColor: stage.color },
-                ]}
-              >
-                <T size="md">{stage.emoji}</T>
-                <T
-                  size="xs"
-                  weight="semibold"
-                  color={active ? '#fff' : Colors.textPrimary}
-                  numberOfLines={1}
-                  style={{ marginTop: 2, maxWidth: 56 }}
-                >
-                  {stage.label}
-                </T>
-                {count > 0 && (
-                  <View style={[
-                    styles.pipelineStepBadge,
-                    active ? { backgroundColor: 'rgba(255,255,255,0.35)' } : { backgroundColor: stage.color },
-                  ]}>
-                    <T size="xs" weight="bold" color="#fff">{toBn(count)}</T>
-                  </View>
-                )}
-              </Pressable>
-            );
-          })}
-        </ScrollView>
-      </View>
-
-      <SectionList
-        ref={listRef}
-        sections={sections}
-        keyExtractor={(item) => item.id}
-        renderItem={renderItem}
-        renderSectionHeader={renderSectionHeader}
-        renderSectionFooter={renderSectionFooter}
-        stickySectionHeadersEnabled
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{
-          paddingHorizontal: Spacing.base,
-          paddingBottom: TAB_BAR + insets.bottom + Spacing.xl,
-        }}
-        onScrollToIndexFailed={() => {}}
-        onViewableItemsChanged={undefined}
-      />
-    </View>
+    <ScrollView
+      style={styles.mobileAccordion}
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={{
+        padding: Spacing.base,
+        paddingBottom: TAB_BAR + insets.bottom + Spacing.xl,
+        gap: Spacing.sm,
+      }}
+    >
+      <T size="xs" color={Colors.textTertiary} style={{ textAlign: 'center', marginBottom: Spacing.xs }}>
+        বিভাগ ট্যাপ করুন · লিড দেখতে প্রসারিত করুন
+      </T>
+      {STAGES.map((stage) => (
+        <StageAccordion
+          key={stage.key}
+          stage={stage}
+          leads={leadsByStage[stage.key]}
+          expanded={expanded === stage.key}
+          onToggle={() => toggleStage(stage.key)}
+          onMovePress={onMovePress}
+          onMove={onMove}
+        />
+      ))}
+    </ScrollView>
   );
 };
 
@@ -443,7 +412,7 @@ const KanbanBoard = ({
       {isWide ? (
         <DesktopKanban leads={leads} onMovePress={setMoveLead} />
       ) : (
-        <MobilePipelineKanban
+        <MobileAccordionKanban
           leads={leads}
           onMovePress={setMoveLead}
           onMove={onMove}
@@ -500,7 +469,7 @@ export const LeadsScreen = () => {
       <View style={styles.toolbar}>
         <Row gap={Spacing.xs}>
           <Chip label="📋 তালিকা" active={view === 'list'} onPress={() => setView('list')} />
-          <Chip label="🗂 পাইপলাইন" active={view === 'kanban'} onPress={() => setView('kanban')} />
+          <Chip label="🗂 Kanban" active={view === 'kanban'} onPress={() => setView('kanban')} />
         </Row>
         <Btn label="➕ লিড" onPress={() => setModalVisible(true)} size="sm" />
       </View>
@@ -596,74 +565,44 @@ const styles = StyleSheet.create({
   },
   kanbanWrap: { flex: 1, minHeight: 0 },
 
-  mobilePipeline: { flex: 1 },
-  pipelineStripWrap: {
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
+  mobileAccordion: { flex: 1 },
+  accordionSection: {
+    borderRadius: Radius.lg,
+    borderWidth: 1,
+    overflow: 'hidden',
     backgroundColor: Colors.surface,
   },
-  pipelineHint: {
-    paddingHorizontal: Spacing.base,
-    paddingTop: Spacing.sm,
-    textAlign: 'center',
-  },
-  pipelineStrip: {
-    paddingHorizontal: Spacing.base,
-    paddingVertical: Spacing.sm,
-    gap: Spacing.xs,
-  },
-  pipelineStep: {
-    alignItems: 'center',
-    width: 72,
-    paddingVertical: Spacing.sm,
-    paddingHorizontal: Spacing.xs,
-    borderRadius: Radius.lg,
-    borderWidth: 1.5,
-    borderColor: Colors.border,
-    backgroundColor: Colors.bg,
-    marginRight: Spacing.xs,
-  },
-  pipelineStepBadge: {
-    marginTop: 4,
-    borderRadius: 999,
-    minWidth: 20,
-    height: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 5,
-  },
-
-  sectionHeader: {
+  accordionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.sm,
-    paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.sm,
-    marginTop: Spacing.sm,
-    backgroundColor: Colors.surface,
-    borderRadius: Radius.lg,
+    padding: Spacing.md,
     borderLeftWidth: 4,
-    ...StyleSheet.flatten({ shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 4, shadowOffset: { width: 0, height: 2 }, elevation: 1 }),
   },
-  sectionIcon: {
+  accordionIcon: {
     width: 44,
     height: 44,
     borderRadius: Radius.md,
     alignItems: 'center',
     justifyContent: 'center',
+    marginRight: Spacing.sm,
   },
-  sectionCount: {
-    minWidth: 32,
-    height: 32,
-    borderRadius: 16,
+  accordionBadge: {
+    minWidth: 28,
+    height: 28,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 8,
   },
+  accordionBody: {
+    paddingHorizontal: Spacing.sm,
+    paddingBottom: Spacing.md,
+    backgroundColor: Colors.bg,
+  },
   emptySection: {
     padding: Spacing.lg,
-    marginBottom: Spacing.sm,
-    backgroundColor: Colors.bg,
+    marginTop: Spacing.xs,
+    backgroundColor: Colors.surface,
     borderRadius: Radius.lg,
     alignItems: 'center',
   },
