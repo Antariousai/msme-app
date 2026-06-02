@@ -9,6 +9,8 @@ import { Spacing, Gradients, TierConfig, BrandStudioAddOn } from '../../theme';
 import { useTheme } from '../../theme/ThemeContext';
 import { useAuth } from '../../auth/AuthContext';
 import { getAccessibleFeatures } from '../../navigation/features';
+import { useFeatureNav } from '../../navigation/FeatureNavContext';
+import { CreditScoreSummaryCard } from './CreditScoreScreen';
 
 interface MoreScreenProps {
   onSelectTier: () => void;
@@ -17,6 +19,7 @@ interface MoreScreenProps {
 
 export const MoreScreen = ({ onSelectTier, onOpenBrandStudio }: MoreScreenProps) => {
   const { user, signOut } = useAuth();
+  const { openFeature } = useFeatureNav();
   const { colors, isDark, toggleMode } = useTheme();
   const [confirmSignOut, setConfirmSignOut] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
@@ -65,6 +68,8 @@ export const MoreScreen = ({ onSelectTier, onOpenBrandStudio }: MoreScreenProps)
             <TierBadge tier={user.tier} />
           </View>
         </Card>
+
+        <CreditScoreSummaryCard onPress={() => openFeature('creditScore')} />
 
         <Card style={{ marginBottom: Spacing.sm }}>
           <Row justify="space-between" fill>

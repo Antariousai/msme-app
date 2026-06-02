@@ -4,6 +4,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { AppHeader } from '../../components/AppHeader';
 import { T, Card, Row, ScreenScroll, SectionHeader, StatCard, StatusPill, Chip, AISuggestion, Btn } from '../../components/atoms';
 import { FeatureToolsSection } from '../../components/FeatureToolsSection';
+import { CreditScoreSummaryCard } from '../shared/CreditScoreScreen';
+import { useFeatureNav } from '../../navigation/FeatureNavContext';
 import { HeroCard } from '../../components/HeroCard';
 import { ScreenFrame } from '../../components/ScreenFrame';
 import { Colors, Spacing, Gradients } from '../../theme';
@@ -166,10 +168,13 @@ export const ComplaintsScreen = () => (
   </ScreenFrame>
 );
 
-export const Tier4Home = () => (
+export const Tier4Home = () => {
+  const { openFeature } = useFeatureNav();
+  return (
   <ScreenFrame>
     <AppHeader showGreeting />
     <ScreenScroll>
+      <CreditScoreSummaryCard onPress={() => openFeature('creditScore')} />
       <HeroCard
         title="📊 এন্টারপ্রাইজ ড্যাশবোর্ড"
         metric={bnTaka(3500)}
@@ -189,4 +194,5 @@ export const Tier4Home = () => (
       <FeatureToolsSection layout="grid" scope="all" />
     </ScreenScroll>
   </ScreenFrame>
-);
+  );
+};

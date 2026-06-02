@@ -8,6 +8,7 @@ import { OrdersScreen, WebsiteScreen } from '../screens/tier2/OrdersScreen';
 import { InventoryScreen, CourierScreen } from '../screens/tier2/InventoryScreen';
 import { LeadsScreen } from '../screens/tier3/LeadsScreen';
 import { DashboardScreen, ReportsScreen, ComplaintsScreen } from '../screens/tier4/DashboardScreen';
+import { CreditScoreScreen } from '../screens/shared/CreditScoreScreen';
 import { FEATURE_EMOJI, makeEmojiIcon } from '../icons/emoji';
 
 export type FeatureId =
@@ -22,7 +23,8 @@ export type FeatureId =
   | 'leads'
   | 'dashboard'
   | 'reports'
-  | 'complaints';
+  | 'complaints'
+  | 'creditScore';
 
 export type FeatureCategory =
   | 'accounting'
@@ -78,6 +80,16 @@ export const FEATURE_CATEGORY_META: Record<
 };
 
 export const FEATURES: FeatureDef[] = [
+  {
+    id: 'creditScore',
+    label: 'ক্রেডিট স্কোর',
+    subtitle: 'অ্যাকাউন্ট · PKSF রিপোর্ট',
+    category: 'accounting',
+    introducedIn: 0,
+    emoji: '🏦',
+    icon: makeEmojiIcon('🏦'),
+    component: CreditScoreScreen,
+  },
   {
     id: 'bookkeeping',
     label: 'হিসাব রক্ষা',

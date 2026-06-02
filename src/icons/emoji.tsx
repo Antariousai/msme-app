@@ -20,6 +20,7 @@ export const FEATURE_EMOJI: Record<FeatureId, string> = {
   dashboard: '📊',
   reports: '📋',
   complaints: '⚠️',
+  creditScore: '🏦',
 };
 
 export const NAV_EMOJI = {
