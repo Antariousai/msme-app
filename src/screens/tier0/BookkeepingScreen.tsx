@@ -45,7 +45,7 @@ export const Tier0Home = () => {
             flex
           />
           <Btn
-            label="➖ ব্যয় যোগ"
+            label="➖ খরচ যোগ"
             onPress={() => openFeature('bookkeeping')}
             variant="secondary"
             flex

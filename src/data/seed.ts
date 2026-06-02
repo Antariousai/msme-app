@@ -54,6 +54,7 @@ export interface Order {
   customer: string;
   phone: string;
   items: string;
+  category: string;
   amount: number;
   status: 'pending' | 'confirmed' | 'shipped' | 'delivered';
   source: 'facebook' | 'instagram' | 'website';
@@ -75,6 +76,7 @@ export interface InventoryItem {
   id: string;
   name: string;
   sku: string;
+  category: string;
   stock: number;
   minStock: number;
   unit: string;
@@ -133,10 +135,14 @@ export const replyTemplates: ReplyTemplate[] = [
   { id: 'rt4', trigger: 'স্টক / available', reply: 'জি, পণ্যটি স্টকে আছে। অর্ডার কনফার্ম করতে নাম, ঠিকানা ও মোবাইল নম্বর দিন।' },
 ];
 
+export const ORDER_CATEGORIES = ['পোশাক', 'অ্যাকসেসরিজ', 'হোম ডেকোর', 'ইলেকট্রনিক্স', 'অন্যান্য'] as const;
+
 export const seedOrders: Order[] = [
-  { id: 'ORD-1042', customer: 'সাবিনা আক্তার', phone: '01711223344', items: 'কটন কুর্তি x1', amount: 850, status: 'pending', source: 'facebook', date: '2026-05-27' },
-  { id: 'ORD-1041', customer: 'তানিয়া রহমান', phone: '01822334455', items: 'শাড়ি x2', amount: 3200, status: 'confirmed', source: 'instagram', date: '2026-05-26' },
-  { id: 'ORD-1040', customer: 'ফারহানা ইসলাম', phone: '01933445566', items: 'লাঞ্জ সেট x1', amount: 1200, status: 'shipped', source: 'website', date: '2026-05-25' },
+  { id: 'ORD-1042', customer: 'সাবিনা আক্তার', phone: '01711223344', items: 'কটন কুর্তি x1', category: 'পোশাক', amount: 850, status: 'pending', source: 'facebook', date: '2026-05-27' },
+  { id: 'ORD-1041', customer: 'তানিয়া রহমান', phone: '01822334455', items: 'শাড়ি x2', category: 'পোশাক', amount: 3200, status: 'confirmed', source: 'instagram', date: '2026-05-26' },
+  { id: 'ORD-1040', customer: 'ফারহানা ইসলাম', phone: '01933445566', items: 'লাঞ্জ সেট x1', category: 'পোশাক', amount: 1200, status: 'shipped', source: 'website', date: '2026-05-25' },
+  { id: 'ORD-1039', customer: 'মাহফুজা বেগম', phone: '01944556677', items: 'স্কার্ফ x3', category: 'অ্যাকসেসরিজ', amount: 600, status: 'delivered', source: 'facebook', date: '2026-05-24' },
+  { id: 'ORD-1038', customer: 'নাজমা খাতুন', phone: '01655667788', items: 'হ্যান্ডব্যাগ x1', category: 'অ্যাকসেসরিজ', amount: 1500, status: 'delivered', source: 'instagram', date: '2026-05-23' },
 ];
 
 export const seedLeads: Lead[] = [
@@ -146,11 +152,14 @@ export const seedLeads: Lead[] = [
   { id: 'L004', name: 'সোহেল রানা', phone: '01944556677', address: 'Boalia, Rajshahi', score: 34, source: 'Facebook', status: 'lost', lastContact: '১ সপ্তাহ আগে' },
 ];
 
+export const INVENTORY_CATEGORIES = ['পোশাক', 'অ্যাকসেসরিজ', 'হোম ডেকোর', 'ইলেকট্রনিক্স', 'অন্যান্য'] as const;
+
 export const seedInventory: InventoryItem[] = [
-  { id: 'i1', name: 'কটন কুর্তি', sku: 'KT-001', stock: 24, minStock: 10, unit: 'পিস', lastInflow: '২৫ মে' },
-  { id: 'i2', name: 'জামদানি শাড়ি', sku: 'SD-012', stock: 8, minStock: 5, unit: 'পিস', lastInflow: '২০ মে' },
-  { id: 'i3', name: 'লাঞ্জ সেট', sku: 'LZ-005', stock: 3, minStock: 8, unit: 'সেট', lastInflow: '১৫ মে' },
-  { id: 'i4', name: 'স্কার্ফ', sku: 'SC-003', stock: 45, minStock: 15, unit: 'পিস', lastInflow: '২২ মে' },
+  { id: 'i1', name: 'কটন কুর্তি', sku: 'KT-001', category: 'পোশাক', stock: 24, minStock: 10, unit: 'পিস', lastInflow: '২৫ মে' },
+  { id: 'i2', name: 'জামদানি শাড়ি', sku: 'SD-012', category: 'পোশাক', stock: 8, minStock: 5, unit: 'পিস', lastInflow: '২০ মে' },
+  { id: 'i3', name: 'লাঞ্জ সেট', sku: 'LZ-005', category: 'পোশাক', stock: 3, minStock: 8, unit: 'সেট', lastInflow: '১৫ মে' },
+  { id: 'i4', name: 'স্কার্ফ', sku: 'SC-003', category: 'অ্যাকসেসরিজ', stock: 45, minStock: 15, unit: 'পিস', lastInflow: '২২ মে' },
+  { id: 'i5', name: 'হ্যান্ডব্যাগ', sku: 'HB-007', category: 'অ্যাকসেসরিজ', stock: 12, minStock: 5, unit: 'পিস', lastInflow: '১৮ মে' },
 ];
 
 export const seedCouriers: CourierShipment[] = [

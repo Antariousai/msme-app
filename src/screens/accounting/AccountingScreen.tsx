@@ -101,7 +101,7 @@ export const AccountingScreen = () => {
 
         <Row gap={Spacing.base} style={{ marginBottom: Spacing.base }}>
           <Btn label="➕ আয় যোগ" onPress={() => openAdd('income')} variant="secondary" flex />
-          <Btn label="➕ ব্যয় যোগ" onPress={() => openAdd('expense')} variant="danger" flex />
+          <Btn label="➕ খরচ যোগ" onPress={() => openAdd('expense')} variant="danger" flex />
         </Row>
 
         {isFull && (
@@ -134,7 +134,7 @@ export const AccountingScreen = () => {
         <Pressable style={[styles.modalOverlay, { backgroundColor: colors.overlay }]} onPress={() => setModalVisible(false)}>
           <Pressable style={[styles.modalSheet, { backgroundColor: colors.surface }]} onPress={(e) => e.stopPropagation()}>
             <T size="lg" weight="bold" style={{ marginBottom: Spacing.base }}>
-              {formType === 'income' ? 'আয় যোগ করুন' : 'ব্যয় যোগ করুন'}
+              {formType === 'income' ? 'আয় যোগ করুন' : 'খরচ যোগ করুন'}
             </T>
             <Input label="পরিমাণ (৳)" value={amount} onChangeText={setAmount} keyboardType="numeric" placeholder="০" style={{ marginBottom: Spacing.md }} />
             <Input label="ক্যাটাগরি" value={category} onChangeText={setCategory} placeholder="যেমন: বিক্রয়, কাঁচামাল" style={{ marginBottom: Spacing.md }} />
