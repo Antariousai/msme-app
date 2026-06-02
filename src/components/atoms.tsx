@@ -157,7 +157,7 @@ export const Btn = ({
       onPress={onPress}
       disabled={disabled || loading}
       effect="lift"
-      rippleRadius={Radius.btn}
+      rippleColor={useGradient ? 'rgba(255,255,255,0.55)' : undefined}
       style={[boxStyle, style]}
     >
       {useGradient && (
