@@ -130,10 +130,10 @@ export const FEATURES: FeatureDef[] = [
   },
   {
     id: 'inventory',
-    label: 'ইনভেন্টরি',
+    label: 'পণ্য মজুদ',
     subtitle: 'স্টক ইনফ্লো/আউটফ্লো',
     category: 'operations',
-    introducedIn: 2,
+    introducedIn: 0,
     emoji: FEATURE_EMOJI.inventory,
     icon: makeEmojiIcon(FEATURE_EMOJI.inventory),
     component: InventoryScreen,
@@ -209,7 +209,7 @@ export function getAccessibleFeatures(tier: UserTier): FeatureDef[] {
 export function getPrimaryTabIds(tier: UserTier): FeatureId[] {
   switch (tier) {
     case 0:
-      return ['bookkeeping'];
+      return ['bookkeeping', 'inventory'];
     case 1:
       return ['bookkeeping', 'messages', 'comments'];
     case 2:
