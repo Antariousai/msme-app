@@ -30,17 +30,17 @@ export const AppHeader = ({
 
   return (
     <View style={{
-      paddingHorizontal: Spacing.lg,
+      paddingHorizontal: Spacing.base,
       paddingBottom: Spacing.sm,
       paddingTop: insets.top + Spacing.sm,
     }}>
       {/* Logo row */}
       <Row justify="space-between" align="center">
-        <Image
-          source={isDark ? LOGO_WHITE : LOGO_MAIN}
-          style={{ height: 28, width: 160 }}
-          resizeMode="contain"
-        />
+          <Image
+            source={isDark ? LOGO_WHITE : LOGO_MAIN}
+            style={{ height: 28, width: 120 }}
+            resizeMode="stretch"
+          />
         <Pressable
           onPress={onNotificationPress}
           style={{
