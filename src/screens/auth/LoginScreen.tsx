@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { View, StyleSheet, KeyboardAvoidingView, Platform, ScrollView, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../auth/AuthContext';
 import { T, Btn, Input, Card, Row } from '../../components/atoms';
@@ -38,11 +38,12 @@ export const LoginScreen = () => {
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
           <OceanGradient style={styles.hero}>
-            <View style={styles.logoWrap}>
-              <T size="3xl">💙</T>
-            </View>
-            <T size="3xl" weight="bold" align="center" color={Colors.textInverse}>Antarious</T>
-            <T size="sm" color="rgba(255,255,255,0.9)" align="center" style={{ marginTop: Spacing.xs }}>
+            <Image
+              source={require('../../../assets/logos/antarious-white.png')}
+              style={{ height: 40, width: 220 }}
+              resizeMode="contain"
+            />
+            <T size="sm" color="rgba(255,255,255,0.9)" align="center" style={{ marginTop: Spacing.sm }}>
               MSME Business Companion — Bangladesh
             </T>
           </OceanGradient>
@@ -113,15 +114,6 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: Radius['2xl'],
     borderBottomRightRadius: Radius['2xl'],
     marginBottom: Spacing.base,
-  },
-  logoWrap: {
-    width: 72,
-    height: 72,
-    borderRadius: Radius.lg,
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: Spacing.sm,
   },
   formCard: { marginHorizontal: Spacing.base, marginTop: -Spacing.xl },
   tierDot: { paddingHorizontal: Spacing.sm, paddingVertical: 4, borderRadius: Radius.full },

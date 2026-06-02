@@ -1,11 +1,14 @@
 import React from 'react';
-import { View, Pressable } from 'react-native';
+import { View, Pressable, Image } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { T, Row, Badge, TierBadge } from '../components/atoms';
-import { Spacing, Radius, Shadow, TierConfig } from '../theme';
+import { Spacing, Shadow, TierConfig } from '../theme';
 import { useTheme } from '../theme/ThemeContext';
 import { getGreeting } from '../utils/helpers';
 import { useAuth } from '../auth/AuthContext';
+
+const LOGO_MAIN  = require('../../assets/logos/antarious-main.png');
+const LOGO_WHITE = require('../../assets/logos/antarious-white.png');
 
 interface AppHeaderProps {
   title?: string;
@@ -21,7 +24,7 @@ export const AppHeader = ({
 }: AppHeaderProps) => {
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
   const tierTagline = user ? TierConfig[user.tier].tagline : undefined;
   const displaySubtitle = subtitle ?? (showGreeting && user ? tierTagline : undefined);
 
@@ -38,11 +41,18 @@ export const AppHeader = ({
       )}
       <Row justify="space-between" align="flex-start">
         <View style={{ flex: 1, minWidth: 0, paddingRight: Spacing.sm }}>
-          <T size="2xl" weight="bold" numberOfLines={2}>
-            {title ?? user?.businessName ?? 'Antarious'}
-          </T>
+          <Image
+            source={isDark ? LOGO_WHITE : LOGO_MAIN}
+            style={{ height: 28, width: 160 }}
+            resizeMode="contain"
+          />
+          {(title ?? user?.businessName) && (
+            <T size="sm" weight="semibold" style={{ marginTop: 4 }} numberOfLines={1}>
+              {title ?? user?.businessName}
+            </T>
+          )}
           {displaySubtitle && (
-            <T size="sm" color={colors.textSecondary} style={{ marginTop: 2 }}>{displaySubtitle}</T>
+            <T size="xs" color={colors.textSecondary} style={{ marginTop: 2 }}>{displaySubtitle}</T>
           )}
         </View>
         <Pressable
