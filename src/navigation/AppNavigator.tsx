@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, Modal } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth, UserTier } from '../auth/AuthContext';
@@ -14,12 +14,16 @@ import { Tier2Home } from '../screens/tier2/OrdersScreen';
 import { Tier3Home } from '../screens/tier3/LeadsScreen';
 import { Tier4Home } from '../screens/tier4/DashboardScreen';
 import { FeatureNavProvider } from './FeatureNavContext';
-import { getPrimaryTabIds, getFeatureById, FeatureId } from './features';
+import { getPrimaryTabIds, getFeatureById } from './features';
 import { T } from '../components/atoms';
-import { Colors, Spacing } from '../theme';
-import { HomeIcon, MoreIcon } from '../icons';
+import { Spacing } from '../theme';
+import { useTheme } from '../theme/ThemeContext';
+import { makeEmojiIcon, NAV_EMOJI } from '../icons/emoji';
+import { Pulse } from '../components/motion';
 
 const Tab = createBottomTabNavigator();
+const HomeIcon = makeEmojiIcon(NAV_EMOJI.home);
+const MoreIcon = makeEmojiIcon(NAV_EMOJI.more);
 
 const HOME_COMPONENTS: Record<UserTier, React.ComponentType> = {
   0: Tier0Home,
@@ -43,14 +47,30 @@ function makeMoreScreen(onSelectTier: () => void, onOpenBrandStudio: () => void)
   };
 }
 
+function buildNavTheme(mode: 'light' | 'dark', colors: ReturnType<typeof useTheme>['colors']) {
+  const base = mode === 'dark' ? DarkTheme : DefaultTheme;
+  return {
+    ...base,
+    colors: {
+      ...base.colors,
+      background: colors.bg,
+      card: colors.surface,
+      border: colors.border,
+      primary: colors.primary,
+      text: colors.textPrimary,
+    },
+  };
+}
+
 function MainTabs({ onSelectTier, onOpenBrandStudio }: { onSelectTier: () => void; onOpenBrandStudio: () => void }) {
   const { user } = useAuth();
   const insets = useSafeAreaInsets();
+  const { colors, mode } = useTheme();
   const tier = user?.tier ?? 0;
   const primaryIds = getPrimaryTabIds(tier);
   const HomeComponent = getHomeComponent(tier);
 
-  const tabScreens: { name: string; label: string; component: React.ComponentType; icon: React.ComponentType<{ size?: number; color?: string }> }[] = [
+  const tabScreens = [
     { name: 'Home', label: 'হোম', component: HomeComponent, icon: HomeIcon },
     ...primaryIds.map((id) => {
       const feat = getFeatureById(id)!;
@@ -61,17 +81,19 @@ function MainTabs({ onSelectTier, onOpenBrandStudio }: { onSelectTier: () => voi
 
   return (
     <Tab.Navigator
+      key={mode}
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: Colors.surface,
-          borderTopColor: Colors.border,
-          height: 56 + insets.bottom,
+          backgroundColor: colors.surface,
+          borderTopColor: colors.border,
+          borderTopWidth: 1,
+          height: 52 + insets.bottom,
           paddingBottom: insets.bottom,
           paddingTop: Spacing.xs,
         },
-        tabBarActiveTintColor: Colors.primary,
-        tabBarInactiveTintColor: Colors.textTertiary,
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.textTertiary,
         tabBarLabel: ({ focused, color, children }) => (
           <T size="xs" color={color} weight={focused ? 'semibold' : 'regular'}>{children}</T>
         ),
@@ -86,7 +108,15 @@ function MainTabs({ onSelectTier, onOpenBrandStudio }: { onSelectTier: () => voi
             component={tab.component}
             options={{
               tabBarLabel: tab.label,
-              tabBarIcon: ({ color, size }) => <Icon size={size} color={color} />,
+              tabBarIcon: ({ focused, size }) => (
+                focused ? (
+                  <Pulse active>
+                    <Icon size={size} />
+                  </Pulse>
+                ) : (
+                  <Icon size={size} />
+                )
+              ),
             }}
           />
         );
@@ -97,14 +127,16 @@ function MainTabs({ onSelectTier, onOpenBrandStudio }: { onSelectTier: () => voi
 
 export const AppNavigator = () => {
   const { user, loading } = useAuth();
+  const { colors, mode } = useTheme();
   const [showTierSelect, setShowTierSelect] = useState(false);
   const [showBrandStudio, setShowBrandStudio] = useState(false);
+  const navTheme = buildNavTheme(mode, colors);
 
   if (loading) {
     return (
-      <View style={styles.loading}>
-        <T size="lg" weight="bold" color={Colors.primary}>Antarious</T>
-        <T size="sm" color={Colors.textSecondary}>লোড হচ্ছে...</T>
+      <View style={[styles.loading, { backgroundColor: colors.bg }]}>
+        <T size="lg" weight="bold" color={colors.primary}>Antarious</T>
+        <T size="sm" color={colors.textSecondary}>লোড হচ্ছে...</T>
       </View>
     );
   }
@@ -115,7 +147,7 @@ export const AppNavigator = () => {
 
   return (
     <FeatureNavProvider>
-      <NavigationContainer>
+      <NavigationContainer theme={navTheme} key={mode}>
         <MainTabs
           onSelectTier={() => setShowTierSelect(true)}
           onOpenBrandStudio={() => setShowBrandStudio(true)}
@@ -136,7 +168,6 @@ export const AppNavigator = () => {
 const styles = StyleSheet.create({
   loading: {
     flex: 1,
-    backgroundColor: Colors.bg,
     alignItems: 'center',
     justifyContent: 'center',
     gap: Spacing.sm,

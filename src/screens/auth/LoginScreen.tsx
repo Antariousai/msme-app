@@ -3,8 +3,8 @@ import { View, StyleSheet, KeyboardAvoidingView, Platform, ScrollView } from 're
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../../auth/AuthContext';
 import { T, Btn, Input, Card, Row } from '../../components/atoms';
+import { OceanGradient } from '../../components/OceanGradient';
 import { Colors, Spacing, Radius, TierConfig } from '../../theme';
-import { AIIcon } from '../../icons';
 
 export const LoginScreen = () => {
   const { signIn } = useAuth();
@@ -37,17 +37,17 @@ export const LoginScreen = () => {
     <SafeAreaView style={styles.safe}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-          <View style={styles.hero}>
+          <OceanGradient style={styles.hero}>
             <View style={styles.logoWrap}>
-              <AIIcon size={32} color={Colors.textInverse} />
+              <T size="3xl">🌊</T>
             </View>
-            <T size="3xl" weight="bold" align="center">Antarious</T>
-            <T size="sm" color={Colors.textSecondary} align="center" style={{ marginTop: Spacing.xs }}>
+            <T size="3xl" weight="bold" align="center" color={Colors.textInverse}>Antarious</T>
+            <T size="sm" color="rgba(255,255,255,0.9)" align="center" style={{ marginTop: Spacing.xs }}>
               MSME Business Companion — Bangladesh
             </T>
-          </View>
+          </OceanGradient>
 
-          <Card style={styles.formCard}>
+          <Card style={styles.formCard} elevated>
             <T size="lg" weight="bold" style={{ marginBottom: Spacing.base }}>লগইন করুন</T>
             <Input
               label="মোবাইল নম্বর"
@@ -70,9 +70,10 @@ export const LoginScreen = () => {
             <Btn label="প্রবেশ করুন" onPress={handleLogin} fullWidth loading={loading} />
           </Card>
 
-          <T size="sm" color={Colors.textSecondary} weight="medium" style={{ marginTop: Spacing.xl, marginBottom: Spacing.sm }}>
+          <T size="sm" color={Colors.textSecondary} weight="medium" style={{ marginTop: Spacing.xl, marginBottom: Spacing.sm, paddingHorizontal: Spacing.base }}>
             ডেমো অ্যাকাউন্ট (PIN: 1234)
           </T>
+          <View style={{ paddingHorizontal: Spacing.base }}>
           {demoAccounts.map((acc) => {
             const tier = TierConfig[acc.tier as keyof typeof TierConfig];
             return (
@@ -94,6 +95,7 @@ export const LoginScreen = () => {
               </Card>
             );
           })}
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -102,13 +104,25 @@ export const LoginScreen = () => {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: Colors.bg },
-  container: { padding: Spacing.base, paddingBottom: Spacing['4xl'] },
-  hero: { alignItems: 'center', paddingVertical: Spacing['2xl'], gap: Spacing.sm },
+  container: { paddingBottom: Spacing['4xl'] },
+  hero: {
+    alignItems: 'center',
+    paddingVertical: Spacing['3xl'],
+    paddingHorizontal: Spacing.base,
+    gap: Spacing.sm,
+    borderBottomLeftRadius: Radius['2xl'],
+    borderBottomRightRadius: Radius['2xl'],
+    marginBottom: Spacing.base,
+  },
   logoWrap: {
-    width: 64, height: 64, borderRadius: Radius.xl,
-    backgroundColor: Colors.primary, alignItems: 'center', justifyContent: 'center',
+    width: 72,
+    height: 72,
+    borderRadius: Radius.lg,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: Spacing.sm,
   },
-  formCard: { marginTop: Spacing.base },
+  formCard: { marginHorizontal: Spacing.base, marginTop: -Spacing.xl },
   tierDot: { paddingHorizontal: Spacing.sm, paddingVertical: 4, borderRadius: Radius.full },
 });

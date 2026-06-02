@@ -11,8 +11,11 @@ import {
   FeatureCategory,
 } from '../navigation/features';
 import { T, Card, Row, SectionHeader } from './atoms';
-import { Colors, Spacing, Radius } from '../theme';
+import { Spacing, Radius } from '../theme';
+import { useTheme } from '../theme/ThemeContext';
+import { EmojiIcon } from '../icons/emoji';
 import { ChevronDownIcon, ChevronRightIcon } from '../icons';
+import { RipplePressable } from './motion';
 
 interface FeatureToolsSectionProps {
   defaultExpanded?: boolean;
@@ -25,6 +28,7 @@ export const FeatureToolsSection = ({
 }: FeatureToolsSectionProps) => {
   const { user } = useAuth();
   const { openFeature } = useFeatureNav();
+  const { colors } = useTheme();
   const [expanded, setExpanded] = useState(defaultExpanded);
 
   if (!user) return null;
@@ -40,13 +44,13 @@ export const FeatureToolsSection = ({
         <Row justify="space-between" style={{ marginBottom: expanded ? Spacing.sm : 0 }}>
           <View style={{ flex: 1, minWidth: 0 }}>
             <T size="md" weight="bold">{title}</T>
-            <T size="xs" color={Colors.textTertiary}>
+            <T size="xs" color={colors.textTertiary}>
               {hubFeatures.length}টি সরঞ্জাম · ব্যবসার প্রয়োজন অনুযায়ী
             </T>
           </View>
           {expanded
-            ? <ChevronDownIcon size={20} color={Colors.textTertiary} />
-            : <ChevronRightIcon size={20} color={Colors.textTertiary} />}
+            ? <ChevronDownIcon size={20} color={colors.textTertiary} />
+            : <ChevronRightIcon size={20} color={colors.textTertiary} />}
         </Row>
       </Pressable>
 
@@ -71,9 +75,9 @@ export const FeatureToolsSection = ({
                 paddingHorizontal: Spacing.md,
                 paddingVertical: Spacing.sm,
                 borderRadius: Radius.full,
-                backgroundColor: Colors.bgDark,
+                backgroundColor: colors.bgDark,
               }}>
-                <T size="xs" color={Colors.primary} weight="semibold">+{hubFeatures.length - 4} আরও</T>
+                <T size="xs" color={colors.primary} weight="semibold">+{hubFeatures.length - 4} আরও</T>
               </View>
             </Pressable>
           )}
@@ -94,13 +98,14 @@ const CategoryGroup = ({
   onOpen: (id: FeatureDef['id']) => void;
   compact?: boolean;
 }) => {
+  const { colors } = useTheme();
   const meta = FEATURE_CATEGORY_META[category];
   return (
     <View style={{ marginTop: Spacing.sm }}>
-      <T size="xs" color={Colors.textSecondary} weight="semibold" style={{ marginBottom: 2 }}>
+      <T size="xs" color={colors.textSecondary} weight="semibold" style={{ marginBottom: 2 }}>
         {meta.title}
       </T>
-      <T size="xs" color={Colors.textTertiary} style={{ marginBottom: Spacing.xs }}>
+      <T size="xs" color={colors.textTertiary} style={{ marginBottom: Spacing.xs }}>
         {meta.description}
       </T>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.sm }}>
@@ -121,9 +126,9 @@ const FeatureChip = ({
   onPress: () => void;
   compact?: boolean;
 }) => {
-  const Icon = feature.icon;
+  const { colors } = useTheme();
   return (
-    <Pressable onPress={onPress}>
+    <RipplePressable onPress={onPress}>
       <View style={{
         flexDirection: 'row',
         alignItems: 'center',
@@ -131,14 +136,14 @@ const FeatureChip = ({
         paddingHorizontal: compact ? Spacing.md : Spacing.base,
         paddingVertical: compact ? Spacing.sm : Spacing.md,
         borderRadius: Radius.lg,
-        backgroundColor: Colors.surface,
+        backgroundColor: colors.surface,
         borderWidth: 1,
-        borderColor: Colors.border,
+        borderColor: colors.border,
       }}>
-        <Icon size={compact ? 16 : 18} color={Colors.secondary} />
+        <EmojiIcon emoji={feature.emoji} size={compact ? 16 : 18} />
         <T size={compact ? 'xs' : 'sm'} weight="medium">{feature.label}</T>
       </View>
-    </Pressable>
+    </RipplePressable>
   );
 };
 
@@ -146,6 +151,7 @@ const FeatureChip = ({
 export const FeatureLauncherList = () => {
   const { user } = useAuth();
   const { openFeature, tabFeatureIds } = useFeatureNav();
+  const { colors } = useTheme();
 
   if (!user) return null;
 
@@ -158,23 +164,22 @@ export const FeatureLauncherList = () => {
         return (
           <View key={category} style={{ marginBottom: Spacing.base }}>
             <SectionHeader title={meta.title} />
-            <T size="xs" color={Colors.textTertiary} style={{ marginBottom: Spacing.sm, marginTop: -Spacing.xs }}>
+            <T size="xs" color={colors.textTertiary} style={{ marginBottom: Spacing.sm, marginTop: -Spacing.xs }}>
               {meta.description}
             </T>
             {features.map((f) => {
               const inTab = tabFeatureIds.includes(f.id);
-              const Icon = f.icon;
               return (
                 <Card key={f.id} onPress={() => openFeature(f.id)} style={{ marginBottom: Spacing.sm }} padding={Spacing.md}>
                   <Row justify="space-between" align="center" fill>
                     <Row gap={Spacing.sm} style={{ flex: 1, minWidth: 0 }}>
-                      <Icon size={20} color={Colors.secondary} />
+                      <EmojiIcon emoji={f.emoji} size={20} />
                       <View style={{ flex: 1, minWidth: 0 }}>
                         <T size="sm" weight="semibold" numberOfLines={1}>{f.label}</T>
-                        <T size="xs" color={Colors.textTertiary} numberOfLines={2}>{f.subtitle}</T>
+                        <T size="xs" color={colors.textTertiary} numberOfLines={2}>{f.subtitle}</T>
                       </View>
                     </Row>
-                    <T size="xs" color={inTab ? Colors.accent : Colors.textTertiary} style={{ flexShrink: 0, marginLeft: Spacing.sm }}>
+                    <T size="xs" color={inTab ? colors.accent : colors.textTertiary} style={{ flexShrink: 0, marginLeft: Spacing.sm }}>
                       {inTab ? 'ট্যাব' : 'খুলুন'}
                     </T>
                   </Row>

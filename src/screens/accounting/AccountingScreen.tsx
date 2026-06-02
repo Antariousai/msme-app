@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { View, StyleSheet, Modal, Pressable } from 'react-native';
 import { AppHeader } from '../../components/AppHeader';
 import { T, Card, Row, Btn, ScreenScroll, StatCard, Input, BtnRow, Chip } from '../../components/atoms';
+import { ScreenFrame } from '../../components/ScreenFrame';
 import { Colors, Spacing, Radius } from '../../theme';
-import { PlusIcon, ArrowUpIcon, ArrowDownIcon } from '../../icons';
+import { useTheme } from '../../theme/ThemeContext';
 import { seedTransactions, seedSimpleStock, Transaction, SimpleStockItem, TransactionType } from '../../data/seed';
 import { bnTaka, generateId } from '../../utils/helpers';
 import { useAuth } from '../../auth/AuthContext';
@@ -23,6 +24,7 @@ const VIEW_TABS: { id: AccountView; label: string }[] = [
 
 export const AccountingScreen = () => {
   const { user } = useAuth();
+  const { colors } = useTheme();
   const tier = user?.tier ?? 0;
   const isFull = tier >= 1;
 
@@ -80,21 +82,21 @@ export const AccountingScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <ScreenFrame>
       <AppHeader title="হিসাব রক্ষা" subtitle={isFull ? 'হিসাব · জার্নাল · বিশ্লেষণ' : 'আয় ও ব্যয় লিখুন'} />
       <ScreenScroll>
         <Row gap={Spacing.sm} style={{ marginBottom: Spacing.sm }}>
-          <StatCard label="মোট আয়" value={bnTaka(income)} color={Colors.success} icon={<ArrowUpIcon size={16} color={Colors.success} />} />
-          <StatCard label="মোট ব্যয়" value={bnTaka(expense)} color={Colors.error} icon={<ArrowDownIcon size={16} color={Colors.error} />} />
+          <StatCard label="মোট আয়" value={bnTaka(income)} color={colors.income} icon={<T>📈</T>} />
+          <StatCard label="মোট ব্যয়" value={bnTaka(expense)} color={colors.expense} icon={<T>📉</T>} />
         </Row>
-        <Card style={{ marginBottom: Spacing.base, backgroundColor: profit >= 0 ? Colors.successLight : Colors.errorLight }}>
-          <T size="sm" color={Colors.textSecondary}>নিট লাভ</T>
-          <T size="2xl" weight="bold" color={profit >= 0 ? Colors.success : Colors.error}>{bnTaka(profit)}</T>
+        <Card style={{ marginBottom: Spacing.base, backgroundColor: profit >= 0 ? colors.successLight : colors.errorLight }}>
+          <T size="sm" color={colors.textSecondary}>নিট লাভ</T>
+          <T size="2xl" weight="bold" color={profit >= 0 ? colors.success : colors.error}>{bnTaka(profit)}</T>
         </Card>
 
         <BtnRow style={{ marginBottom: Spacing.base }}>
-          <Btn label="আয় যোগ" onPress={() => openAdd('income')} variant="secondary" flex icon={<PlusIcon size={16} color={Colors.textInverse} />} />
-          <Btn label="ব্যয় যোগ" onPress={() => openAdd('expense')} variant="danger" flex icon={<PlusIcon size={16} color={Colors.textInverse} />} />
+          <Btn label="আয় যোগ" onPress={() => openAdd('income')} variant="secondary" flex icon={<T color={colors.textInverse}>➕</T>} />
+          <Btn label="ব্যয় যোগ" onPress={() => openAdd('expense')} variant="danger" flex icon={<T color={colors.textInverse}>➕</T>} />
         </BtnRow>
 
         {isFull && (
@@ -124,8 +126,8 @@ export const AccountingScreen = () => {
       </ScreenScroll>
 
       <Modal visible={modalVisible} transparent animationType="slide">
-        <Pressable style={styles.modalOverlay} onPress={() => setModalVisible(false)}>
-          <Pressable style={styles.modalSheet} onPress={(e) => e.stopPropagation()}>
+        <Pressable style={[styles.modalOverlay, { backgroundColor: colors.overlay }]} onPress={() => setModalVisible(false)}>
+          <Pressable style={[styles.modalSheet, { backgroundColor: colors.surface }]} onPress={(e) => e.stopPropagation()}>
             <T size="lg" weight="bold" style={{ marginBottom: Spacing.base }}>
               {formType === 'income' ? 'আয় যোগ করুন' : 'ব্যয় যোগ করুন'}
             </T>
@@ -136,12 +138,11 @@ export const AccountingScreen = () => {
           </Pressable>
         </Pressable>
       </Modal>
-    </View>
+    </ScreenFrame>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.bg },
-  modalOverlay: { flex: 1, backgroundColor: Colors.overlay, justifyContent: 'flex-end' },
-  modalSheet: { backgroundColor: Colors.surface, borderTopLeftRadius: Radius['2xl'], borderTopRightRadius: Radius['2xl'], padding: Spacing.xl },
+  modalOverlay: { flex: 1, justifyContent: 'flex-end' },
+  modalSheet: { borderTopLeftRadius: Radius['2xl'], borderTopRightRadius: Radius['2xl'], padding: Spacing.xl },
 });

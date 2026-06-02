@@ -4,7 +4,18 @@ import {
   ActivityIndicator, ScrollView, TextInput, Pressable, StyleProp,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Colors, Spacing, Radius, Shadow, Typography } from '../theme';
+import { Spacing, Radius, Shadow, Typography } from '../theme';
+import { useTheme } from '../theme/ThemeContext';
+import { RipplePressable, PopIn } from './motion';
+
+type TextWeight = 'regular' | 'medium' | 'semibold' | 'bold';
+
+const fontForWeight = (_weight: TextWeight = 'regular') => Typography.fontFamily.regular;
+
+const weightToNumeric = (weight: TextWeight = 'regular') => {
+  const map = { regular: '400', medium: '500', semibold: '600', bold: '700' };
+  return map[weight] as TextStyle['fontWeight'];
+};
 
 // ─── Text ────────────────────────────────────────────────────────────────────
 
@@ -12,26 +23,28 @@ interface TProps {
   children: React.ReactNode;
   size?: keyof typeof Typography.size;
   color?: string;
-  weight?: 'regular' | 'medium' | 'semibold' | 'bold';
+  weight?: TextWeight;
   align?: 'left' | 'center' | 'right';
   style?: TextStyle;
   numberOfLines?: number;
 }
 
 export const T = ({
-  children, size = 'base', color = Colors.textPrimary,
+  children, size = 'base', color,
   weight = 'regular', align = 'left', style, numberOfLines,
 }: TProps) => {
-  const fontWeightMap = { regular: '400', medium: '500', semibold: '600', bold: '700' };
+  const { colors } = useTheme();
+  const textColor = color ?? colors.textPrimary;
   return (
     <Text
       numberOfLines={numberOfLines}
       style={[{
+        fontFamily: fontForWeight(weight),
         fontSize: Typography.size[size],
-        color,
-        fontWeight: fontWeightMap[weight] as TextStyle['fontWeight'],
+        color: textColor,
+        fontWeight: weightToNumeric(weight),
         textAlign: align,
-        lineHeight: Typography.size[size] * 1.5,
+        lineHeight: Typography.size[size] * Typography.lineHeight.normal,
       }, style]}
     >
       {children}
@@ -50,17 +63,21 @@ interface CardProps {
 }
 
 export const Card = ({ children, style, onPress, elevated = false, padding = Spacing.base }: CardProps) => {
+  const { colors } = useTheme();
   const baseStyle: ViewStyle = {
-    backgroundColor: Colors.surface,
+    backgroundColor: colors.surface,
     borderRadius: Radius.lg,
     padding,
+    borderWidth: 1,
+    borderColor: colors.borderLight,
+    overflow: 'hidden',
     ...(elevated ? Shadow.md : Shadow.sm),
   };
   if (onPress) {
     return (
-      <Pressable onPress={onPress} style={({ pressed }) => [baseStyle, pressed && { opacity: 0.85 }, style]}>
+      <RipplePressable onPress={onPress} style={[baseStyle, style]}>
         {children}
-      </Pressable>
+      </RipplePressable>
     );
   }
   return <View style={[baseStyle, style]}>{children}</View>;
@@ -86,27 +103,28 @@ export const Btn = ({
   label, onPress, variant = 'primary', size = 'md',
   fullWidth = false, flex = false, loading = false, disabled = false, icon, style,
 }: BtnProps) => {
-  const heights = { sm: 36, md: 46, lg: 54 };
-  const fontSizes = { sm: Typography.size.sm, md: Typography.size.base, lg: Typography.size.md };
+  const { colors } = useTheme();
+  const heights = { sm: 32, md: 40, lg: 48 };
 
   const variantStyles: Record<string, { bg: string; text: string; border?: string }> = {
-    primary: { bg: Colors.primary, text: Colors.textInverse },
-    secondary: { bg: Colors.secondary, text: Colors.textInverse },
-    outline: { bg: 'transparent', text: Colors.primary, border: Colors.primary },
-    ghost: { bg: Colors.bgDark, text: Colors.textPrimary },
-    danger: { bg: Colors.error, text: Colors.textInverse },
+    primary: { bg: colors.primary, text: colors.textInverse },
+    secondary: { bg: colors.secondary, text: colors.textInverse },
+    outline: { bg: 'transparent', text: colors.primary, border: colors.primary },
+    ghost: { bg: colors.chip, text: colors.textPrimary },
+    danger: { bg: colors.expense, text: colors.textInverse },
   };
 
   const vs = variantStyles[variant];
 
   return (
-    <Pressable
+    <RipplePressable
       onPress={onPress}
       disabled={disabled || loading}
-      style={({ pressed }) => [{
+      bounce
+      style={[{
         height: heights[size],
-        paddingHorizontal: size === 'sm' ? Spacing.md : Spacing.xl,
-        borderRadius: Radius.md,
+        paddingHorizontal: size === 'sm' ? Spacing.md : Spacing.lg,
+        borderRadius: Radius.lg,
         backgroundColor: vs.bg,
         borderWidth: vs.border ? 1.5 : 0,
         borderColor: vs.border,
@@ -116,7 +134,7 @@ export const Btn = ({
         gap: Spacing.xs,
         ...(flex && { flex: 1, minWidth: 0, alignSelf: 'stretch' }),
         ...(fullWidth && !flex && { width: '100%' }),
-        opacity: disabled ? 0.5 : pressed ? 0.85 : 1,
+        opacity: disabled ? 0.5 : 1,
       }, style]}
     >
       {loading ? (
@@ -129,7 +147,7 @@ export const Btn = ({
           </T>
         </>
       )}
-    </Pressable>
+    </RipplePressable>
   );
 };
 
@@ -143,22 +161,24 @@ interface ChipProps {
   active?: boolean;
 }
 
-export const Chip = ({ label, color, bg, onPress, active = false }: ChipProps) => (
-  <Pressable
-    onPress={onPress}
-    style={({ pressed }) => [{
-      paddingHorizontal: Spacing.md,
-      paddingVertical: Spacing.xs,
-      borderRadius: Radius.full,
-      backgroundColor: active ? (bg ?? Colors.primary) : Colors.bgDark,
-      opacity: pressed ? 0.8 : 1,
-    }]}
-  >
-    <T size="sm" color={active ? (color ?? Colors.textInverse) : Colors.textSecondary} weight="medium">
-      {label}
-    </T>
-  </Pressable>
-);
+export const Chip = ({ label, color, bg, onPress, active = false }: ChipProps) => {
+  const { colors } = useTheme();
+  return (
+    <RipplePressable
+      onPress={onPress}
+      style={{
+        paddingHorizontal: Spacing.md,
+        paddingVertical: Spacing.xs,
+        borderRadius: Radius.full,
+        backgroundColor: active ? (bg ?? colors.primary) : colors.chip,
+      }}
+    >
+      <T size="sm" color={active ? (color ?? colors.textInverse) : colors.textSecondary} weight="medium">
+        {label}
+      </T>
+    </RipplePressable>
+  );
+};
 
 // ─── Row ─────────────────────────────────────────────────────────────────────
 
@@ -197,9 +217,12 @@ export const BtnRow = ({ children, style }: { children: React.ReactNode; style?:
 
 // ─── Divider ─────────────────────────────────────────────────────────────────
 
-export const Divider = ({ style }: { style?: ViewStyle }) => (
-  <View style={[{ height: 1, backgroundColor: Colors.border, marginVertical: Spacing.sm }, style]}/>
-);
+export const Divider = ({ style }: { style?: ViewStyle }) => {
+  const { colors } = useTheme();
+  return (
+    <View style={[{ height: 1, backgroundColor: colors.border, marginVertical: Spacing.sm }, style]}/>
+  );
+};
 
 // ─── Badge ───────────────────────────────────────────────────────────────────
 
@@ -209,11 +232,13 @@ interface BadgeProps {
   size?: number;
 }
 
-export const Badge = ({ count, color = Colors.error, size = 18 }: BadgeProps) => {
+export const Badge = ({ count, color, size = 18 }: BadgeProps) => {
+  const { colors } = useTheme();
+  const badgeColor = color ?? colors.error;
   if (!count || count === 0) return null;
   return (
     <View style={{
-      backgroundColor: color,
+      backgroundColor: badgeColor,
       borderRadius: Radius.full,
       minWidth: size,
       height: size,
@@ -221,7 +246,7 @@ export const Badge = ({ count, color = Colors.error, size = 18 }: BadgeProps) =>
       justifyContent: 'center',
       paddingHorizontal: 4,
     }}>
-      <T size="xs" color={Colors.textInverse} weight="bold">{count > 99 ? '99+' : String(count)}</T>
+      <T size="xs" color={colors.textInverse} weight="bold">{count > 99 ? '99+' : String(count)}</T>
     </View>
   );
 };
@@ -234,16 +259,19 @@ interface SectionHeaderProps {
   onAction?: () => void;
 }
 
-export const SectionHeader = ({ title, action, onAction }: SectionHeaderProps) => (
-  <Row justify="space-between" style={{ marginBottom: Spacing.sm }}>
-    <T size="md" weight="bold">{title}</T>
-    {action && onAction && (
-      <Pressable onPress={onAction}>
-        <T size="sm" color={Colors.primary} weight="medium">{action}</T>
-      </Pressable>
-    )}
-  </Row>
-);
+export const SectionHeader = ({ title, action, onAction }: SectionHeaderProps) => {
+  const { colors } = useTheme();
+  return (
+    <Row justify="space-between" style={{ marginBottom: Spacing.sm }}>
+      <T size="md" weight="bold">{title}</T>
+      {action && onAction && (
+        <Pressable onPress={onAction}>
+          <T size="sm" color={colors.primary} weight="medium">{action}</T>
+        </Pressable>
+      )}
+    </Row>
+  );
+};
 
 // ─── Stat Card ───────────────────────────────────────────────────────────────
 
@@ -259,26 +287,30 @@ interface StatCardProps {
 }
 
 export const StatCard = ({
-  label, value, subtitle, color = Colors.primary, icon, trend, trendValue, style,
-}: StatCardProps) => (
+  label, value, subtitle, color, icon, trend, trendValue, style,
+}: StatCardProps) => {
+  const { colors } = useTheme();
+  const accent = color ?? colors.primary;
+  return (
   <Card style={[{ flex: 1 }, style]}>
     <Row justify="space-between" align="flex-start" style={{ marginBottom: Spacing.sm }}>
-      <T size="sm" color={Colors.textSecondary}>{label}</T>
+      <T size="sm" color={colors.textSecondary}>{label}</T>
       {icon && <View style={{ opacity: 0.7 }}>{icon}</View>}
     </Row>
-    <T size="2xl" weight="bold" color={color}>{value}</T>
+    <T size="2xl" weight="bold" color={accent}>{value}</T>
     {(subtitle || (trend && trendValue)) && (
       <Row style={{ marginTop: Spacing.xs }} gap={Spacing.xs}>
         {trend && trendValue && (
-          <T size="xs" color={trend === 'up' ? Colors.success : trend === 'down' ? Colors.error : Colors.textSecondary} weight="medium">
+          <T size="xs" color={trend === 'up' ? colors.success : trend === 'down' ? colors.error : colors.textSecondary} weight="medium">
             {trend === 'up' ? '+' : trend === 'down' ? '-' : ''}{trendValue}
           </T>
         )}
-        {subtitle && <T size="xs" color={Colors.textTertiary}>{subtitle}</T>}
+        {subtitle && <T size="xs" color={colors.textTertiary}>{subtitle}</T>}
       </Row>
     )}
   </Card>
-);
+  );
+};
 
 // ─── Input ───────────────────────────────────────────────────────────────────
 
@@ -299,19 +331,21 @@ export const Input = ({
   label, placeholder, value, onChangeText,
   secureTextEntry = false, keyboardType = 'default',
   multiline = false, numberOfLines = 1, icon, style,
-}: InputProps) => (
+}: InputProps) => {
+  const { colors } = useTheme();
+  return (
   <View style={[{ gap: Spacing.xs }, style]}>
-    {label && <T size="sm" weight="medium" color={Colors.textSecondary}>{label}</T>}
+    {label && <T size="sm" weight="medium" color={colors.textSecondary}>{label}</T>}
     <View style={{
       flexDirection: 'row',
       alignItems: multiline ? 'flex-start' : 'center',
-      backgroundColor: Colors.bgDark,
-      borderRadius: Radius.md,
+      backgroundColor: colors.chip,
+      borderRadius: Radius.lg,
       borderWidth: 1.5,
-      borderColor: Colors.border,
+      borderColor: colors.border,
       paddingHorizontal: Spacing.md,
       paddingVertical: multiline ? Spacing.sm : 0,
-      minHeight: multiline ? numberOfLines * 24 + Spacing.base : 48,
+      minHeight: multiline ? numberOfLines * 24 + Spacing.base : 44,
       gap: Spacing.sm,
     }}>
       {icon && <View style={{ paddingTop: multiline ? 2 : 0 }}>{icon}</View>}
@@ -319,21 +353,23 @@ export const Input = ({
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
-        placeholderTextColor={Colors.textTertiary}
+        placeholderTextColor={colors.textTertiary}
         secureTextEntry={secureTextEntry}
         keyboardType={keyboardType}
         multiline={multiline}
         numberOfLines={numberOfLines}
         style={{
           flex: 1,
+          fontFamily: Typography.fontFamily.regular,
           fontSize: Typography.size.base,
-          color: Colors.textPrimary,
+          color: colors.textPrimary,
           paddingVertical: multiline ? 0 : 0,
         }}
       />
     </View>
   </View>
-);
+  );
+};
 
 // ─── Empty State ─────────────────────────────────────────────────────────────
 
@@ -348,8 +384,8 @@ interface EmptyStateProps {
 export const EmptyState = ({ icon, title, subtitle, action, onAction }: EmptyStateProps) => (
   <View style={{ alignItems: 'center', paddingVertical: Spacing['3xl'], gap: Spacing.md }}>
     {icon && <View style={{ opacity: 0.4 }}>{icon}</View>}
-    <T size="md" weight="semibold" color={Colors.textSecondary} align="center">{title}</T>
-    {subtitle && <T size="sm" color={Colors.textTertiary} align="center">{subtitle}</T>}
+    <T size="md" weight="semibold" align="center">{title}</T>
+    {subtitle && <T size="sm" align="center">{subtitle}</T>}
     {action && onAction && <Btn label={action} onPress={onAction} variant="outline" size="sm"/>}
   </View>
 );
@@ -362,14 +398,15 @@ interface StatusPillProps {
 }
 
 export const StatusPill = ({ label, type = 'neutral' }: StatusPillProps) => {
-  const colors = {
-    success: { bg: Colors.successLight, text: Colors.success },
-    warning: { bg: Colors.warningLight, text: Colors.warning },
-    error: { bg: Colors.errorLight, text: Colors.error },
-    info: { bg: '#E0F2FE', text: Colors.accent },
-    neutral: { bg: Colors.bgDark, text: Colors.textSecondary },
+  const { colors } = useTheme();
+  const palette = {
+    success: { bg: colors.successLight, text: colors.success },
+    warning: { bg: colors.warningLight, text: colors.warning },
+    error: { bg: colors.errorLight, text: colors.error },
+    info: { bg: colors.chip, text: colors.ai },
+    neutral: { bg: colors.bgDark, text: colors.textSecondary },
   };
-  const c = colors[type];
+  const c = palette[type];
   return (
     <View style={{ paddingHorizontal: Spacing.sm, paddingVertical: 3, borderRadius: Radius.full, backgroundColor: c.bg }}>
       <T size="xs" color={c.text} weight="semibold">{label}</T>
@@ -388,24 +425,27 @@ const tierLabels: Record<number, string> = {
   0: 'অফলাইন', 1: 'স্টার্টার', 2: 'গ্রোথ', 3: 'প্রো', 4: 'এন্টারপ্রাইজ',
 };
 
-const tierColors: Record<number, string> = {
-  0: Colors.tier0, 1: Colors.tier1, 2: Colors.tier2, 3: Colors.tier3, 4: Colors.tier4,
-};
-
-export const TierBadge = ({ tier, compact = false }: TierBadgeProps) => (
+export const TierBadge = ({ tier, compact = false }: TierBadgeProps) => {
+  const { colors } = useTheme();
+  const tierColors: Record<number, string> = {
+    0: colors.tier0, 1: colors.tier1, 2: colors.tier2, 3: colors.tier3, 4: colors.tier4,
+  };
+  const tc = tierColors[tier];
+  return (
   <View style={{
     paddingHorizontal: compact ? Spacing.sm : Spacing.md,
     paddingVertical: compact ? 2 : Spacing.xs,
     borderRadius: Radius.full,
-    backgroundColor: tierColors[tier] + '22',
+    backgroundColor: tc + '22',
     borderWidth: 1,
-    borderColor: tierColors[tier] + '44',
+    borderColor: tc + '44',
   }}>
-    <T size="xs" color={tierColors[tier]} weight="bold">
+    <T size="xs" color={tc} weight="bold">
       {compact ? `T${tier}` : `টায়ার ${tier} — ${tierLabels[tier]}`}
     </T>
   </View>
-);
+  );
+};
 
 // ─── Feature Lock ────────────────────────────────────────────────────────────
 
@@ -417,6 +457,10 @@ interface FeatureLockProps {
 }
 
 export const FeatureLock = ({ requiredTier, currentTier, onUpgrade, children }: FeatureLockProps) => {
+  const { colors } = useTheme();
+  const tierColors: Record<number, string> = {
+    0: colors.tier0, 1: colors.tier1, 2: colors.tier2, 3: colors.tier3, 4: colors.tier4,
+  };
   if (currentTier >= requiredTier) return <>{children}</>;
   return (
     <View style={{ opacity: 0.5, position: 'relative' }}>
@@ -425,14 +469,14 @@ export const FeatureLock = ({ requiredTier, currentTier, onUpgrade, children }: 
         onPress={onUpgrade}
         style={{
           position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-          backgroundColor: Colors.overlay,
+          backgroundColor: colors.overlay,
           borderRadius: Radius.lg,
           alignItems: 'center',
           justifyContent: 'center',
           gap: Spacing.sm,
         }}
       >
-        <T size="sm" color={Colors.textInverse} weight="semibold" align="center">
+        <T size="sm" color={colors.textInverse} weight="semibold" align="center">
           টায়ার {requiredTier} প্রয়োজন
         </T>
         <View style={{
@@ -441,7 +485,7 @@ export const FeatureLock = ({ requiredTier, currentTier, onUpgrade, children }: 
           paddingVertical: Spacing.xs,
           borderRadius: Radius.full,
         }}>
-          <T size="xs" color={Colors.textInverse} weight="bold">আপগ্রেড করুন</T>
+          <T size="xs" color={colors.textInverse} weight="bold">আপগ্রেড করুন</T>
         </View>
       </Pressable>
     </View>
@@ -458,7 +502,7 @@ interface ScreenScrollProps {
 
 export const ScreenScroll = ({ children, style, contentPadding = true }: ScreenScrollProps) => {
   const insets = useSafeAreaInsets();
-  const tabBarClearance = 72;
+  const tabBarClearance = 68;
 
   return (
     <ScrollView
@@ -466,12 +510,12 @@ export const ScreenScroll = ({ children, style, contentPadding = true }: ScreenS
       contentContainerStyle={[
         contentPadding && {
           padding: Spacing.base,
-          paddingBottom: tabBarClearance + insets.bottom + Spacing.xl,
+          paddingBottom: tabBarClearance + insets.bottom + Spacing.lg,
         },
         style,
       ]}
     >
-      {children}
+      <PopIn>{children}</PopIn>
     </ScrollView>
   );
 };
@@ -485,29 +529,32 @@ interface AISuggestionProps {
   actionLabel?: string;
 }
 
-export const AISuggestion = ({ title, message, onAction, actionLabel }: AISuggestionProps) => (
+export const AISuggestion = ({ title, message, onAction, actionLabel }: AISuggestionProps) => {
+  const { colors } = useTheme();
+  return (
   <View style={{
-    backgroundColor: Colors.accent + '12',
+    backgroundColor: colors.chip,
     borderRadius: Radius.lg,
     padding: Spacing.base,
     borderLeftWidth: 3,
-    borderLeftColor: Colors.accent,
+    borderLeftColor: colors.ai,
     gap: Spacing.xs,
   }}>
     <Row gap={Spacing.xs}>
       <View style={{
         width: 20, height: 20, borderRadius: Radius.full,
-        backgroundColor: Colors.accent, alignItems: 'center', justifyContent: 'center',
+        backgroundColor: colors.ai, alignItems: 'center', justifyContent: 'center',
       }}>
-        <T size="xs" color={Colors.textInverse} weight="bold">AI</T>
+        <T size="xs" color={colors.textInverse} weight="bold">AI</T>
       </View>
-      <T size="sm" weight="semibold" color={Colors.accent}>{title}</T>
+      <T size="sm" weight="semibold" color={colors.ai}>{title}</T>
     </Row>
-    <T size="sm" color={Colors.textSecondary}>{message}</T>
+    <T size="sm" color={colors.textSecondary}>{message}</T>
     {onAction && actionLabel && (
       <Pressable onPress={onAction}>
-        <T size="sm" color={Colors.accent} weight="semibold">{actionLabel} →</T>
+        <T size="sm" color={colors.ai} weight="semibold">{actionLabel} →</T>
       </Pressable>
     )}
   </View>
-);
+  );
+};

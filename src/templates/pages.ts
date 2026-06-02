@@ -1,11 +1,13 @@
 import { TemplateContext } from './types';
-import { wrapPage, heroBlock, escapeHtml } from './layout';
+import { wrapPage, heroBlock, escapeHtml, OCEAN_CSS } from './layout';
+
+const HERO = OCEAN_CSS.heroGradient;
 
 export function buildFashionStoreHtml(ctx: TemplateContext): string {
   const name = ctx.businessName;
   const body = `
     ${heroBlock(
-      'linear-gradient(145deg, #BE185D 0%, #D94F00 100%)',
+      HERO,
       'ফ্যাশন স্টোর',
       name,
       ctx.tagline ?? 'নতুন কালেকশন · হোম ডেলিভারি সারা বাংলাদেশে',
@@ -37,7 +39,7 @@ export function buildProductLandingHtml(ctx: TemplateContext): string {
   const product = ctx.tagline?.includes('পণ্য') ? ctx.tagline : 'প্রিমিয়াম জামদানি শাড়ি';
   const body = `
     ${heroBlock(
-      'linear-gradient(145deg, #1A7A4A 0%, #0E7490 100%)',
+      `linear-gradient(135deg, ${OCEAN_CSS.income}, ${OCEAN_CSS.primary})`,
       'ল্যান্ডিং পেজ',
       product,
       nameSubtitle(ctx.businessName),
@@ -65,7 +67,7 @@ export function buildProductLandingHtml(ctx: TemplateContext): string {
 export function buildRestaurantMenuHtml(ctx: TemplateContext): string {
   const body = `
     ${heroBlock(
-      'linear-gradient(145deg, #D97706 0%, #D94F00 100%)',
+      `linear-gradient(135deg, ${OCEAN_CSS.primary2}, ${OCEAN_CSS.primary})`,
       'রেস্টুরেন্ট',
       ctx.businessName,
       ctx.tagline ?? 'তাজা খাবার · দ্রুত ডেলিভারি',
@@ -90,7 +92,7 @@ export function buildRestaurantMenuHtml(ctx: TemplateContext): string {
 export function buildServiceBookingHtml(ctx: TemplateContext): string {
   const body = `
     ${heroBlock(
-      'linear-gradient(145deg, #7C3AED 0%, #0E7490 100%)',
+      `linear-gradient(135deg, ${OCEAN_CSS.brand}, ${OCEAN_CSS.ai})`,
       'সার্ভিস বুকিং',
       ctx.businessName,
       ctx.tagline ?? 'অ্যাপয়েন্টমেন্ট ও হোম সার্ভিস',

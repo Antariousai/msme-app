@@ -1,17 +1,43 @@
 import 'react-native-gesture-handler';
 import React from 'react';
+import { View, ActivityIndicator } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { useFonts, TiroBangla_400Regular } from '@expo-google-fonts/tiro-bangla';
 import { AuthProvider } from './src/auth/AuthContext';
 import { AppNavigator } from './src/navigation/AppNavigator';
+import { ThemeProvider, useTheme } from './src/theme';
 
-export default function App() {
+const AppRoot = () => {
+  const { isDark } = useTheme();
   return (
-    <SafeAreaProvider>
+    <>
       <AuthProvider>
         <AppNavigator />
-        <StatusBar style="dark" />
       </AuthProvider>
+      <StatusBar style={isDark ? 'light' : 'dark'} />
+    </>
+  );
+};
+
+export default function App() {
+  const [fontsLoaded] = useFonts({
+    TiroBangla_400Regular,
+  });
+
+  if (!fontsLoaded) {
+    return (
+      <View style={{ flex: 1, backgroundColor: '#ecfeff', alignItems: 'center', justifyContent: 'center' }}>
+        <ActivityIndicator size="large" color="#0e7490" />
+      </View>
+    );
+  }
+
+  return (
+    <SafeAreaProvider>
+      <ThemeProvider>
+        <AppRoot />
+      </ThemeProvider>
     </SafeAreaProvider>
   );
 }

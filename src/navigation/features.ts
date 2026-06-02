@@ -8,11 +8,7 @@ import { OrdersScreen, WebsiteScreen } from '../screens/tier2/OrdersScreen';
 import { InventoryScreen, CourierScreen } from '../screens/tier2/InventoryScreen';
 import { LeadsScreen } from '../screens/tier3/LeadsScreen';
 import { DashboardScreen, ReportsScreen, ComplaintsScreen } from '../screens/tier4/DashboardScreen';
-import {
-  BookIcon, MessageIcon, CommentIcon, CalendarIcon, OrderIcon,
-  InventoryIcon, CourierIcon, WebsiteIcon, LeadIcon, ChartIcon,
-  ReportIcon, ComplaintIcon,
-} from '../icons';
+import { FEATURE_EMOJI, makeEmojiIcon } from '../icons/emoji';
 
 export type FeatureId =
   | 'bookkeeping'
@@ -41,6 +37,7 @@ export interface FeatureDef {
   subtitle: string;
   category: FeatureCategory;
   introducedIn: UserTier;
+  emoji: string;
   icon: React.ComponentType<{ size?: number; color?: string }>;
   component: React.ComponentType;
 }
@@ -87,7 +84,8 @@ export const FEATURES: FeatureDef[] = [
     subtitle: 'আয়, ব্যয়, জার্নাল ও বিশ্লেষণ',
     category: 'accounting',
     introducedIn: 0,
-    icon: BookIcon,
+    emoji: FEATURE_EMOJI.bookkeeping,
+    icon: makeEmojiIcon(FEATURE_EMOJI.bookkeeping),
     component: BookkeepingScreen,
   },
   {
@@ -96,7 +94,8 @@ export const FEATURES: FeatureDef[] = [
     subtitle: 'Facebook + Instagram',
     category: 'sales',
     introducedIn: 1,
-    icon: MessageIcon,
+    emoji: FEATURE_EMOJI.messages,
+    icon: makeEmojiIcon(FEATURE_EMOJI.messages),
     component: MessagesScreen,
   },
   {
@@ -105,7 +104,8 @@ export const FEATURES: FeatureDef[] = [
     subtitle: 'স্বয়ংক্রিয় কমেন্ট রিপ্লাই',
     category: 'sales',
     introducedIn: 1,
-    icon: CommentIcon,
+    emoji: FEATURE_EMOJI.comments,
+    icon: makeEmojiIcon(FEATURE_EMOJI.comments),
     component: CommentsScreen,
   },
   {
@@ -114,7 +114,8 @@ export const FEATURES: FeatureDef[] = [
     subtitle: 'দৈনিক ও সাপ্তাহিক পরিকল্পনা',
     category: 'customers',
     introducedIn: 1,
-    icon: CalendarIcon,
+    emoji: FEATURE_EMOJI.calendar,
+    icon: makeEmojiIcon(FEATURE_EMOJI.calendar),
     component: CalendarScreen,
   },
   {
@@ -123,7 +124,8 @@ export const FEATURES: FeatureDef[] = [
     subtitle: 'সব চ্যানেল',
     category: 'sales',
     introducedIn: 2,
-    icon: OrderIcon,
+    emoji: FEATURE_EMOJI.orders,
+    icon: makeEmojiIcon(FEATURE_EMOJI.orders),
     component: OrdersScreen,
   },
   {
@@ -132,7 +134,8 @@ export const FEATURES: FeatureDef[] = [
     subtitle: 'স্টক ইনফ্লো/আউটফ্লো',
     category: 'operations',
     introducedIn: 2,
-    icon: InventoryIcon,
+    emoji: FEATURE_EMOJI.inventory,
+    icon: makeEmojiIcon(FEATURE_EMOJI.inventory),
     component: InventoryScreen,
   },
   {
@@ -141,7 +144,8 @@ export const FEATURES: FeatureDef[] = [
     subtitle: 'Pathao · RedX · Steadfast',
     category: 'operations',
     introducedIn: 2,
-    icon: CourierIcon,
+    emoji: FEATURE_EMOJI.courier,
+    icon: makeEmojiIcon(FEATURE_EMOJI.courier),
     component: CourierScreen,
   },
   {
@@ -150,7 +154,8 @@ export const FEATURES: FeatureDef[] = [
     subtitle: 'ইন্টিগ্রেশন ও হোস্টিং',
     category: 'operations',
     introducedIn: 2,
-    icon: WebsiteIcon,
+    emoji: FEATURE_EMOJI.website,
+    icon: makeEmojiIcon(FEATURE_EMOJI.website),
     component: WebsiteScreen,
   },
   {
@@ -159,7 +164,8 @@ export const FEATURES: FeatureDef[] = [
     subtitle: 'ক্যাপচার ও স্কোরিং',
     category: 'customers',
     introducedIn: 3,
-    icon: LeadIcon,
+    emoji: FEATURE_EMOJI.leads,
+    icon: makeEmojiIcon(FEATURE_EMOJI.leads),
     component: LeadsScreen,
   },
   {
@@ -168,7 +174,8 @@ export const FEATURES: FeatureDef[] = [
     subtitle: 'ইনসাইট ও বিশ্লেষণ',
     category: 'insights',
     introducedIn: 4,
-    icon: ChartIcon,
+    emoji: FEATURE_EMOJI.dashboard,
+    icon: makeEmojiIcon(FEATURE_EMOJI.dashboard),
     component: DashboardScreen,
   },
   {
@@ -177,7 +184,8 @@ export const FEATURES: FeatureDef[] = [
     subtitle: 'দৈনিক · সাপ্তাহিক · মাসিক',
     category: 'insights',
     introducedIn: 4,
-    icon: ReportIcon,
+    emoji: FEATURE_EMOJI.reports,
+    icon: makeEmojiIcon(FEATURE_EMOJI.reports),
     component: ReportsScreen,
   },
   {
@@ -186,7 +194,8 @@ export const FEATURES: FeatureDef[] = [
     subtitle: 'ট্র্যাকিং ও সমাধান',
     category: 'insights',
     introducedIn: 4,
-    icon: ComplaintIcon,
+    emoji: FEATURE_EMOJI.complaints,
+    icon: makeEmojiIcon(FEATURE_EMOJI.complaints),
     component: ComplaintsScreen,
   },
 ];

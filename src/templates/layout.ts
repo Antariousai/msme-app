@@ -1,11 +1,31 @@
 import { TemplateContext } from './types';
 
+/** Ocean theme CSS tokens for HTML email/web templates */
+export const OCEAN_CSS = {
+  primary: '#0e7490',
+  primary2: '#22b8cf',
+  accent: '#155e75',
+  income: '#14b8a6',
+  expense: '#fb7185',
+  bg: '#ecfeff',
+  bg2: '#f0fdfa',
+  card: '#ffffff',
+  ink: '#083344',
+  muted: '#5f8a96',
+  chip: '#cffafe',
+  ai: '#0891b2',
+  brand: '#27a7e1',
+  border: '#d4e6eb',
+  heroGradient: 'linear-gradient(135deg,#0e7490,#0891b2 55%,#22d3ee)',
+  radius: '20px',
+};
+
 const BASE_STYLES = `
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    font-family: 'Noto Sans Bengali', system-ui, sans-serif;
-    background: #F7F5F2;
-    color: #1A1A1A;
+    font-family: 'Tiro Bangla', 'Noto Sans Bengali', system-ui, sans-serif;
+    background: ${OCEAN_CSS.bg};
+    color: ${OCEAN_CSS.ink};
     line-height: 1.55;
     -webkit-font-smoothing: antialiased;
   }
@@ -30,49 +50,49 @@ const BASE_STYLES = `
     font-size: 1rem;
     font-weight: 700;
     margin-bottom: 0.85rem;
-    color: #1A1A1A;
+    color: ${OCEAN_CSS.ink};
   }
   .card {
-    background: #fff;
-    border-radius: 12px;
+    background: ${OCEAN_CSS.card};
+    border-radius: ${OCEAN_CSS.radius};
     padding: 1rem;
     margin-bottom: 0.75rem;
-    border: 1px solid #E5E0D8;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    border: 1px solid ${OCEAN_CSS.border};
+    box-shadow: 0 4px 12px rgba(14,116,144,0.06);
   }
   .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
   .product-img {
     height: 88px;
-    border-radius: 8px;
-    background: linear-gradient(135deg, #EDE9E4 0%, #E5E0D8 100%);
+    border-radius: 12px;
+    background: linear-gradient(135deg, ${OCEAN_CSS.chip} 0%, ${OCEAN_CSS.bg2} 100%);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 2rem;
     margin-bottom: 0.5rem;
   }
-  .price { font-weight: 700; color: #D94F00; font-size: 0.95rem; }
+  .price { font-weight: 700; color: ${OCEAN_CSS.primary}; font-size: 0.95rem; }
   .name { font-weight: 600; font-size: 0.85rem; margin-bottom: 0.2rem; }
-  .muted { font-size: 0.75rem; color: #6B6560; }
+  .muted { font-size: 0.75rem; color: ${OCEAN_CSS.muted}; }
   .btn {
     display: block;
     width: 100%;
     text-align: center;
     padding: 0.85rem 1rem;
-    border-radius: 10px;
+    border-radius: ${OCEAN_CSS.radius};
     font-weight: 600;
     font-size: 0.9rem;
     text-decoration: none;
     border: none;
     margin-top: 0.5rem;
   }
-  .btn-primary { background: #D94F00; color: #fff; }
-  .btn-secondary { background: #1A7A4A; color: #fff; }
+  .btn-primary { background: ${OCEAN_CSS.primary}; color: #fff; }
+  .btn-secondary { background: ${OCEAN_CSS.income}; color: #fff; }
   .footer {
     text-align: center;
     padding: 1.5rem 1rem 2rem;
     font-size: 0.7rem;
-    color: #A09890;
+    color: ${OCEAN_CSS.muted};
   }
   .menu-item {
     display: flex;
@@ -80,31 +100,31 @@ const BASE_STYLES = `
     align-items: flex-start;
     gap: 0.75rem;
     padding: 0.65rem 0;
-    border-bottom: 1px solid #F0EDE8;
+    border-bottom: 1px solid ${OCEAN_CSS.border};
   }
   .menu-item:last-child { border-bottom: none; }
   .form-group { margin-bottom: 0.85rem; }
-  .form-label { font-size: 0.75rem; color: #6B6560; margin-bottom: 0.25rem; display: block; }
+  .form-label { font-size: 0.75rem; color: ${OCEAN_CSS.muted}; margin-bottom: 0.25rem; display: block; }
   .form-input {
     width: 100%;
     padding: 0.65rem 0.75rem;
-    border: 1.5px solid #E5E0D8;
-    border-radius: 8px;
+    border: 1.5px solid ${OCEAN_CSS.border};
+    border-radius: 12px;
     font-size: 0.85rem;
-    background: #fff;
+    background: ${OCEAN_CSS.chip};
   }
   .feature-list { list-style: none; }
   .feature-list li {
     padding: 0.4rem 0 0.4rem 1.25rem;
     position: relative;
     font-size: 0.85rem;
-    color: #6B6560;
+    color: ${OCEAN_CSS.muted};
   }
   .feature-list li::before {
     content: '✓';
     position: absolute;
     left: 0;
-    color: #1A7A4A;
+    color: ${OCEAN_CSS.income};
     font-weight: 700;
   }
 `;
@@ -117,7 +137,7 @@ export function wrapPage(title: string, body: string, ctx: TemplateContext): str
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
   <title>${escapeHtml(title)} — ${escapeHtml(ctx.businessName)}</title>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Tiro+Bangla:ital@0;1&display=swap" rel="stylesheet" />
   <style>${BASE_STYLES}</style>
 </head>
 <body>
@@ -125,7 +145,7 @@ export function wrapPage(title: string, body: string, ctx: TemplateContext): str
     ${body}
     <div class="footer">
       ${escapeHtml(ctx.businessName)} · ${escapeHtml(phone)}<br/>
-      Antarious MSME টেমপ্লেট প্রিভিউ
+      Antarious MSME · ওশান টেমপ্লেট
     </div>
   </div>
 </body>
