@@ -1,9 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { View, StyleSheet, ScrollView, Pressable } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../../auth/AuthContext';
-import { T, Btn, Card, Row, Chip } from '../../components/atoms';
+import { T, Card, Row, Chip } from '../../components/atoms';
 import { Spacing, Radius, TierConfig, Gradients } from '../../theme';
 import { useTheme } from '../../theme/ThemeContext';
 import { TIER_ONBOARDING } from '../../data/tierOnboardingContent';
@@ -17,6 +16,12 @@ import { computeBusinessCreditScore, creditScoreColor } from '../../utils/credit
 import { useTransactions } from '../../context/TransactionsContext';
 import { toBn } from '../../utils/helpers';
 import { CheckIcon } from '../../icons';
+import {
+  GuidanceShell,
+  GuidanceContentCard,
+  guidanceContentStyles,
+  guidanceCenterText,
+} from '../../components/guidance/GuidanceShell';
 
 interface CustomerOnboardingScreenProps {
   onComplete: () => void;
@@ -44,7 +49,6 @@ export const CustomerOnboardingScreen = ({ onComplete }: CustomerOnboardingScree
     [tier, isUpgrade, loanAlreadySet, includeCredit],
   );
   const stepId = steps[stepIndex] ?? 'ready';
-  const progress = steps.length > 0 ? ((stepIndex + 1) / steps.length) * 100 : 100;
 
   const profile = useMemo(() => computeBusinessCreditScore(transactions), [transactions]);
   const scoreColor = creditScoreColor(profile.score);
@@ -82,75 +86,98 @@ export const CustomerOnboardingScreen = ({ onComplete }: CustomerOnboardingScree
     }
   };
 
+  const isLoan = stepId === 'loan';
+  const isReady = stepId === 'ready';
+  const loanNextBlocked = hasLoanChoice === null || (hasLoanChoice === true && !lenderId);
+
+  const handleNext = () => {
+    if (isReady) {
+      void finish();
+      return;
+    }
+    goNext();
+  };
+
   const renderBody = () => {
+    const center = guidanceContentStyles.centerBlock;
+    const textCenter = guidanceCenterText;
+
     switch (stepId as CustomerOnboardingStepId) {
       case 'welcome':
         return (
-          <>
+          <View style={center}>
             <View style={[styles.badge, { backgroundColor: cfg.color }]}>
               <T size="xs" color="#fff" weight="bold">গ্রাহক অনবোর্ডিং</T>
             </View>
-            <T size="4xl" style={{ marginTop: Spacing.md, marginBottom: Spacing.sm }}>{content.emoji}</T>
-            <T size="2xl" weight="bold">{isUpgrade ? content.upgradeTitle : content.title}</T>
-            <T size="sm" color={colors.textSecondary} style={{ marginTop: Spacing.xs, marginBottom: Spacing.lg }}>
+            <T size="4xl" style={{ marginTop: Spacing.lg, marginBottom: Spacing.sm }}>{content.emoji}</T>
+            <T size="2xl" weight="bold" style={textCenter}>{isUpgrade ? content.upgradeTitle : content.title}</T>
+            <T size="sm" color={colors.textSecondary} style={{ ...textCenter, marginTop: Spacing.sm, marginBottom: Spacing.lg }}>
               {isUpgrade ? content.upgradeSubtitle : content.subtitle}
             </T>
-            <Card style={{ backgroundColor: cfg.color + '14' }}>
-              <T size="xs" color={colors.textTertiary}>আপনি</T>
-              <T size="sm" weight="semibold">{user?.businessName}</T>
-              <T size="xs" color={colors.textSecondary}>{content.persona}</T>
+            <Card style={{ backgroundColor: cfg.color + '14', width: '100%' }}>
+              <T size="xs" color={colors.textTertiary} style={textCenter}>আপনি</T>
+              <T size="md" weight="semibold" style={{ ...textCenter, marginTop: 4 }}>{user?.businessName}</T>
+              <T size="sm" color={colors.textSecondary} style={{ ...textCenter, marginTop: 4 }}>{content.persona}</T>
             </Card>
-          </>
+          </View>
         );
       case 'tierValue':
         return (
-          <>
-            <T size="xl" weight="bold" style={{ marginBottom: Spacing.sm }}>আপনার প্যাকেজ</T>
-            <T size="sm" color={colors.textSecondary} style={{ marginBottom: Spacing.lg }}>
+          <View style={center}>
+            <T size="xl" weight="bold" style={{ ...textCenter, marginBottom: Spacing.sm }}>আপনার প্যাকেজ</T>
+            <T size="sm" color={colors.textSecondary} style={{ ...textCenter, marginBottom: Spacing.lg }}>
               টায়ার {tier} · {cfg.name} — {cfg.tagline}
             </T>
             {content.highlights.map((h) => (
-              <Row key={h} gap={Spacing.sm} style={{ marginBottom: Spacing.md }}>
+              <Row key={h} gap={Spacing.sm} style={styles.listRow}>
                 <CheckIcon size={18} color={cfg.color} />
                 <T size="sm" style={{ flex: 1 }}>{h}</T>
               </Row>
             ))}
-            <Card style={{ marginTop: Spacing.sm, backgroundColor: colors.aiBg }}>
-              <T size="xs" color={colors.textSecondary}>
-                পরবর্তী ধাপে অ্যাপ ব্যবহারের সংক্ষিপ্ত টিউটোরিয়াল দেখানো হবে।
+            <Card style={{ marginTop: Spacing.md, backgroundColor: colors.aiBg, width: '100%' }}>
+              <T size="xs" color={colors.textSecondary} style={textCenter}>
+                পরবর্তী ধাপে অ্যাপ টিউটোরিয়াল — প্রতিটি পেজ নিজে খুলে দেখতে পারবেন।
               </T>
             </Card>
-          </>
+          </View>
         );
       case 'whatsNew':
         return (
-          <>
-            <T size="xl" weight="bold" style={{ marginBottom: Spacing.lg }}>নতুন সুবিধা</T>
+          <View style={center}>
+            <T size="xl" weight="bold" style={{ ...textCenter, marginBottom: Spacing.lg }}>নতুন সুবিধা</T>
             {content.whatsNew.map((h) => (
-              <Row key={h} gap={Spacing.sm} style={{ marginBottom: Spacing.md }}>
+              <Row key={h} gap={Spacing.sm} style={styles.listRow}>
                 <T color={cfg.color}>✦</T>
                 <T size="sm" style={{ flex: 1 }}>{h}</T>
               </Row>
             ))}
-          </>
+          </View>
         );
       case 'loan':
         return (
-          <>
-            <T size="xl" weight="bold" style={{ marginBottom: Spacing.sm }}>ব্যবসায়িক ঋণ</T>
-            <T size="sm" color={colors.textSecondary} style={{ marginBottom: Spacing.lg }}>
+          <View style={center}>
+            <T size="xl" weight="bold" style={{ ...textCenter, marginBottom: Spacing.sm }}>ব্যবসায়িক ঋণ</T>
+            <T size="sm" color={colors.textSecondary} style={{ ...textCenter, marginBottom: Spacing.lg }}>
               {content.creditHint}
             </T>
-            <Row gap={Spacing.sm} style={{ marginBottom: Spacing.lg }}>
+            <Row gap={Spacing.sm} style={{ width: '100%', marginBottom: Spacing.lg }}>
               <Pressable
-                style={[styles.choiceCard, { borderColor: hasLoanChoice === true ? cfg.color : colors.border, backgroundColor: colors.surface }, hasLoanChoice === true && styles.choiceActive]}
+                style={[
+                  styles.choiceCard,
+                  { borderColor: hasLoanChoice === true ? cfg.color : colors.border, backgroundColor: colors.surface },
+                  hasLoanChoice === true && styles.choiceActive,
+                ]}
                 onPress={() => setHasLoanChoice(true)}
               >
                 <T size="lg">✅</T>
                 <T size="sm" weight="semibold" style={{ marginTop: Spacing.xs }}>ঋণ আছে</T>
               </Pressable>
               <Pressable
-                style={[styles.choiceCard, { borderColor: hasLoanChoice === false ? cfg.color : colors.border, backgroundColor: colors.surface }, hasLoanChoice === false && styles.choiceActive]}
+                style={[
+                  styles.choiceCard,
+                  { borderColor: hasLoanChoice === false ? cfg.color : colors.border, backgroundColor: colors.surface },
+                  hasLoanChoice === false && styles.choiceActive,
+                ]}
                 onPress={() => { setHasLoanChoice(false); setLenderId(null); }}
               >
                 <T size="lg">🚫</T>
@@ -164,87 +191,111 @@ export const CustomerOnboardingScreen = ({ onComplete }: CustomerOnboardingScree
                 ))}
               </View>
             )}
-          </>
+          </View>
         );
       case 'credit':
         return (
-          <>
-            <T size="xl" weight="bold" style={{ marginBottom: Spacing.sm }}>ক্রেডিট স্কোর</T>
-            <T size="sm" color={colors.textSecondary} style={{ marginBottom: Spacing.lg }}>
+          <View style={center}>
+            <T size="xl" weight="bold" style={{ ...textCenter, marginBottom: Spacing.sm }}>ক্রেডিট স্কোর</T>
+            <T size="sm" color={colors.textSecondary} style={{ ...textCenter, marginBottom: Spacing.lg }}>
               ঋণ থাকলে হোমে স্কোর কার্ড দেখা যাবে।
             </T>
             <LinearGradient colors={[...Gradients.hero]} style={styles.creditPreview}>
-              <T size="sm" weight="semibold" color="#fff">{toBn(profile.score)} / ১০০</T>
-              <T size="xs" color="#fff">{profile.gradeEmoji} {profile.gradeLabel}</T>
+              <T size="lg" weight="semibold" color="#fff">{toBn(profile.score)} / ১০০</T>
+              <T size="sm" color="#fff" style={{ marginTop: Spacing.xs }}>{profile.gradeEmoji} {profile.gradeLabel}</T>
               <View style={[styles.previewBar, { backgroundColor: '#ffffff33' }]}>
                 <View style={{ width: `${profile.score}%`, height: 8, borderRadius: 4, backgroundColor: scoreColor }} />
               </View>
             </LinearGradient>
-          </>
+          </View>
         );
       case 'ready':
         return (
-          <>
+          <View style={center}>
             <T size="4xl" style={{ marginBottom: Spacing.sm }}>✅</T>
-            <T size="xl" weight="bold">সেটআপ সম্পন্ন</T>
-            <T size="sm" color={colors.textSecondary} style={{ marginTop: Spacing.sm, marginBottom: Spacing.lg }}>
-              এখন অ্যাপ টিউটোরিয়াল শুরু হবে — প্রতিটি পেজে কী পাবেন তা দেখানো হবে।
+            <T size="xl" weight="bold" style={textCenter}>সেটআপ সম্পন্ন</T>
+            <T size="sm" color={colors.textSecondary} style={{ ...textCenter, marginTop: Spacing.sm, marginBottom: Spacing.lg }}>
+              এখন অ্যাপ টিউটোরিয়াল — প্রতিটি ফিচার নিজে খুলে দেখুন।
             </T>
-            <Card style={{ backgroundColor: colors.primary + '12' }}>
-              <T size="sm" weight="bold">📱 অ্যাপ টিউটোরিয়াল</T>
-              <T size="xs" color={colors.textSecondary} style={{ marginTop: 4 }}>
-                নিচ থেকে কোচ কার্ড — আসল স্ক্রিনের উপর গাইড
+            <Card style={{ backgroundColor: colors.primary + '12', width: '100%' }}>
+              <T size="sm" weight="bold" style={textCenter}>📱 অ্যাপ টিউটোরিয়াল</T>
+              <T size="xs" color={colors.textSecondary} style={{ ...textCenter, marginTop: 4 }}>
+                বাম/ডান বাটনে ধাপ · «পেজ দেখুন» দিয়ে স্ক্রিন খুলুন
               </T>
             </Card>
-          </>
+          </View>
         );
       default:
         return null;
     }
   };
 
-  const isLoan = stepId === 'loan';
-  const isReady = stepId === 'ready';
-
   return (
-    <SafeAreaView style={[styles.safe, { backgroundColor: colors.bg }]} edges={['top', 'bottom']}>
-      <View style={[styles.progressTrack, { backgroundColor: colors.bgDark }]}>
-        <View style={[styles.progressFill, { width: `${progress}%`, backgroundColor: cfg.color }]} />
-      </View>
-      <T size="xs" color={colors.textTertiary} style={styles.stepLabel}>
-        গ্রাহক সেটআপ · {toBn(stepIndex + 1)}/{toBn(steps.length)}
-      </T>
-      <ScrollView contentContainerStyle={styles.scroll}>{renderBody()}</ScrollView>
-      <View style={[styles.footer, { borderTopColor: colors.border, backgroundColor: colors.surface }]}>
-        {isReady ? (
-          <Btn label="টিউটোরিয়াল শুরু করুন" onPress={finish} fullWidth loading={submitting} />
-        ) : isLoan ? (
-          <Row gap={Spacing.sm}>
-            {stepIndex > 0 ? <Btn label="পিছনে" onPress={goBack} variant="outline" flex /> : null}
-            <Btn label="এগিয়ে যান" onPress={goNext} flex disabled={hasLoanChoice === null || (hasLoanChoice === true && !lenderId)} />
-          </Row>
-        ) : (
-          <Row gap={Spacing.sm}>
-            {stepIndex > 0 ? <Btn label="পিছনে" onPress={goBack} variant="outline" flex /> : null}
-            <Btn label="এগিয়ে যান" onPress={goNext} flex />
-          </Row>
-        )}
-      </View>
-    </SafeAreaView>
+    <GuidanceShell
+      variant="screen"
+      backgroundColor={colors.bg}
+      stepIndex={stepIndex}
+      stepTotal={steps.length}
+      phaseLabel="গ্রাহক সেটআপ"
+      accentColor={cfg.color}
+      onBack={goBack}
+      onNext={handleNext}
+      backDisabled={stepIndex === 0 || submitting}
+      nextDisabled={(isLoan && loanNextBlocked) || submitting}
+      nextLoading={submitting}
+      backLabel="পিছনে"
+      nextLabel={isReady ? 'টিউটোরিয়াল' : 'এগিয়ে'}
+    >
+      <GuidanceContentCard>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={guidanceContentStyles.scroll}
+          keyboardShouldPersistTaps="handled"
+        >
+          {renderBody()}
+        </ScrollView>
+      </GuidanceContentCard>
+    </GuidanceShell>
   );
 };
 
 const styles = StyleSheet.create({
-  safe: { flex: 1 },
-  badge: { alignSelf: 'flex-start', paddingHorizontal: Spacing.sm, paddingVertical: 4, borderRadius: Radius.full },
-  progressTrack: { height: 4 },
-  progressFill: { height: 4 },
-  stepLabel: { textAlign: 'center', paddingTop: Spacing.sm },
-  scroll: { padding: Spacing.xl, flexGrow: 1 },
-  footer: { padding: Spacing.base, borderTopWidth: 1 },
-  choiceCard: { flex: 1, borderRadius: Radius.lg, borderWidth: 1, padding: Spacing.lg, alignItems: 'center' },
+  badge: {
+    paddingHorizontal: Spacing.md,
+    paddingVertical: 6,
+    borderRadius: Radius.full,
+  },
+  listRow: {
+    width: '100%',
+    marginBottom: Spacing.md,
+    paddingHorizontal: Spacing.xs,
+  },
+  choiceCard: {
+    flex: 1,
+    borderRadius: Radius.lg,
+    borderWidth: 1,
+    padding: Spacing.lg,
+    alignItems: 'center',
+  },
   choiceActive: { borderWidth: 2 },
-  lenderGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.sm },
-  creditPreview: { borderRadius: Radius.lg, padding: Spacing.xl, alignItems: 'center' },
-  previewBar: { width: '100%', height: 8, borderRadius: 4, marginTop: Spacing.md, overflow: 'hidden' },
+  lenderGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.sm,
+    justifyContent: 'center',
+    width: '100%',
+  },
+  creditPreview: {
+    width: '100%',
+    borderRadius: Radius.lg,
+    padding: Spacing.xl,
+    alignItems: 'center',
+  },
+  previewBar: {
+    width: '100%',
+    height: 8,
+    borderRadius: 4,
+    marginTop: Spacing.md,
+    overflow: 'hidden',
+  },
 });
