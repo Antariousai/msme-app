@@ -17,8 +17,6 @@ import { HeroCard } from '../../components/HeroCard';
 import { Colors, Spacing, Radius } from '../../theme';
 import { seedLeads, Lead, aiSuggestions } from '../../data/seed';
 import { toBn, generateId } from '../../utils/helpers';
-import { useFeatureNav } from '../../navigation/FeatureNavContext';
-import { DashboardCreditScoreCard } from '../shared/CreditScoreScreen';
 
 const WIDE_BREAKPOINT = 720;
 const TAB_BAR = 68;
@@ -529,7 +527,6 @@ export const LeadsScreen = () => {
 };
 
 export const Tier3Home = () => {
-  const { openFeature } = useFeatureNav();
   const hotLeads = seedLeads.filter((l) => l.score >= 70).length;
   const converted = seedLeads.filter((l) => l.status === 'converted').length;
   return (
@@ -545,7 +542,6 @@ export const Tier3Home = () => {
             { label: 'রূপান্তর ✅', value: toBn(converted) },
           ]}
         />
-        <DashboardCreditScoreCard onPress={() => openFeature('creditScore')} />
         <AISuggestion
           title="🔥 লিড ক্লোজিং"
           message="আয়েশা সিদ্দিকা (স্কোর ৯২) — আজ কল করলে রূপান্তর সম্ভাবনা ৮৫%। 🚀"

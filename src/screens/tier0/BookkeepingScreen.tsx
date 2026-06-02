@@ -9,8 +9,6 @@ import { Spacing, Colors } from '../../theme';
 import { seedTransactions } from '../../data/seed';
 import { bnTaka, calcProfit, toBn } from '../../utils/helpers';
 import { useFeatureNav } from '../../navigation/FeatureNavContext';
-import { DashboardCreditScoreCard } from '../shared/CreditScoreScreen';
-
 export { AccountingScreen as BookkeepingScreen } from '../accounting/AccountingScreen';
 
 export const Tier0Home = () => {
@@ -36,8 +34,6 @@ export const Tier0Home = () => {
             { label: 'লেনদেন',   value: `${toBn(txCount)} টি` },
           ]}
         />
-
-        <DashboardCreditScoreCard onPress={() => openFeature('creditScore')} />
 
         {/* Quick actions */}
         <Row gap={Spacing.sm} style={{ marginBottom: Spacing.base }}>

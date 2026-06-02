@@ -212,9 +212,17 @@ export const FEATURES: FeatureDef[] = [
   },
 ];
 
+/** Shown only under অ্যাকাউন্ট — not home grid or feature launcher */
+export const ACCOUNT_ONLY_FEATURE_IDS: FeatureId[] = ['creditScore'];
+
 /** Features unlocked at or below the user's tier */
 export function getAccessibleFeatures(tier: UserTier): FeatureDef[] {
   return FEATURES.filter((f) => f.introducedIn <= tier);
+}
+
+/** Features listed on home grid and অ্যাকাউন্ট launcher (excludes account-only) */
+export function getLauncherFeatures(tier: UserTier): FeatureDef[] {
+  return getAccessibleFeatures(tier).filter((f) => !ACCOUNT_ONLY_FEATURE_IDS.includes(f.id));
 }
 
 /** Feature IDs shown as bottom tabs for each tier */
@@ -248,7 +256,7 @@ export function getFeatureById(id: FeatureId): FeatureDef | undefined {
 export function getFeaturesByCategory(
   tier: UserTier,
 ): { category: FeatureCategory; features: FeatureDef[] }[] {
-  const accessible = getAccessibleFeatures(tier);
+  const accessible = getLauncherFeatures(tier);
   return FEATURE_CATEGORY_ORDER.map((category) => ({
     category,
     features: accessible.filter((f) => f.category === category),

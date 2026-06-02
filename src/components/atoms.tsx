@@ -44,17 +44,22 @@ interface TProps {
   align?: 'left' | 'center' | 'right';
   style?: TextStyle;
   numberOfLines?: number;
+  adjustsFontSizeToFit?: boolean;
+  minimumFontScale?: number;
 }
 
 export const T = ({
   children, size = 'base', color,
   weight = 'regular', align = 'left', style, numberOfLines,
+  adjustsFontSizeToFit, minimumFontScale,
 }: TProps) => {
   const { colors } = useTheme();
   const textColor = color ?? colors.textPrimary;
   return (
     <Text
       numberOfLines={numberOfLines}
+      adjustsFontSizeToFit={adjustsFontSizeToFit}
+      minimumFontScale={minimumFontScale}
       style={[{
         fontFamily: fontForWeight(weight),
         fontWeight: fontWeightFor(weight),

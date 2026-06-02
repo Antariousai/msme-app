@@ -9,8 +9,6 @@ import { Colors, Spacing } from '../../theme';
 import { FacebookIcon, InstagramIcon, AutoReplyIcon, EscalateIcon, OrderIcon, CheckIcon } from '../../icons';
 import { seedMessages, replyTemplates, Message } from '../../data/seed';
 import { toBn } from '../../utils/helpers';
-import { useFeatureNav } from '../../navigation/FeatureNavContext';
-import { DashboardCreditScoreCard } from '../shared/CreditScoreScreen';
 
 const platformIcon = (p: Message['platform']) =>
   p === 'facebook'
@@ -133,7 +131,6 @@ export const MessagesScreen = () => {
 };
 
 export const Tier1Home = () => {
-  const { openFeature } = useFeatureNav();
   const unread = seedMessages.filter((m) => m.unread).length;
   return (
     <ScreenFrame>
@@ -147,7 +144,6 @@ export const Tier1Home = () => {
             { label: 'অর্ডার অপেক্ষমাণ', value: '২ 📋' },
           ]}
         />
-        <DashboardCreditScoreCard onPress={() => openFeature('creditScore')} />
         <AISuggestion
           title="🔥 আজকের পরামর্শ"
           message="সন্ধ্যা ৭–৯টায় সবচেয়ে বেশি মেসেজ আসে — এই সময়ে সক্রিয় থাকুন।"

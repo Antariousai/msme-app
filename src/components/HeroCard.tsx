@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, ViewStyle, StyleProp } from 'react-native';
+import { View, ViewStyle, StyleProp, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { T, Row } from './atoms';
 import { Spin } from './motion';
@@ -45,27 +45,93 @@ export const HeroCard = ({
       ...Shadow.soft,
     }, style]}
   >
-    <View style={{ position: 'absolute', top: 14, right: 18 }}>
+    <View style={styles.sparkleWrap}>
       <Spin>
         <T size="lg" style={{ opacity: 0.55 }}>{sparkle}</T>
       </Spin>
     </View>
 
-    <T size="sm" weight="semibold" color="#ffffff" style={{ opacity: 0.92 }}>{title}</T>
-    <T color="#ffffff" weight="bold" style={{ fontSize: Typography.size['4xl'], marginVertical: 2 }}>
-      {metric}
-    </T>
-    <T size="sm" weight="semibold" color="#ffffff" style={{ opacity: 0.92 }}>{metricLabel}</T>
+    <View style={styles.content}>
+      <T size="sm" weight="semibold" color="#ffffff" style={styles.title} numberOfLines={2}>
+        {title}
+      </T>
+      <T
+        color="#ffffff"
+        weight="bold"
+        numberOfLines={1}
+        adjustsFontSizeToFit
+        minimumFontScale={0.55}
+        style={styles.metric}
+      >
+        {metric}
+      </T>
+      <T size="sm" weight="semibold" color="#ffffff" style={styles.metricLabel} numberOfLines={1}>
+        {metricLabel}
+      </T>
 
-    {stats.length > 0 && (
-      <Row gap={Spacing.xl} style={{ marginTop: Spacing.md }}>
-        {stats.map((s) => (
-          <View key={s.label}>
-            <T size="xs" color="#ffffff" style={{ opacity: 0.85 }}>{s.label}</T>
-            <T size="lg" weight="bold" color="#ffffff">{s.value}</T>
-          </View>
-        ))}
-      </Row>
-    )}
+      {stats.length > 0 && (
+        <View style={styles.statsRow}>
+          {stats.map((s) => (
+            <View key={s.label} style={styles.statCell}>
+              <T size="xs" color="#ffffff" style={styles.statLabel} numberOfLines={1}>
+                {s.label}
+              </T>
+              <T
+                size="md"
+                weight="bold"
+                color="#ffffff"
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={0.7}
+                style={styles.statValue}
+              >
+                {s.value}
+              </T>
+            </View>
+          ))}
+        </View>
+      )}
+    </View>
   </LinearGradient>
 );
+
+const styles = StyleSheet.create({
+  sparkleWrap: {
+    position: 'absolute',
+    top: Spacing.md,
+    right: Spacing.base,
+    zIndex: 1,
+  },
+  content: {
+    paddingRight: Spacing['3xl'],
+  },
+  title: {
+    opacity: 0.92,
+  },
+  metric: {
+    fontSize: Typography.size['4xl'],
+    lineHeight: Typography.size['4xl'] * 1.15,
+    marginTop: Spacing.xs,
+    marginBottom: 2,
+  },
+  metricLabel: {
+    opacity: 0.92,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    marginTop: Spacing.md,
+    gap: Spacing.sm,
+    width: '100%',
+  },
+  statCell: {
+    flex: 1,
+    minWidth: 0,
+  },
+  statLabel: {
+    opacity: 0.85,
+    marginBottom: 2,
+  },
+  statValue: {
+    lineHeight: 22,
+  },
+});

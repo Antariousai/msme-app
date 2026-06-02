@@ -33,6 +33,8 @@ export const LoginScreen = () => {
     { phone: '01800000004', tier: 4, name: 'নাসরিন (এন্টারপ্রাইজ)' },
   ];
 
+  const poDemo = { phone: '01999000000', name: 'PO পোর্টাল — রাশেদুল (প্রোগ্রাম অফিসার)' };
+
   return (
     <SafeAreaView style={styles.safe}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
@@ -72,9 +74,22 @@ export const LoginScreen = () => {
           </Card>
 
           <T size="sm" color={Colors.textSecondary} weight="medium" style={{ marginTop: Spacing.xl, marginBottom: Spacing.sm, paddingHorizontal: Spacing.base }}>
-            ডেমো অ্যাকাউন্ট (PIN: 1234)
+            ডেমো MSME (PIN: 1234)
           </T>
           <View style={{ paddingHorizontal: Spacing.base }}>
+          <Card
+            onPress={() => { setPhone(poDemo.phone); setPin('1234'); }}
+            style={{ marginBottom: Spacing.base, borderWidth: 2, borderColor: Colors.primary }}
+            padding={Spacing.md}
+          >
+            <Row justify="space-between" align="center">
+              <View style={{ flex: 1, minWidth: 0 }}>
+                <T size="sm" weight="bold">{poDemo.name}</T>
+                <T size="xs" color={Colors.textTertiary}>{poDemo.phone}</T>
+              </View>
+              <T size="xs" color={Colors.primary} weight="bold">PO</T>
+            </Row>
+          </Card>
           {demoAccounts.map((acc) => {
             const tier = TierConfig[acc.tier as keyof typeof TierConfig];
             return (

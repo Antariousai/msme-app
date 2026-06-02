@@ -8,7 +8,7 @@ import { ScreenFrame } from '../../components/ScreenFrame';
 import { Spacing, Gradients } from '../../theme';
 import { useTheme } from '../../theme/ThemeContext';
 import { useAuth } from '../../auth/AuthContext';
-import { getAccessibleFeatures } from '../../navigation/features';
+import { getLauncherFeatures } from '../../navigation/features';
 import { useFeatureNav } from '../../navigation/FeatureNavContext';
 import { AccountCreditScoreRow } from './CreditScoreScreen';
 
@@ -22,7 +22,7 @@ export const MoreScreen = ({ onOpenSettings }: MoreScreenProps) => {
   const { colors } = useTheme();
 
   if (!user) return null;
-  const featureCount = getAccessibleFeatures(user.tier).length;
+  const featureCount = getLauncherFeatures(user.tier).length;
 
   return (
     <ScreenFrame>

@@ -14,6 +14,7 @@ import { Tier1Home } from '../screens/tier1/MessagesScreen';
 import { Tier2Home } from '../screens/tier2/OrdersScreen';
 import { Tier3Home } from '../screens/tier3/LeadsScreen';
 import { Tier4Home } from '../screens/tier4/DashboardScreen';
+import { POPortalNavigator } from '../screens/po/POPortalNavigator';
 import { FeatureNavProvider, RootTabParamList } from './FeatureNavContext';
 import type { NavigationContainerRef } from '@react-navigation/native';
 import { getPrimaryTabIds, getFeatureById } from './features';
@@ -129,7 +130,7 @@ function MainTabs({ onOpenSettings }: { onOpenSettings: () => void }) {
 }
 
 export const AppNavigator = () => {
-  const { user, loading } = useAuth();
+  const { user, role, loading } = useAuth();
   const { colors, mode } = useTheme();
   const [showSettings, setShowSettings] = useState(false);
   const [showTierSelect, setShowTierSelect] = useState(false);
@@ -161,8 +162,12 @@ export const AppNavigator = () => {
     );
   }
 
-  if (!user) {
+  if (!user && role !== 'po') {
     return <LoginScreen />;
+  }
+
+  if (role === 'po') {
+    return <POPortalNavigator />;
   }
 
   return (

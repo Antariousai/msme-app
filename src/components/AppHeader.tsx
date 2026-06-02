@@ -23,10 +23,16 @@ export const AppHeader = ({
   notificationCount = 0, onNotificationPress,
 }: AppHeaderProps) => {
   const insets = useSafeAreaInsets();
-  const { user } = useAuth();
+  const { user, officer } = useAuth();
   const { colors, isDark } = useTheme();
   const tierTagline = user ? TierConfig[user.tier].tagline : undefined;
-  const displaySubtitle = subtitle ?? (showGreeting && user ? tierTagline : undefined);
+  const greetingName = user?.name ?? officer?.name;
+  const defaultSubtitle = user
+    ? tierTagline
+    : officer
+      ? `${officer.organization} · ${officer.region}`
+      : undefined;
+  const displaySubtitle = subtitle ?? (showGreeting && greetingName ? defaultSubtitle : undefined);
 
   return (
     <View style={{
@@ -64,9 +70,9 @@ export const AppHeader = ({
 
       {/* Greeting / title line */}
       <View style={{ marginTop: Spacing.sm }}>
-        {showGreeting && user ? (
-          <T size="md" weight="semibold">
-            {getGreeting()}, {user.name.split(' ')[0]} 👋
+        {showGreeting && greetingName ? (
+          <T size="md" weight="semibold" numberOfLines={1}>
+            {getGreeting()}, {greetingName.split(' ')[0]} 👋
           </T>
         ) : (title ?? user?.businessName) ? (
           <T size="md" weight="semibold" numberOfLines={1}>

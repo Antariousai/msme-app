@@ -3,9 +3,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { STORAGE_KEYS } from '../utils/helpers';
 
 export type UserTier = 0 | 1 | 2 | 3 | 4;
+export type AuthRole = 'msme' | 'po';
 
 export interface AddOns {
-  /** Brand Studio is a paid add-on available on tiers 1–4 */
   brandStudio: boolean;
 }
 
@@ -19,8 +19,23 @@ export interface AuthUser {
   addOns: AddOns;
 }
 
+export interface ProgramOfficer {
+  id: string;
+  name: string;
+  phone: string;
+  organization: string;
+  region: string;
+}
+
+export type AuthSession =
+  | { role: 'msme'; user: AuthUser }
+  | { role: 'po'; officer: ProgramOfficer };
+
 interface AuthContextType {
+  session: AuthSession | null;
+  role: AuthRole | null;
   user: AuthUser | null;
+  officer: ProgramOfficer | null;
   loading: boolean;
   signIn: (phone: string, pin: string) => Promise<boolean>;
   signOut: () => Promise<void>;
@@ -29,7 +44,10 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType>({
+  session: null,
+  role: null,
   user: null,
+  officer: null,
   loading: true,
   signIn: async () => false,
   signOut: async () => {},
@@ -37,7 +55,7 @@ const AuthContext = createContext<AuthContextType>({
   setBrandStudioAddOn: async () => {},
 });
 
-const DEMO_USERS: Record<string, { pin: string; user: AuthUser }> = {
+const DEMO_MSME: Record<string, { pin: string; user: AuthUser }> = {
   '01700000000': {
     pin: '1234',
     user: {
@@ -100,8 +118,40 @@ const DEMO_USERS: Record<string, { pin: string; user: AuthUser }> = {
   },
 };
 
+const DEMO_PO: Record<string, { pin: string; officer: ProgramOfficer }> = {
+  '01999000000': {
+    pin: '1234',
+    officer: {
+      id: 'po1',
+      name: 'মোঃ রাশেদুল ইসলাম',
+      phone: '01999000000',
+      organization: 'Antarious MSME প্রোগ্রাম',
+      region: 'ঢাকা ও ঢাকার আশেপাশ',
+    },
+  },
+};
+
+function parseStoredSession(raw: string): AuthSession | null {
+  const parsed = JSON.parse(raw) as AuthSession | AuthUser;
+  if (parsed && typeof parsed === 'object' && 'role' in parsed) {
+    const s = parsed as AuthSession;
+    if (s.role === 'po' && s.officer) return s;
+    if (s.role === 'msme' && s.user) {
+      if (!s.user.addOns) s.user.addOns = { brandStudio: false };
+      return s;
+    }
+    return null;
+  }
+  const legacy = parsed as AuthUser;
+  if (legacy?.phone && legacy?.tier !== undefined) {
+    if (!legacy.addOns) legacy.addOns = { brandStudio: false };
+    return { role: 'msme', user: legacy };
+  }
+  return null;
+}
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<AuthUser | null>(null);
+  const [session, setSession] = useState<AuthSession | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -109,9 +159,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       try {
         const stored = await AsyncStorage.getItem(STORAGE_KEYS.AUTH_USER);
         if (stored) {
-          const parsed = JSON.parse(stored) as AuthUser;
-          if (!parsed.addOns) parsed.addOns = { brandStudio: false };
-          setUser(parsed);
+          const restored = parseStoredSession(stored);
+          if (restored) setSession(restored);
         }
       } catch {
         // ignore
@@ -122,35 +171,66 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     restore();
   }, []);
 
+  const persist = async (next: AuthSession | null) => {
+    if (next) {
+      await AsyncStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(next));
+    } else {
+      await AsyncStorage.removeItem(STORAGE_KEYS.AUTH_USER);
+    }
+    setSession(next);
+  };
+
   const signIn = async (phone: string, pin: string): Promise<boolean> => {
-    const entry = DEMO_USERS[phone];
-    if (!entry || entry.pin !== pin) return false;
-    await AsyncStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(entry.user));
-    setUser(entry.user);
-    return true;
+    const po = DEMO_PO[phone];
+    if (po && po.pin === pin) {
+      await persist({ role: 'po', officer: po.officer });
+      return true;
+    }
+    const msme = DEMO_MSME[phone];
+    if (msme && msme.pin === pin) {
+      await persist({ role: 'msme', user: msme.user });
+      return true;
+    }
+    return false;
   };
 
   const signOut = async () => {
-    await AsyncStorage.removeItem(STORAGE_KEYS.AUTH_USER);
-    setUser(null);
+    await persist(null);
   };
 
   const updateTier = async (tier: UserTier) => {
-    if (!user) return;
-    const updated = { ...user, tier };
-    await AsyncStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(updated));
-    setUser(updated);
+    if (!session || session.role !== 'msme') return;
+    const updated = { role: 'msme' as const, user: { ...session.user, tier } };
+    await persist(updated);
   };
 
   const setBrandStudioAddOn = async (enabled: boolean) => {
-    if (!user) return;
-    const updated = { ...user, addOns: { ...user.addOns, brandStudio: enabled } };
-    await AsyncStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(updated));
-    setUser(updated);
+    if (!session || session.role !== 'msme') return;
+    const updated = {
+      role: 'msme' as const,
+      user: { ...session.user, addOns: { ...session.user.addOns, brandStudio: enabled } },
+    };
+    await persist(updated);
   };
 
+  const user = session?.role === 'msme' ? session.user : null;
+  const officer = session?.role === 'po' ? session.officer : null;
+  const role = session?.role ?? null;
+
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, signOut, updateTier, setBrandStudioAddOn }}>
+    <AuthContext.Provider
+      value={{
+        session,
+        role,
+        user,
+        officer,
+        loading,
+        signIn,
+        signOut,
+        updateTier,
+        setBrandStudioAddOn,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

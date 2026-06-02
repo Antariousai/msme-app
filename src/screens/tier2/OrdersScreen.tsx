@@ -9,8 +9,6 @@ import { Colors, Spacing, Radius } from '../../theme';
 import { WebsiteIcon, FacebookIcon, InstagramIcon } from '../../icons';
 import { seedOrders, Order, ORDER_CATEGORIES } from '../../data/seed';
 import { bnTaka } from '../../utils/helpers';
-import { useFeatureNav } from '../../navigation/FeatureNavContext';
-import { DashboardCreditScoreCard } from '../shared/CreditScoreScreen';
 
 const sourceIcon = (s: Order['source']) => {
   if (s === 'facebook') return <FacebookIcon size={16} color="#1877F2" />;
@@ -301,10 +299,7 @@ export const WebsiteScreen = () => (
   </View>
 );
 
-export const Tier2Home = () => {
-  const { openFeature } = useFeatureNav();
-
-  return (
+export const Tier2Home = () => (
   <ScreenFrame>
     <AppHeader showGreeting />
     <ScreenScroll>
@@ -317,12 +312,10 @@ export const Tier2Home = () => {
           { label: 'কুরিয়ারে', value: '২ 🛵' },
         ]}
       />
-      <DashboardCreditScoreCard onPress={() => openFeature('creditScore')} />
       <FeatureToolsSection layout="grid" scope="all" />
     </ScreenScroll>
   </ScreenFrame>
-  );
-};
+);
 
 const styles = StyleSheet.create({
   container:      { flex: 1, backgroundColor: Colors.bg },
