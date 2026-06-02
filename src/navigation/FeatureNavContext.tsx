@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Modal, View, StyleSheet, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../auth/AuthContext';
@@ -32,6 +32,10 @@ export const FeatureNavProvider = ({ children }: { children: ReactNode }) => {
 
   const openFeature = (id: FeatureId) => setActiveFeature(id);
   const closeFeature = () => setActiveFeature(null);
+
+  useEffect(() => {
+    setActiveFeature(null);
+  }, [tier]);
 
   const active = activeFeature ? getFeatureById(activeFeature) : null;
   const ActiveComponent = active?.component;

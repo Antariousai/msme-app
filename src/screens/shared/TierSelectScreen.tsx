@@ -15,7 +15,8 @@ const TIER_FEATURES: Record<number, string[]> = {
 };
 
 interface TierSelectScreenProps {
-  onDone: () => void;
+  /** Called when modal closes; pass true after tier change to land on home dashboard */
+  onDone: (navigateHome?: boolean) => void;
 }
 
 export const TierSelectScreen = ({ onDone }: TierSelectScreenProps) => {
@@ -85,7 +86,7 @@ export const TierSelectScreen = ({ onDone }: TierSelectScreenProps) => {
           );
         })}
 
-        <Btn label="চালিয়ে যান" onPress={onDone} variant="outline" fullWidth style={{ marginTop: Spacing.md }} />
+        <Btn label="চালিয়ে যান" onPress={() => onDone(false)} variant="outline" fullWidth style={{ marginTop: Spacing.md }} />
       </ScreenScroll>
     </SafeAreaView>
   );

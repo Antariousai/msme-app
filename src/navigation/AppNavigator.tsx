@@ -7,6 +7,7 @@ import { useAuth, UserTier } from '../auth/AuthContext';
 import { LoginScreen } from '../screens/auth/LoginScreen';
 import { TierSelectScreen } from '../screens/shared/TierSelectScreen';
 import { MoreScreen } from '../screens/shared/MoreScreen';
+import { SettingsScreen } from '../screens/shared/SettingsScreen';
 import { BrandStudioScreen } from '../screens/shared/BrandStudioScreen';
 import { Tier0Home } from '../screens/tier0/BookkeepingScreen';
 import { Tier1Home } from '../screens/tier1/MessagesScreen';
@@ -41,9 +42,9 @@ function getHomeComponent(tier: UserTier): React.ComponentType {
   return HOME_COMPONENTS[0];
 }
 
-function makeMoreScreen(onSelectTier: () => void, onOpenBrandStudio: () => void) {
-  return function MoreTabScreen() {
-    return <MoreScreen onSelectTier={onSelectTier} onOpenBrandStudio={onOpenBrandStudio} />;
+function makeAccountScreen(onOpenSettings: () => void) {
+  return function AccountTabScreen() {
+    return <MoreScreen onOpenSettings={onOpenSettings} />;
   };
 }
 
@@ -62,10 +63,10 @@ function buildNavTheme(mode: 'light' | 'dark', colors: ReturnType<typeof useThem
   };
 }
 
-function MainTabs({ onSelectTier, onOpenBrandStudio }: { onSelectTier: () => void; onOpenBrandStudio: () => void }) {
+function MainTabs({ onOpenSettings }: { onOpenSettings: () => void }) {
   const { user } = useAuth();
   const insets = useSafeAreaInsets();
-  const { colors, mode } = useTheme();
+  const { colors } = useTheme();
   const tier = user?.tier ?? 0;
   const primaryIds = getPrimaryTabIds(tier);
   const HomeComponent = getHomeComponent(tier);
@@ -76,12 +77,13 @@ function MainTabs({ onSelectTier, onOpenBrandStudio }: { onSelectTier: () => voi
       const feat = getFeatureById(id)!;
       return { name: feat.id, label: feat.label, component: feat.component, icon: feat.icon };
     }),
-    { name: 'Account', label: 'অ্যাকাউন্ট', component: makeMoreScreen(onSelectTier, onOpenBrandStudio), icon: AccountIcon },
+    { name: 'Account', label: 'অ্যাকাউন্ট', component: makeAccountScreen(onOpenSettings), icon: AccountIcon },
   ];
 
   return (
     <Tab.Navigator
-      key={mode}
+      key={`tier-${tier}`}
+      initialRouteName="Home"
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
@@ -128,9 +130,25 @@ function MainTabs({ onSelectTier, onOpenBrandStudio }: { onSelectTier: () => voi
 export const AppNavigator = () => {
   const { user, loading } = useAuth();
   const { colors, mode } = useTheme();
+  const [showSettings, setShowSettings] = useState(false);
   const [showTierSelect, setShowTierSelect] = useState(false);
   const [showBrandStudio, setShowBrandStudio] = useState(false);
   const navTheme = buildNavTheme(mode, colors);
+
+  const openTierFromSettings = () => {
+    setShowSettings(false);
+    setShowTierSelect(true);
+  };
+
+  const openBrandStudioFromSettings = () => {
+    setShowSettings(false);
+    setShowBrandStudio(true);
+  };
+
+  const handleTierSelectDone = (navigateHome?: boolean) => {
+    setShowTierSelect(false);
+    if (navigateHome) setShowSettings(false);
+  };
 
   if (loading) {
     return (
@@ -147,15 +165,20 @@ export const AppNavigator = () => {
 
   return (
     <FeatureNavProvider>
-      <NavigationContainer theme={navTheme} key={mode}>
-        <MainTabs
-          onSelectTier={() => setShowTierSelect(true)}
-          onOpenBrandStudio={() => setShowBrandStudio(true)}
-        />
+      <NavigationContainer theme={navTheme}>
+        <MainTabs onOpenSettings={() => setShowSettings(true)} />
       </NavigationContainer>
 
+      <Modal visible={showSettings} animationType="slide">
+        <SettingsScreen
+          onClose={() => setShowSettings(false)}
+          onSelectTier={openTierFromSettings}
+          onOpenBrandStudio={openBrandStudioFromSettings}
+        />
+      </Modal>
+
       <Modal visible={showTierSelect} animationType="slide">
-        <TierSelectScreen onDone={() => setShowTierSelect(false)} />
+        <TierSelectScreen onDone={handleTierSelectDone} />
       </Modal>
 
       <Modal visible={showBrandStudio} animationType="slide">
