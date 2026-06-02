@@ -1,5 +1,15 @@
-import React, { useState, useMemo } from 'react';
-import { View, StyleSheet, Modal, Pressable, ScrollView, useWindowDimensions } from 'react-native';
+import React, { useState, useMemo, useRef } from 'react';
+import {
+  View,
+  StyleSheet,
+  Modal,
+  Pressable,
+  ScrollView,
+  useWindowDimensions,
+  NativeSyntheticEvent,
+  NativeScrollEvent,
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppHeader } from '../../components/AppHeader';
 import { T, Card, Row, ScreenScroll, SectionHeader, StatusPill, Btn, Input, AISuggestion, Chip } from '../../components/atoms';
 import { FeatureToolsSection } from '../../components/FeatureToolsSection';
@@ -8,6 +18,9 @@ import { HeroCard } from '../../components/HeroCard';
 import { Colors, Spacing, Radius } from '../../theme';
 import { seedLeads, Lead, aiSuggestions } from '../../data/seed';
 import { toBn, generateId } from '../../utils/helpers';
+
+const WIDE_BREAKPOINT = 720;
+const MOBILE_COL_GAP = Spacing.sm;
 
 const scoreColor = (score: number) => {
   if (score >= 80) return Colors.success;
@@ -31,84 +44,357 @@ const statusPillType: Record<Lead['status'], 'success' | 'warning' | 'error' | '
   lost: 'error',
 };
 
-// ─── Kanban Card ───────────────────────────────────────────────────────────────
+const nextStage = (status: Lead['status']): Lead['status'] | null => {
+  const i = STAGES.findIndex((s) => s.key === status);
+  if (i < 0 || i >= STAGES.length - 2) return null; // skip advancing into 'lost' via quick action
+  return STAGES[i + 1].key;
+};
+
+// ─── Move lead sheet (mobile-friendly) ─────────────────────────────────────────
+
+const MoveLeadSheet = ({
+  visible,
+  lead,
+  onClose,
+  onMove,
+}: {
+  visible: boolean;
+  lead: Lead | null;
+  onClose: () => void;
+  onMove: (id: string, status: Lead['status']) => void;
+}) => {
+  if (!lead) return null;
+  const current = STAGES.find((s) => s.key === lead.status)!;
+
+  return (
+    <Modal visible={visible} transparent animationType="slide">
+      <Pressable style={styles.overlay} onPress={onClose}>
+        <Pressable style={styles.sheet} onPress={(e) => e.stopPropagation()}>
+          <T size="lg" weight="bold" style={{ marginBottom: 4 }}>{lead.name}</T>
+          <T size="xs" color={Colors.textSecondary} style={{ marginBottom: Spacing.lg }}>
+            বর্তমান: {current.emoji} {current.label}
+          </T>
+          <T size="sm" weight="semibold" style={{ marginBottom: Spacing.sm }}>স্তর বেছে নিন</T>
+          {STAGES.filter((s) => s.key !== lead.status).map((s) => (
+            <Pressable
+              key={s.key}
+              onPress={() => { onMove(lead.id, s.key); onClose(); }}
+              style={[styles.moveRow, { borderLeftColor: s.color }]}
+            >
+              <T size="md">{s.emoji}</T>
+              <T size="sm" weight="semibold" style={{ flex: 1, marginLeft: Spacing.sm }}>{s.label}</T>
+              <T size="lg" color={Colors.textTertiary}>›</T>
+            </Pressable>
+          ))}
+        </Pressable>
+      </Pressable>
+    </Modal>
+  );
+};
+
+// ─── Kanban card ───────────────────────────────────────────────────────────────
 
 const KanbanCard = ({
   lead,
-  onMove,
+  mobile,
+  onMovePress,
+  onQuickAdvance,
 }: {
   lead: Lead;
-  onMove: (id: string, status: Lead['status']) => void;
+  mobile?: boolean;
+  onMovePress: (lead: Lead) => void;
+  onQuickAdvance?: (lead: Lead) => void;
 }) => {
-  const [expanded, setExpanded] = useState(false);
   const stage = STAGES.find((s) => s.key === lead.status)!;
+  const advance = nextStage(lead.status);
+  const advanceStage = advance ? STAGES.find((s) => s.key === advance) : null;
 
   return (
     <Card
-      onPress={() => setExpanded(!expanded)}
       style={[styles.kanbanCard, { borderLeftColor: stage.color }]}
-      padding={Spacing.sm}
+      padding={mobile ? Spacing.md : Spacing.sm}
     >
-      <Row justify="space-between" style={{ marginBottom: 2 }}>
-        <T size="sm" weight="semibold" style={{ flex: 1 }} numberOfLines={1}>{lead.name}</T>
-        <T size="xs" weight="bold" color={scoreColor(lead.score)}>⭐{toBn(lead.score)}</T>
-      </Row>
-      <T size="xs" color={Colors.textSecondary} numberOfLines={1}>📞 {lead.phone}</T>
-      <T size="xs" color={Colors.textTertiary}>{lead.source}</T>
-      {expanded && (
-        <View style={{ marginTop: Spacing.sm }}>
-          <T size="xs" weight="medium" style={{ marginBottom: Spacing.xs }}>স্তরে সরান:</T>
-          <Row gap={4} wrap>
-            {STAGES.filter((s) => s.key !== lead.status).map((s) => (
-              <Pressable
-                key={s.key}
-                onPress={() => { onMove(lead.id, s.key); setExpanded(false); }}
-                style={[styles.moveBtn, { borderColor: s.color }]}
-              >
-                <T size="xs" color={s.color}>{s.emoji} {s.label}</T>
-              </Pressable>
-            ))}
-          </Row>
+      <Row justify="space-between" align="flex-start" style={{ marginBottom: Spacing.xs }}>
+        <View style={{ flex: 1, minWidth: 0, paddingRight: Spacing.sm }}>
+          <T size={mobile ? 'md' : 'sm'} weight="semibold" numberOfLines={2}>{lead.name}</T>
+          <T size="xs" color={Colors.textSecondary} style={{ marginTop: 2 }} numberOfLines={1}>
+            📞 {lead.phone}
+          </T>
+          {lead.address ? (
+            <T size="xs" color={Colors.textTertiary} numberOfLines={1}>📍 {lead.address}</T>
+          ) : null}
         </View>
+        <View style={styles.scoreBadge}>
+          <T size="xs" weight="bold" color={scoreColor(lead.score)}>⭐ {toBn(lead.score)}</T>
+        </View>
+      </Row>
+      <T size="xs" color={Colors.textTertiary}>{lead.source} · {lead.lastContact}</T>
+
+      {mobile && (
+        <Row gap={Spacing.sm} style={{ marginTop: Spacing.md }}>
+          {advanceStage && onQuickAdvance && (
+            <Btn
+              label={`${advanceStage.emoji} ${advanceStage.label}`}
+              onPress={() => onQuickAdvance(lead)}
+              size="sm"
+              variant="primary"
+              flex
+            />
+          )}
+          <Btn
+            label="স্তর পরিবর্তন"
+            onPress={() => onMovePress(lead)}
+            size="sm"
+            variant="outline"
+            flex={!advanceStage}
+          />
+        </Row>
       )}
     </Card>
   );
 };
 
-// ─── Kanban Column ─────────────────────────────────────────────────────────────
+// ─── Desktop column ────────────────────────────────────────────────────────────
 
 const KanbanColumn = ({
   stage,
   leads,
-  onMove,
   colWidth,
+  colHeight,
+  onMovePress,
 }: {
   stage: typeof STAGES[number];
   leads: Lead[];
-  onMove: (id: string, status: Lead['status']) => void;
   colWidth: number;
+  colHeight: number;
+  onMovePress: (lead: Lead) => void;
 }) => (
-  <View style={[styles.kanbanCol, { width: colWidth }]}>
+  <View style={[styles.kanbanCol, { width: colWidth, height: colHeight }]}>
     <View style={[styles.kanbanColHeader, { backgroundColor: stage.color + '22', borderTopColor: stage.color }]}>
-      <T size="sm" weight="bold">{stage.emoji} {stage.label}</T>
+      <T size="sm" weight="bold" numberOfLines={1}>{stage.emoji} {stage.label}</T>
       <View style={[styles.kanbanBadge, { backgroundColor: stage.color }]}>
         <T size="xs" weight="bold" color="#fff">{leads.length}</T>
       </View>
     </View>
-    <ScrollView nestedScrollEnabled showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
-      {leads.length === 0 && (
-        <T size="xs" color={Colors.textTertiary} style={{ textAlign: 'center', marginTop: Spacing.md }}>
+    <ScrollView
+      nestedScrollEnabled
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={{ paddingBottom: Spacing.sm }}
+    >
+      {leads.length === 0 ? (
+        <T size="xs" color={Colors.textTertiary} style={styles.emptyCol}>
           কোনো লিড নেই
         </T>
+      ) : (
+        leads.map((lead) => (
+          <Pressable key={lead.id} onPress={() => onMovePress(lead)}>
+            <KanbanCard lead={lead} onMovePress={onMovePress} />
+          </Pressable>
+        ))
       )}
-      {leads.map((lead) => (
-        <KanbanCard key={lead.id} lead={lead} onMove={onMove} />
-      ))}
     </ScrollView>
   </View>
 );
 
-// ─── Kanban Board ──────────────────────────────────────────────────────────────
+// ─── Mobile: stage tabs + paged columns ────────────────────────────────────────
+
+const MobileKanban = ({
+  leads,
+  onMovePress,
+  onQuickAdvance,
+}: {
+  leads: Lead[];
+  onMovePress: (lead: Lead) => void;
+  onQuickAdvance: (lead: Lead) => void;
+}) => {
+  const { width } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
+  const scrollRef = useRef<ScrollView>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  const counts = useMemo(() => {
+    const m: Record<Lead['status'], number> = {} as Record<Lead['status'], number>;
+    STAGES.forEach((s) => { m[s.key] = leads.filter((l) => l.status === s.key).length; });
+    return m;
+  }, [leads]);
+
+  const pageWidth = width - Spacing.base * 2;
+  const boardHeight = 420;
+
+  const goToStage = (index: number) => {
+    setActiveIndex(index);
+    scrollRef.current?.scrollTo({ x: index * (pageWidth + MOBILE_COL_GAP), animated: true });
+  };
+
+  const onScrollEnd = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const x = e.nativeEvent.contentOffset.x;
+    const index = Math.round(x / (pageWidth + MOBILE_COL_GAP));
+    setActiveIndex(Math.max(0, Math.min(index, STAGES.length - 1)));
+  };
+
+  const activeStage = STAGES[activeIndex];
+
+  return (
+    <View style={styles.mobileKanban}>
+      {/* Stage tabs */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.stageTabs}
+      >
+        {STAGES.map((stage, i) => (
+          <Pressable
+            key={stage.key}
+            onPress={() => goToStage(i)}
+            style={[
+              styles.stageTab,
+              activeIndex === i && { backgroundColor: stage.color, borderColor: stage.color },
+            ]}
+          >
+            <T
+              size="xs"
+              weight="semibold"
+              color={activeIndex === i ? '#fff' : Colors.textPrimary}
+              numberOfLines={1}
+            >
+              {stage.emoji} {stage.label}
+            </T>
+            <View style={[
+              styles.stageTabCount,
+              activeIndex === i
+                ? { backgroundColor: 'rgba(255,255,255,0.35)' }
+                : { backgroundColor: stage.color + '22' },
+            ]}>
+              <T size="xs" weight="bold" color={activeIndex === i ? '#fff' : stage.color}>
+                {counts[stage.key]}
+              </T>
+            </View>
+          </Pressable>
+        ))}
+      </ScrollView>
+
+      {/* Dot indicator */}
+      <Row justify="center" gap={6} style={{ marginBottom: Spacing.sm }}>
+        {STAGES.map((_, i) => (
+          <View
+            key={i}
+            style={[
+              styles.dot,
+              activeIndex === i && { backgroundColor: STAGES[i].color, width: 18 },
+            ]}
+          />
+        ))}
+      </Row>
+
+      {/* One column per swipe page */}
+      <ScrollView
+        ref={scrollRef}
+        horizontal
+        pagingEnabled={false}
+        decelerationRate="fast"
+        snapToInterval={pageWidth + MOBILE_COL_GAP}
+        snapToAlignment="start"
+        disableIntervalMomentum
+        onMomentumScrollEnd={onScrollEnd}
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{
+          paddingHorizontal: Spacing.base,
+          gap: MOBILE_COL_GAP,
+          paddingBottom: insets.bottom + Spacing.lg,
+        }}
+        style={{ maxHeight: boardHeight }}
+      >
+        {STAGES.map((stage) => {
+          const stageLeads = leads.filter((l) => l.status === stage.key);
+          return (
+            <View
+              key={stage.key}
+              style={[
+                styles.mobileCol,
+                { width: pageWidth, borderTopColor: stage.color },
+              ]}
+            >
+              <View style={[styles.mobileColHeader, { backgroundColor: stage.color + '18' }]}>
+                <T size="sm" weight="bold">{stage.emoji} {stage.label}</T>
+                <T size="xs" color={Colors.textSecondary}>{stageLeads.length} লিড</T>
+              </View>
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                nestedScrollEnabled
+                contentContainerStyle={{ padding: Spacing.sm, paddingBottom: Spacing.md }}
+              >
+                {stageLeads.length === 0 ? (
+                  <Card padding={Spacing.lg}>
+                    <T size="sm" color={Colors.textTertiary} style={{ textAlign: 'center' }}>
+                      এই স্তরে কোনো লিড নেই
+                    </T>
+                    <T size="xs" color={Colors.textTertiary} style={{ textAlign: 'center', marginTop: Spacing.xs }}>
+                      অন্য স্তর থেকে সরান অথবা নতুন লিড যোগ করুন
+                    </T>
+                  </Card>
+                ) : (
+                  stageLeads.map((lead) => (
+                    <KanbanCard
+                      key={lead.id}
+                      lead={lead}
+                      mobile
+                      onMovePress={onMovePress}
+                      onQuickAdvance={onQuickAdvance}
+                    />
+                  ))
+                )}
+              </ScrollView>
+            </View>
+          );
+        })}
+      </ScrollView>
+
+      <T size="xs" color={Colors.textTertiary} style={styles.swipeHint}>
+        ← সোয়াইপ করুন ({activeStage.emoji} {activeStage.label}) →
+      </T>
+    </View>
+  );
+};
+
+// ─── Desktop board ─────────────────────────────────────────────────────────────
+
+const DesktopKanban = ({
+  leads,
+  onMovePress,
+}: {
+  leads: Lead[];
+  onMovePress: (lead: Lead) => void;
+}) => {
+  const { width, height } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
+  const colWidth = Math.floor(
+    (width - Spacing.base * 2 - MOBILE_COL_GAP * (STAGES.length - 1)) / STAGES.length,
+  );
+  const colHeight = Math.min(height * 0.55, 520);
+
+  return (
+    <ScrollView
+      horizontal
+      style={{ flex: 1 }}
+      contentContainerStyle={[
+        styles.kanbanBoard,
+        { paddingBottom: insets.bottom + Spacing.lg },
+      ]}
+      showsHorizontalScrollIndicator={false}
+    >
+      {STAGES.map((stage) => (
+        <KanbanColumn
+          key={stage.key}
+          stage={stage}
+          leads={leads.filter((l) => l.status === stage.key)}
+          colWidth={colWidth}
+          colHeight={colHeight}
+          onMovePress={onMovePress}
+        />
+      ))}
+    </ScrollView>
+  );
+};
 
 const KanbanBoard = ({
   leads,
@@ -118,31 +404,32 @@ const KanbanBoard = ({
   onMove: (id: string, status: Lead['status']) => void;
 }) => {
   const { width } = useWindowDimensions();
-  const isWide = width >= 720;
-  const colWidth = isWide
-    ? Math.floor((width - Spacing.base * 2 - Spacing.sm * (STAGES.length - 1)) / STAGES.length)
-    : width - Spacing.base * 3;
+  const isWide = width >= WIDE_BREAKPOINT;
+  const [moveLead, setMoveLead] = useState<Lead | null>(null);
+
+  const handleQuickAdvance = (lead: Lead) => {
+    const next = nextStage(lead.status);
+    if (next) onMove(lead.id, next);
+  };
 
   return (
-    <ScrollView
-      horizontal={!isWide}
-      style={{ flex: 1 }}
-      contentContainerStyle={[
-        styles.kanbanBoard,
-        isWide && { flexDirection: 'row', flexWrap: 'nowrap' },
-      ]}
-      showsHorizontalScrollIndicator={false}
-    >
-      {STAGES.map((stage) => (
-        <KanbanColumn
-          key={stage.key}
-          stage={stage}
-          leads={leads.filter((l) => l.status === stage.key)}
-          onMove={onMove}
-          colWidth={colWidth}
+    <>
+      {isWide ? (
+        <DesktopKanban leads={leads} onMovePress={setMoveLead} />
+      ) : (
+        <MobileKanban
+          leads={leads}
+          onMovePress={setMoveLead}
+          onQuickAdvance={handleQuickAdvance}
         />
-      ))}
-    </ScrollView>
+      )}
+      <MoveLeadSheet
+        visible={moveLead !== null}
+        lead={moveLead}
+        onClose={() => setMoveLead(null)}
+        onMove={onMove}
+      />
+    </>
   );
 };
 
@@ -185,17 +472,18 @@ export const LeadsScreen = () => {
     <ScreenFrame>
       <AppHeader title="লিড ও CRM" subtitle="ক্যাপচার · স্কোর · রূপান্তর" />
 
-      {/* Toolbar */}
       <View style={styles.toolbar}>
         <Row gap={Spacing.xs}>
           <Chip label="📋 তালিকা" active={view === 'list'} onPress={() => setView('list')} />
           <Chip label="🗂 Kanban" active={view === 'kanban'} onPress={() => setView('kanban')} />
         </Row>
-        <Btn label="➕ লিড যোগ" onPress={() => setModalVisible(true)} size="sm" />
+        <Btn label="➕ লিড" onPress={() => setModalVisible(true)} size="sm" />
       </View>
 
       {view === 'kanban' ? (
-        <KanbanBoard leads={leads} onMove={moveLead} />
+        <View style={styles.kanbanWrap}>
+          <KanbanBoard leads={leads} onMove={moveLead} />
+        </View>
       ) : (
         <ScreenScroll>
           {aiSuggestions.leads.map((s, i) => (
@@ -255,8 +543,6 @@ export const LeadsScreen = () => {
   );
 };
 
-// ─── Tier 3 Home ───────────────────────────────────────────────────────────────
-
 export const Tier3Home = () => {
   const hotLeads = seedLeads.filter((l) => l.score >= 70).length;
   const converted = seedLeads.filter((l) => l.status === 'converted').length;
@@ -291,22 +577,71 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: Spacing.base,
     paddingVertical: Spacing.sm,
-    backgroundColor: Colors.bg,
     borderBottomWidth: 1,
     borderBottomColor: Colors.border,
   },
+  kanbanWrap: { flex: 1, minHeight: 0 },
+  mobileKanban: { flex: 1 },
+  stageTabs: {
+    paddingHorizontal: Spacing.base,
+    paddingVertical: Spacing.sm,
+    gap: Spacing.xs,
+  },
+  stageTab: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: 8,
+    borderRadius: Radius.full,
+    borderWidth: 1.5,
+    borderColor: Colors.border,
+    backgroundColor: Colors.surface,
+    marginRight: Spacing.xs,
+  },
+  stageTabCount: {
+    borderRadius: 999,
+    minWidth: 22,
+    height: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 6,
+  },
+  dot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: Colors.border,
+  },
+  mobileCol: {
+    borderRadius: Radius.lg,
+    backgroundColor: Colors.surface,
+    overflow: 'hidden',
+    borderTopWidth: 3,
+    maxHeight: 400,
+  },
+  mobileColHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+  },
+  swipeHint: {
+    textAlign: 'center',
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.base,
+  },
   kanbanBoard: {
     flexDirection: 'row',
-    padding: Spacing.sm,
-    gap: Spacing.sm,
+    padding: Spacing.base,
+    gap: MOBILE_COL_GAP,
   },
   kanbanCol: {
     borderRadius: Radius.lg,
     backgroundColor: Colors.surface,
     overflow: 'hidden',
-    maxHeight: '100%',
     flexShrink: 0,
-    minHeight: 200,
   },
   kanbanColHeader: {
     flexDirection: 'row',
@@ -321,16 +656,32 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
   },
   kanbanCard: {
-    margin: Spacing.xs,
+    marginBottom: Spacing.sm,
     borderLeftWidth: 3,
   },
-  moveBtn: {
-    borderWidth: 1,
-    borderRadius: Radius.sm,
+  scoreBadge: {
+    backgroundColor: Colors.bg,
     paddingHorizontal: Spacing.sm,
-    paddingVertical: 3,
-    marginBottom: 4,
+    paddingVertical: 4,
+    borderRadius: Radius.sm,
+  },
+  emptyCol: { textAlign: 'center', marginTop: Spacing.md, padding: Spacing.sm },
+  moveRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.md,
+    marginBottom: Spacing.sm,
+    backgroundColor: Colors.bg,
+    borderRadius: Radius.md,
+    borderLeftWidth: 4,
   },
   overlay: { flex: 1, backgroundColor: Colors.overlay, justifyContent: 'flex-end' },
-  sheet: { backgroundColor: Colors.surface, borderTopLeftRadius: Radius['2xl'], borderTopRightRadius: Radius['2xl'], padding: Spacing.xl },
+  sheet: {
+    backgroundColor: Colors.surface,
+    borderTopLeftRadius: Radius['2xl'],
+    borderTopRightRadius: Radius['2xl'],
+    padding: Spacing.xl,
+    paddingBottom: Spacing.xl + 8,
+  },
 });
