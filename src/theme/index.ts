@@ -53,11 +53,13 @@ export const Gradients = {
 };
 
 export const Typography = {
+  // Tiro Bangla only ships Regular (400). All weight slots point to the same
+  // face; React Native's OS-level fontWeight will synthesise bold where needed.
   fontFamily: {
-    regular: 'BalooDa2_400Regular',
-    medium: 'BalooDa2_500Medium',
-    semibold: 'BalooDa2_600SemiBold',
-    bold: 'BalooDa2_700Bold',
+    regular:  'TiroBangla_400Regular',
+    medium:   'TiroBangla_400Regular',
+    semibold: 'TiroBangla_400Regular',
+    bold:     'TiroBangla_400Regular',
   },
   size: {
     xs: 11,

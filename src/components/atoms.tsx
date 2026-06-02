@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { Children } from 'react';
 import {
   View, Text, StyleSheet, ViewStyle, TextStyle,
   ActivityIndicator, ScrollView, TextInput, Pressable, StyleProp,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Spacing, Radius, Shadow, Typography } from '../theme';
+import { Spacing, Radius, Shadow, Typography, Motion } from '../theme';
 import { useTheme } from '../theme/ThemeContext';
 import { RipplePressable, SlideIn, Pulse, type PressEffect } from './motion';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -18,6 +18,18 @@ const fontForWeight = (weight: TextWeight = 'regular') => {
     medium: Typography.fontFamily.medium,
     semibold: Typography.fontFamily.semibold,
     bold: Typography.fontFamily.bold,
+  };
+  return map[weight];
+};
+
+// OS-level fontWeight synthesis so bold/semibold show correctly when the
+// font family only ships a single Regular file (e.g. Tiro Bangla).
+const fontWeightFor = (weight: TextWeight): TextStyle['fontWeight'] => {
+  const map: Record<TextWeight, TextStyle['fontWeight']> = {
+    regular: '400',
+    medium:  '500',
+    semibold: '600',
+    bold:    '700',
   };
   return map[weight];
 };
@@ -45,6 +57,7 @@ export const T = ({
       numberOfLines={numberOfLines}
       style={[{
         fontFamily: fontForWeight(weight),
+        fontWeight: fontWeightFor(weight),
         fontSize: Typography.size[size],
         color: textColor,
         textAlign: align,
@@ -524,6 +537,8 @@ export const ScreenScroll = ({ children, style, contentPadding = true }: ScreenS
   const insets = useSafeAreaInsets();
   const tabBarClearance = 68;
 
+  const items = Children.toArray(children);
+
   return (
     <ScrollView
       showsVerticalScrollIndicator={false}
@@ -535,7 +550,11 @@ export const ScreenScroll = ({ children, style, contentPadding = true }: ScreenS
         style,
       ]}
     >
-      <SlideIn>{children}</SlideIn>
+      {items.map((child, i) => (
+        <SlideIn key={i} delay={i * Motion.stagger}>
+          {child}
+        </SlideIn>
+      ))}
     </ScrollView>
   );
 };

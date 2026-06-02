@@ -3,13 +3,7 @@ import React from 'react';
 import { View, ActivityIndicator } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import {
-  useFonts,
-  BalooDa2_400Regular,
-  BalooDa2_500Medium,
-  BalooDa2_600SemiBold,
-  BalooDa2_700Bold,
-} from '@expo-google-fonts/baloo-da-2';
+import { useFonts } from 'expo-font';
 import { AuthProvider } from './src/auth/AuthContext';
 import { AppNavigator } from './src/navigation/AppNavigator';
 import { ThemeProvider, useTheme } from './src/theme';
@@ -28,10 +22,7 @@ const AppRoot = () => {
 
 export default function App() {
   const [fontsLoaded] = useFonts({
-    BalooDa2_400Regular,
-    BalooDa2_500Medium,
-    BalooDa2_600SemiBold,
-    BalooDa2_700Bold,
+    TiroBangla_400Regular: require('./assets/fonts/TiroBangla-Regular.ttf'),
   });
 
   if (!fontsLoaded) {

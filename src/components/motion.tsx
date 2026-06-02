@@ -199,13 +199,14 @@ export const Pulse = ({ children, style, active = true }: PulseProps) => {
       scale.value = 1;
       return;
     }
+    // reverse=false — sequence already returns to 1, so no double-bump
     scale.value = withRepeat(
       withSequence(
         withTiming(1.06, { duration: Motion.pulseDuration }),
         withTiming(1, { duration: Motion.pulseDuration }),
       ),
       -1,
-      true,
+      false,
     );
   }, [active, scale]);
 
