@@ -26,24 +26,22 @@ export interface BusinessCreditProfile {
   gradeLabel: string;
   gradeEmoji: string;
   factors: CreditFactor[];
-  /** Meets demo threshold for PKSF-style reporting */
-  pksfEligible: boolean;
   summary: string;
 }
 
 const clamp = (n: number, min = 0, max = 100) => Math.max(min, Math.min(max, Math.round(n)));
 
-function gradeFromScore(score: number): Pick<BusinessCreditProfile, 'grade' | 'gradeLabel' | 'gradeEmoji' | 'pksfEligible'> {
+function gradeFromScore(score: number): Pick<BusinessCreditProfile, 'grade' | 'gradeLabel' | 'gradeEmoji'> {
   if (score >= 80) {
-    return { grade: 'excellent', gradeLabel: 'উৎকৃষ্ট', gradeEmoji: '🌟', pksfEligible: true };
+    return { grade: 'excellent', gradeLabel: 'উৎকৃষ্ট', gradeEmoji: '🌟' };
   }
   if (score >= 60) {
-    return { grade: 'good', gradeLabel: 'ভালো', gradeEmoji: '✅', pksfEligible: true };
+    return { grade: 'good', gradeLabel: 'ভালো', gradeEmoji: '✅' };
   }
   if (score >= 40) {
-    return { grade: 'fair', gradeLabel: 'মাঝারি', gradeEmoji: '📊', pksfEligible: false };
+    return { grade: 'fair', gradeLabel: 'মাঝারি', gradeEmoji: '📊' };
   }
-  return { grade: 'needs_work', gradeLabel: 'উন্নতি প্রয়োজন', gradeEmoji: '⚠️', pksfEligible: false };
+  return { grade: 'needs_work', gradeLabel: 'উন্নতি প্রয়োজন', gradeEmoji: '⚠️' };
 }
 
 /** MSME account credit score from in-app business signals (demo model). */
@@ -165,17 +163,16 @@ export function creditScoreColor(score: number): string {
   return '#fb7185';
 }
 
-/** Plain-text report for PKSF / partner institutions (demo). */
-export function buildPksfCreditReport(businessName: string, profile: BusinessCreditProfile): string {
+/** Plain-text credit score report for sharing (demo). */
+export function buildCreditScoreReport(businessName: string, profile: BusinessCreditProfile): string {
   const today = new Date().toLocaleDateString('en-GB');
   const lines = [
-    'PKSF MSME ক্রেডিট স্কোর রিপোর্ট (ডেমো)',
+    'MSME ক্রেডিট স্কোর রিপোর্ট (ডেমো)',
     '────────────────────',
     `প্রতিষ্ঠান: ${businessName}`,
     `রিপোর্ট তারিখ: ${toBn(today)}`,
     `ক্রেডিট স্কোর: ${toBn(profile.score)}/১০০`,
     `মান: ${profile.gradeEmoji} ${profile.gradeLabel}`,
-    `PKSF যোগ্যতা: ${profile.pksfEligible ? 'হ্যাঁ (থ্রেশহোল্ড পূরণ)' : 'এখনও নয়'}`,
     '────────────────────',
     'স্কোর উপাদান:',
     ...profile.factors.map(

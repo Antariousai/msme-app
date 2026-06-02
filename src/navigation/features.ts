@@ -83,7 +83,7 @@ export const FEATURES: FeatureDef[] = [
   {
     id: 'creditScore',
     label: 'ক্রেডিট স্কোর',
-    subtitle: 'অ্যাকাউন্ট · PKSF রিপোর্ট',
+    subtitle: 'অ্যাকাউন্ট · MSME প্রোফাইল',
     category: 'accounting',
     introducedIn: 0,
     emoji: '🏦',

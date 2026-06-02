@@ -19,7 +19,7 @@ import { useAuth } from '../../auth/AuthContext';
 import {
   computeBusinessCreditScore,
   creditScoreColor,
-  buildPksfCreditReport,
+  buildCreditScoreReport,
   CreditFactor,
 } from '../../utils/creditScore';
 import { shareReport } from '../../utils/report';
@@ -55,13 +55,13 @@ export const CreditScoreScreen = () => {
 
   const profile = useMemo(() => computeBusinessCreditScore(), []);
   const scoreColor = creditScoreColor(profile.score);
-  const canPksf = (user?.tier ?? 0) >= 3;
+  const canExport = (user?.tier ?? 0) >= 3;
 
-  const exportPksf = async () => {
+  const exportReport = async () => {
     setExporting(true);
     try {
-      const content = buildPksfCreditReport(user?.businessName ?? 'আমার ব্যবসা', profile);
-      await shareReport('pksf-credit-score', content);
+      const content = buildCreditScoreReport(user?.businessName ?? 'আমার ব্যবসা', profile);
+      await shareReport('credit-score', content);
     } finally {
       setExporting(false);
     }
@@ -91,9 +91,6 @@ export const CreditScoreScreen = () => {
               label={`${profile.gradeEmoji} ${profile.gradeLabel}`}
               type={profile.score >= 60 ? 'success' : profile.score >= 40 ? 'warning' : 'error'}
             />
-            {profile.pksfEligible && (
-              <StatusPill label="PKSF যোগ্য" type="info" />
-            )}
           </Row>
           <T size="xs" color="#fff" style={{ opacity: 0.8, marginTop: Spacing.sm, textAlign: 'center' }}>
             হিসাব · অর্ডার · স্টক · লিড ডেটা থেকে স্বয়ংক্রিয়
@@ -112,29 +109,24 @@ export const CreditScoreScreen = () => {
         ))}
 
         <Card style={{ marginTop: Spacing.sm, marginBottom: Spacing.base }}>
-          <T size="sm" weight="bold" style={{ marginBottom: Spacing.sm }}>🏛️ PKSF রিপোর্টিং</T>
+          <T size="sm" weight="bold" style={{ marginBottom: Spacing.sm }}>📄 রিপোর্ট এক্সপোর্ট</T>
           <T size="xs" color={colors.textSecondary} style={{ marginBottom: Spacing.md }}>
-            পল্লী কর্ম-সহায়ক ফাউন্ডেশন (PKSF) ও অংশীদার ইনস্টিটিউশনের জন্য ক্রেডিট সারাংশ এক্সপোর্ট করুন।
-            {canPksf ? '' : ' সম্পূর্ণ রিপোর্ট টায়ার ৩+ এ উপলব্ধ।'}
+            ক্রেডিট স্কোর সারাংশ ডাউনলোড বা শেয়ার করুন।
+            {canExport ? '' : ' সম্পূর্ণ রিপোর্ট টায়ার ৩+ এ উপলব্ধ।'}
           </T>
-          {!profile.pksfEligible && (
-            <T size="xs" color={Colors.warning} style={{ marginBottom: Spacing.md }}>
-              স্কোর ৬০+ হলে PKSF যোগ্যতা চিহ্ন সক্রিয় হয়।
-            </T>
-          )}
           <Btn
-            label={canPksf ? '⬇️ PKSF রিপোর্ট এক্সপোর্ট' : '🔒 টায়ার ৩+ প্রয়োজন'}
-            onPress={exportPksf}
+            label={canExport ? '⬇️ রিপোর্ট এক্সপোর্ট' : '🔒 টায়ার ৩+ প্রয়োজন'}
+            onPress={exportReport}
             fullWidth
             variant="primary"
-            disabled={!canPksf}
+            disabled={!canExport}
             loading={exporting}
           />
         </Card>
 
         <Card style={{ backgroundColor: colors.aiBg }}>
           <T size="xs" color={colors.textSecondary}>
-            * ডেমো মডেল — প্রকৃত PKSF ইন্টিগ্রেশন ব্যাকএন্ড API সংযুক্ত হলে লাইভ ডেটা ব্যবহার হবে।
+            * ডেমো মডেল — ব্যাকএন্ড API সংযুক্ত হলে লাইভ ব্যবসা ডেটা ব্যবহার হবে।
           </T>
         </Card>
       </ScreenScroll>
@@ -160,7 +152,6 @@ export const AccountCreditScoreRow = ({ onPress }: { onPress: () => void }) => {
         <T size="sm" weight="bold">🏦 ক্রেডিট স্কোর</T>
         <T size="xs" color={colors.textSecondary} numberOfLines={1}>
           {profile.gradeEmoji} {profile.gradeLabel}
-          {profile.pksfEligible ? ' · PKSF যোগ্য' : ''}
         </T>
       </View>
       <View style={[styles.creditBarMini, { backgroundColor: colors.bg }]}>
