@@ -29,7 +29,19 @@ export const PrimaryShades = {
   900: '#083344',
 };
 
-export const BrandShades = { ...PrimaryShades };
+/** Brand shades — #27a7e1 (Antarious corporate blue, separate from ocean primary) */
+export const BrandShades = {
+  50:  '#f0f9ff',
+  100: '#d8effa',
+  200: '#addef4',
+  300: '#7dcaed',
+  400: '#4fb8e8',
+  500: '#27a7e1',
+  600: '#228fc1',
+  700: '#1c77a2',
+  800: '#175f82',
+  900: '#134b67',
+};
 
 /** Ocean diagonal hero gradient 135deg — studio hero: #0e7490 → #0891b2 → #22d3ee */
 export const Gradients = {
