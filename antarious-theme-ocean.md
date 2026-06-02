@@ -1,16 +1,16 @@
 # Antarious MSME — ডিজাইন টোকেন
 নির্বাচিত মুড: ওশান (ocean)
-তারিখ: ২/৬/২০২৬, ৬:৩০:২৩ PM
+তারিখ: ২/৬/২০২৬, ৮:০৪:৪২ PM
 
 ## নির্বাচন (Selections)
-- ফন্ট: Tiro Bangla
+- ফন্ট: Baloo Da 2
 - কর্নার রেডিয়াস: 20px
-- বাটন আকৃতি / ফিল: soft / solid
+- বাটন আকৃতি / ফিল: rounded / gradient
 - গ্রেডিয়েন্ট স্টাইল: diagonal
 - আইকন স্টাইল: emoji
 - ব্যাকগ্রাউন্ড / কার্ড: soft / white
-- এন্ট্রান্স অ্যানিমেশন: pop
-- মোড: light
+- এন্ট্রান্স অ্যানিমেশন: slide
+- মোড: dark
 
 ## রং (Colors)
 Primary    #0e7490
@@ -53,7 +53,7 @@ linear-gradient(135deg,#0e7490,#0891b2 55%,#22d3ee)
   --brand:#27a7e1; --brand-100:#d8effa; --brand-300:#7dcaed; --brand-700:#1c77a2;
   --radius:20px;
   --hero:linear-gradient(135deg,#0e7490,#0891b2 55%,#22d3ee);
-  --font:'Tiro Bangla';
+  --font:'Baloo Da 2';
 }
 ```
 
@@ -62,17 +62,17 @@ linear-gradient(135deg,#0e7490,#0891b2 55%,#22d3ee)
 {
   "theme": "ocean",
   "name": "ওশান",
-  "font": "Tiro Bangla",
+  "font": "Baloo Da 2",
   "radius": 20,
-  "buttonShape": "soft",
-  "buttonFill": "solid",
+  "buttonShape": "rounded",
+  "buttonFill": "gradient",
   "gradient": "diagonal",
   "gradientCss": "linear-gradient(135deg,#0e7490,#0891b2 55%,#22d3ee)",
   "icon": "emoji",
   "bgStyle": "soft",
   "cardStyle": "white",
-  "entrance": "pop",
-  "mode": "light",
+  "entrance": "slide",
+  "mode": "dark",
   "colors": {
     "primary": "#0e7490",
     "primary2": "#22b8cf",

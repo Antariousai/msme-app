@@ -1,4 +1,4 @@
-/** Antarious Blue brand tokens — see antarious-theme-antarious.md */
+/** Ocean brand tokens — studio "ocean" mood */
 
 export { Colors, ThemeProvider, useTheme } from './ThemeContext';
 export type { ThemeMode } from './ThemeContext';
@@ -15,28 +15,29 @@ export const Motion = {
   slide: { damping: 18, stiffness: 280, mass: 0.8 },
 };
 
+/** Primary shades derived from #0e7490 (studio ramp) */
 export const PrimaryShades = {
-  50: '#eef8fd',
-  100: '#d8effa',
-  200: '#addef4',
-  300: '#7dcaed',
-  400: '#4eb7e6',
-  500: '#27a7e1',
-  600: '#228fc1',
-  700: '#1c77a2',
-  800: '#175f82',
-  900: '#134b67',
+  50: '#ecfeff',
+  100: '#cffafe',
+  200: '#a5f3fc',
+  300: '#67e8f9',
+  400: '#22d3ee',
+  500: '#0e7490',
+  600: '#0891b2',
+  700: '#155e75',
+  800: '#164e63',
+  900: '#083344',
 };
 
 export const BrandShades = { ...PrimaryShades };
 
-/** Diagonal hero gradient 135deg */
+/** Ocean diagonal hero gradient 135deg — studio hero: #0e7490 → #0891b2 → #22d3ee */
 export const Gradients = {
-  hero: ['#27a7e1', '#4fb8e8', '#8fd2f0'] as const,
+  hero: ['#0e7490', '#0891b2', '#22d3ee'] as const,
   heroLocations: [0, 0.55, 1] as const,
-  soft: ['#eef8fd', '#f3fbff'] as const,
-  softDark: ['#0f3a52', '#134b67'] as const,
-  button: ['#27a7e1', '#4fb8e8'] as const,
+  soft: ['#ecfeff', '#f0fdfa'] as const,
+  softDark: ['#0d2d38', '#0a2430'] as const,
+  button: ['#0e7490', '#0891b2'] as const,
 };
 
 export const Typography = {
@@ -89,7 +90,7 @@ export const Radius = {
 
 export const Shadow = {
   sm: {
-    shadowColor: '#27a7e1',
+    shadowColor: '#0e7490',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 8,
@@ -97,7 +98,7 @@ export const Shadow = {
   },
   /** studio --shadow-card: 0 4px 18px -6px rgba(0,0,0,.12) */
   card: {
-    shadowColor: '#1f1633',
+    shadowColor: '#083344',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.12,
     shadowRadius: 14,
@@ -105,21 +106,21 @@ export const Shadow = {
   },
   /** studio --shadow-soft: 0 8px 24px -8px rgba(0,0,0,.18) */
   soft: {
-    shadowColor: '#1f1633',
+    shadowColor: '#083344',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.18,
     shadowRadius: 18,
     elevation: 6,
   },
   md: {
-    shadowColor: '#27a7e1',
+    shadowColor: '#0e7490',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 12,
     elevation: 4,
   },
   lg: {
-    shadowColor: '#1f87b8',
+    shadowColor: '#155e75',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.14,
     shadowRadius: 20,

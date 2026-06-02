@@ -108,6 +108,8 @@ const CategoryGrid = ({
           <RipplePressable
             key={f.id}
             onPress={() => onOpen(f.id)}
+            effect="tool"
+            rippleRadius={Radius.btn}
             style={{
               width: tileW,
               backgroundColor: colors.surface,

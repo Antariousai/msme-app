@@ -19,7 +19,7 @@ import { T } from '../components/atoms';
 import { Spacing } from '../theme';
 import { useTheme } from '../theme/ThemeContext';
 import { makeEmojiIcon, NAV_EMOJI } from '../icons/emoji';
-import { Pulse } from '../components/motion';
+import { Bounce } from '../components/motion';
 
 const Tab = createBottomTabNavigator();
 const HomeIcon = makeEmojiIcon(NAV_EMOJI.home);
@@ -95,7 +95,7 @@ function MainTabs({ onSelectTier, onOpenBrandStudio }: { onSelectTier: () => voi
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textTertiary,
         tabBarLabel: ({ focused, color, children }) => (
-          <T size="xs" color={color} weight={focused ? 'semibold' : 'regular'}>{children}</T>
+          <T size="xs" color={color} weight={focused ? 'bold' : 'regular'}>{children}</T>
         ),
       }}
     >
@@ -110,9 +110,9 @@ function MainTabs({ onSelectTier, onOpenBrandStudio }: { onSelectTier: () => voi
               tabBarLabel: tab.label,
               tabBarIcon: ({ focused, size }) => (
                 focused ? (
-                  <Pulse active>
+                  <Bounce active>
                     <Icon size={size} />
-                  </Pulse>
+                  </Bounce>
                 ) : (
                   <Icon size={size} />
                 )

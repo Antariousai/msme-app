@@ -6,7 +6,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Spacing, Radius, Shadow, Typography } from '../theme';
 import { useTheme } from '../theme/ThemeContext';
-import { RipplePressable, SlideIn } from './motion';
+import { RipplePressable, SlideIn, Pulse, type PressEffect } from './motion';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Gradients } from '../theme';
 
@@ -64,9 +64,11 @@ interface CardProps {
   onPress?: () => void;
   elevated?: boolean;
   padding?: number;
+  /** Press interaction when pressable. Defaults to `scale`. */
+  effect?: PressEffect;
 }
 
-export const Card = ({ children, style, onPress, elevated = false, padding = Spacing.lg }: CardProps) => {
+export const Card = ({ children, style, onPress, elevated = false, padding = Spacing.lg, effect }: CardProps) => {
   const { colors } = useTheme();
   const baseStyle: ViewStyle = {
     backgroundColor: colors.surface,
@@ -76,7 +78,7 @@ export const Card = ({ children, style, onPress, elevated = false, padding = Spa
   };
   if (onPress) {
     return (
-      <RipplePressable onPress={onPress} style={[baseStyle, style]}>
+      <RipplePressable onPress={onPress} effect={effect} rippleRadius={Radius.lg} style={[baseStyle, style]}>
         {children}
       </RipplePressable>
     );
@@ -154,7 +156,8 @@ export const Btn = ({
     <RipplePressable
       onPress={onPress}
       disabled={disabled || loading}
-      bounce
+      effect="lift"
+      rippleRadius={Radius.btn}
       style={[boxStyle, style]}
     >
       {useGradient && (
@@ -559,12 +562,14 @@ export const AISuggestion = ({ title, message, onAction, actionLabel }: AISugges
     gap: Spacing.xs,
   }}>
     <Row gap={Spacing.sm} align="center" style={{ flexWrap: 'wrap' }}>
-      <View style={{
-        paddingHorizontal: Spacing.sm, paddingVertical: 3, borderRadius: Radius.full,
-        backgroundColor: colors.ai, alignItems: 'center', justifyContent: 'center',
-      }}>
-        <T size="xs" color="#ffffff" weight="bold">AI</T>
-      </View>
+      <Pulse>
+        <View style={{
+          paddingHorizontal: Spacing.sm, paddingVertical: 3, borderRadius: Radius.full,
+          backgroundColor: colors.ai, alignItems: 'center', justifyContent: 'center',
+        }}>
+          <T size="xs" color="#ffffff" weight="bold">AI</T>
+        </View>
+      </Pulse>
       <T size="sm" weight="bold" color={colors.textPrimary}>{title}</T>
     </Row>
     <T size="sm" color={colors.textPrimary} style={{ opacity: 0.92 }}>{message}</T>

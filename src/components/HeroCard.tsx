@@ -2,6 +2,7 @@ import React from 'react';
 import { View, ViewStyle, StyleProp } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { T, Row } from './atoms';
+import { Spin } from './motion';
 import { Gradients, Spacing, Radius, Shadow, Typography } from '../theme';
 
 interface HeroStat {
@@ -45,7 +46,9 @@ export const HeroCard = ({
     }, style]}
   >
     <View style={{ position: 'absolute', top: 14, right: 18 }}>
-      <T size="lg" style={{ opacity: 0.55 }}>{sparkle}</T>
+      <Spin>
+        <T size="lg" style={{ opacity: 0.55 }}>{sparkle}</T>
+      </Spin>
     </View>
 
     <T size="sm" weight="semibold" color="#ffffff" style={{ opacity: 0.92 }}>{title}</T>

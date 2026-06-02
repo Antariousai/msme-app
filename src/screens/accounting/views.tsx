@@ -1,38 +1,51 @@
 import React, { useState } from 'react';
 import { View, Modal, Pressable, StyleSheet } from 'react-native';
 import { T, Card, Row, Btn, SectionHeader, Input, StatusPill, AISuggestion } from '../../components/atoms';
-import { Colors, Spacing, Radius } from '../../theme';
-import { ArrowUpIcon, ArrowDownIcon, DownloadIcon, SendIcon } from '../../icons';
+import { RipplePressable } from '../../components/motion';
+import { Colors, Spacing, Radius, Shadow } from '../../theme';
 import { Transaction, SimpleStockItem, aiSuggestions } from '../../data/seed';
 import { bnTaka, toBn } from '../../utils/helpers';
 
 export const TransactionList = ({ transactions }: { transactions: Transaction[] }) => (
   <View>
-    {transactions.map((tx) => (
-      <Card key={tx.id} style={{ marginBottom: Spacing.sm }} padding={Spacing.md}>
-        <Row justify="space-between">
-          <Row gap={Spacing.sm} style={{ flex: 1, minWidth: 0 }}>
-            <View style={[styles.txIcon, { backgroundColor: tx.type === 'income' ? Colors.successLight : Colors.errorLight }]}>
-              {tx.type === 'income'
-                ? <ArrowUpIcon size={16} color={Colors.success} />
-                : <ArrowDownIcon size={16} color={Colors.error} />}
-            </View>
-            <View style={{ flex: 1, minWidth: 0 }}>
-              <T size="sm" weight="semibold" numberOfLines={1}>{tx.product || tx.category}</T>
-              <T size="xs" color={Colors.textTertiary} numberOfLines={1}>
-                {tx.category}{tx.note ? ` · ${tx.note}` : ''}
-              </T>
-            </View>
-          </Row>
-          <View style={{ alignItems: 'flex-end', flexShrink: 0, marginLeft: Spacing.sm }}>
-            <T size="sm" weight="bold" color={tx.type === 'income' ? Colors.success : Colors.error}>
-              {tx.type === 'income' ? '+' : '-'}{bnTaka(tx.amount)}
-            </T>
-            <T size="xs" color={Colors.textTertiary}>{tx.date}</T>
+    {transactions.map((tx) => {
+      const isUp = tx.type === 'income';
+      return (
+        <RipplePressable
+          key={tx.id}
+          effect="slideX"
+          rippleRadius={Radius.lg}
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: Spacing.md,
+            backgroundColor: Colors.surface,
+            borderRadius: Radius.lg,
+            padding: Spacing.base,
+            marginBottom: Spacing.sm,
+            ...Shadow.card,
+          }}
+        >
+          <View style={[styles.txIcon, {
+            backgroundColor: isUp ? Colors.incomeSoft : Colors.expenseSoft,
+          }]}>
+            <T size="md">{isUp ? '🧵' : '🛵'}</T>
           </View>
-        </Row>
-      </Card>
-    ))}
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <T size="sm" weight="bold" numberOfLines={1}>{tx.product || tx.category}</T>
+            <T size="xs" color={Colors.textSecondary} numberOfLines={1}>
+              {tx.category}{tx.note ? ` · ${tx.note}` : ''}
+            </T>
+          </View>
+          <View style={{ alignItems: 'flex-end', flexShrink: 0 }}>
+            <T size="sm" weight="bold" color={isUp ? Colors.income : Colors.expense}>
+              {isUp ? '+' : '-'}{bnTaka(tx.amount)}
+            </T>
+            <T size="xs" color={Colors.textSecondary}>{tx.date}</T>
+          </View>
+        </RipplePressable>
+      );
+    })}
   </View>
 );
 
@@ -113,11 +126,10 @@ export const InsightsView = ({
         </View>
       ))}
       <Btn
-        label="রিপোর্ট এক্সপোর্ট করুন"
+        label="⬇️ রিপোর্ট এক্সপোর্ট করুন"
         onPress={onExport}
         loading={exporting}
         fullWidth
-        icon={<DownloadIcon size={16} color={Colors.textInverse} />}
         style={{ marginTop: Spacing.sm }}
       />
     </View>
@@ -184,9 +196,9 @@ export const NGOReportCard = ({
 }: { onSend: (period: 'weekly' | 'monthly') => void; sending: boolean }) => {
   const [period, setPeriod] = useState<'weekly' | 'monthly'>('weekly');
   return (
-    <Card style={{ marginTop: Spacing.base, backgroundColor: Colors.accent + '10' }}>
-      <Row gap={Spacing.sm} style={{ marginBottom: Spacing.sm }}>
-        <SendIcon size={20} color={Colors.accent} />
+    <Card style={{ marginTop: Spacing.base }}>
+      <Row gap={Spacing.md} style={{ marginBottom: Spacing.sm }}>
+        <T size="xl">📤</T>
         <View style={{ flex: 1, minWidth: 0 }}>
           <T size="sm" weight="bold">NGO রিপোর্ট</T>
           <T size="xs" color={Colors.textTertiary}>সাপ্তাহিক/মাসিক হিসাব তৈরি ও পাঠান</T>
@@ -197,18 +209,17 @@ export const NGOReportCard = ({
         <Btn label="মাসিক" onPress={() => setPeriod('monthly')} size="sm" variant={period === 'monthly' ? 'primary' : 'outline'} />
       </Row>
       <Btn
-        label="রিপোর্ট তৈরি ও পাঠান"
+        label="📤 রিপোর্ট তৈরি ও পাঠান"
         onPress={() => onSend(period)}
         loading={sending}
         fullWidth
-        icon={<SendIcon size={16} color={Colors.textInverse} />}
       />
     </Card>
   );
 };
 
 const styles = StyleSheet.create({
-  txIcon: { width: 36, height: 36, borderRadius: Radius.md, alignItems: 'center', justifyContent: 'center' },
+  txIcon: { width: 38, height: 38, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
   overlay: { flex: 1, backgroundColor: Colors.overlay, justifyContent: 'flex-end' },
   sheet: { backgroundColor: Colors.surface, borderTopLeftRadius: Radius['2xl'], borderTopRightRadius: Radius['2xl'], padding: Spacing.xl },
 });

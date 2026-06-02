@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, Modal, Pressable } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { AppHeader } from '../../components/AppHeader';
 import { T, Card, Row, Btn, ScreenScroll, StatCard, Input, BtnRow, Chip } from '../../components/atoms';
+import { HeroCard } from '../../components/HeroCard';
 import { ScreenFrame } from '../../components/ScreenFrame';
 import { Colors, Spacing, Radius } from '../../theme';
 import { useTheme } from '../../theme/ThemeContext';
@@ -85,19 +87,22 @@ export const AccountingScreen = () => {
     <ScreenFrame>
       <AppHeader title="হিসাব রক্ষা" subtitle={isFull ? 'হিসাব · জার্নাল · বিশ্লেষণ' : 'আয় ও ব্যয় লিখুন'} />
       <ScreenScroll>
-        <Row gap={Spacing.sm} style={{ marginBottom: Spacing.sm }}>
+        <Row gap={Spacing.base} style={{ marginBottom: Spacing.base }}>
           <StatCard label="মোট আয়" value={bnTaka(income)} color={colors.income} icon={<T>📈</T>} />
           <StatCard label="মোট ব্যয়" value={bnTaka(expense)} color={colors.expense} icon={<T>📉</T>} />
         </Row>
-        <Card style={{ marginBottom: Spacing.base, backgroundColor: profit >= 0 ? colors.successLight : colors.errorLight }}>
-          <T size="sm" color={colors.textSecondary}>নিট লাভ</T>
-          <T size="2xl" weight="bold" color={profit >= 0 ? colors.success : colors.error}>{bnTaka(profit)}</T>
-        </Card>
 
-        <BtnRow style={{ marginBottom: Spacing.base }}>
-          <Btn label="আয় যোগ" onPress={() => openAdd('income')} variant="secondary" flex icon={<T color={colors.textInverse}>➕</T>} />
-          <Btn label="ব্যয় যোগ" onPress={() => openAdd('expense')} variant="danger" flex icon={<T color={colors.textInverse}>➕</T>} />
-        </BtnRow>
+        <HeroCard
+          title="💚 নিট লাভ"
+          metric={bnTaka(profit)}
+          metricLabel=""
+          colors={profit >= 0 ? ['#16b886', '#5ed8a8', '#c2f0df'] : ['#ff5a78', '#ff8fa5', '#ffd0d9']}
+        />
+
+        <Row gap={Spacing.base} style={{ marginBottom: Spacing.base }}>
+          <Btn label="➕ আয় যোগ" onPress={() => openAdd('income')} variant="secondary" flex />
+          <Btn label="➕ ব্যয় যোগ" onPress={() => openAdd('expense')} variant="danger" flex />
+        </Row>
 
         {isFull && (
           <Row gap={Spacing.sm} wrap style={{ marginBottom: Spacing.base }}>

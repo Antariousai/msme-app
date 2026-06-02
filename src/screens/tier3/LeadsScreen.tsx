@@ -6,7 +6,7 @@ import { FeatureToolsSection } from '../../components/FeatureToolsSection';
 import { ScreenFrame } from '../../components/ScreenFrame';
 import { HeroCard } from '../../components/HeroCard';
 import { Colors, Spacing, Radius } from '../../theme';
-import { LeadIcon, PhoneIcon, LocationIcon, StarIcon, UpsellIcon, PlusIcon } from '../../icons';
+import { UpsellIcon } from '../../icons';
 import { seedLeads, Lead, aiSuggestions } from '../../data/seed';
 import { toBn, generateId } from '../../utils/helpers';
 
@@ -69,22 +69,19 @@ export const LeadsScreen = () => {
       <AppHeader title="লিড" subtitle="ক্যাপচার · স্কোর · আপসেল" />
       <ScreenScroll>
         <Btn
-          label="নতুন লিড যোগ"
+          label="➕ নতুন লিড যোগ"
           onPress={() => setModalVisible(true)}
           fullWidth
-          icon={<PlusIcon size={16} color={Colors.textInverse} />}
           style={{ marginBottom: Spacing.base }}
         />
 
         <Card style={{ marginBottom: Spacing.base }}>
-          <Row justify="space-between">
-            <Row gap={Spacing.sm} style={{ flex: 1, minWidth: 0 }}>
-              <UpsellIcon size={20} color={Colors.tier3} />
-              <View style={{ flex: 1, minWidth: 0 }}>
-                <T size="sm" weight="semibold">আপসেল ও ক্রস-সেল অটোমেশন</T>
-                <T size="xs" color={Colors.textTertiary}>যোগ্য লিডে স্বয়ংক্রিয় অফার পাঠান</T>
-              </View>
-            </Row>
+          <Row gap={Spacing.md}>
+            <T size="xl">🛍️</T>
+            <View style={{ flex: 1, minWidth: 0 }}>
+              <T size="sm" weight="bold">আপসেল ও ক্রস-সেল অটোমেশন</T>
+              <T size="xs" color={Colors.textTertiary}>যোগ্য লিডে স্বয়ংক্রিয় অফার পাঠান</T>
+            </View>
             <Pressable onPress={() => setAutomationOn(!automationOn)}>
               <StatusPill label={automationOn ? 'চালু' : 'বন্ধ'} type={automationOn ? 'success' : 'neutral'} />
             </Pressable>
@@ -97,29 +94,22 @@ export const LeadsScreen = () => {
           </View>
         ))}
 
-        <SectionHeader title="লিড র‍্যাঙ্কিং" />
+        <SectionHeader title="⭐ লিড র‍্যাঙ্কিং" />
         {sorted.map((lead) => {
           const st = statusMap[lead.status];
           return (
-            <Card key={lead.id} style={{ marginBottom: Spacing.sm }} padding={Spacing.md}>
-              <Row justify="space-between" style={{ marginBottom: Spacing.xs }}>
+            <Card key={lead.id} style={{ marginBottom: Spacing.sm }} padding={Spacing.base}>
+              <Row justify="space-between">
                 <T size="sm" weight="bold">{lead.name}</T>
-                <Row gap={Spacing.xs}>
-                  <StarIcon size={14} color={scoreColor(lead.score)} />
-                  <T size="sm" weight="bold" color={scoreColor(lead.score)}>{toBn(lead.score)}</T>
-                </Row>
+                <T size="sm" weight="bold" color={Colors.primary}>⭐ {toBn(lead.score)}</T>
               </Row>
-              <Row gap={Spacing.xs} style={{ marginBottom: Spacing.xs }}>
-                <PhoneIcon size={12} color={Colors.textTertiary} />
-                <T size="xs" color={Colors.textSecondary}>{lead.phone}</T>
-              </Row>
-              {lead.address ? (
-                <Row gap={Spacing.xs} style={{ marginBottom: Spacing.xs }}>
-                  <LocationIcon size={12} color={Colors.textTertiary} />
-                  <T size="xs" color={Colors.textSecondary}>{lead.address}</T>
-                </Row>
-              ) : null}
-              <Row justify="space-between" align="center" style={{ marginTop: Spacing.sm }}>
+              <View style={{ marginTop: Spacing.sm, gap: 3 }}>
+                <T size="xs" color={Colors.textSecondary}>📞 {lead.phone}</T>
+                {lead.address ? (
+                  <T size="xs" color={Colors.textSecondary}>📍 {lead.address}</T>
+                ) : null}
+              </View>
+              <Row justify="space-between" align="center" style={{ marginTop: Spacing.md }}>
                 <StatusPill label={st.label} type={st.type} />
                 <T size="xs" color={Colors.textTertiary}>{lead.source} · {lead.lastContact}</T>
               </Row>
@@ -136,7 +126,6 @@ export const LeadsScreen = () => {
                     onPress={() => sendUpsell(lead.id)}
                     size="sm"
                     variant="outline"
-                    icon={<UpsellIcon size={14} color={Colors.primary} />}
                   />
                 </Row>
               ) : null}
