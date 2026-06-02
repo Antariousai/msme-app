@@ -74,6 +74,10 @@ export const CalendarScreen = () => {
     else setMonth(nm);
   };
 
+  const deleteEvent = (id: string) => {
+    setEvents((prev) => prev.filter((e) => e.id !== id));
+  };
+
   const saveEvent = () => {
     if (!newTitle.trim()) return;
     setEvents((prev) => [...prev, {
@@ -185,6 +189,13 @@ export const CalendarScreen = () => {
                     <T size="sm" weight="semibold">{ev.title}</T>
                     <T size="xs" color={colors.textSecondary}>{TYPE_LABEL[ev.type]}</T>
                   </View>
+                  <Pressable
+                    onPress={() => deleteEvent(ev.id)}
+                    style={{ paddingHorizontal: Spacing.md, alignItems: 'center', justifyContent: 'center' }}
+                    hitSlop={8}
+                  >
+                    <T size="lg" color={colors.textTertiary}>🗑️</T>
+                  </Pressable>
                 </Row>
               </Card>
             ))
