@@ -1,5 +1,15 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { View, StyleSheet, Modal, Pressable, ScrollView } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  View,
+  StyleSheet,
+  Modal,
+  Pressable,
+  ScrollView,
+  FlatList,
+  useWindowDimensions,
+  NativeSyntheticEvent,
+  NativeScrollEvent,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../auth/AuthContext';
 import { T, Btn, Card, Row } from '../../components/atoms';
@@ -9,7 +19,6 @@ import {
   AppTutorialStep,
   getAppTutorialSteps,
   getTutorialTargetLabel,
-  TutorialTarget,
 } from '../../data/appTutorial';
 import { isUpgradeOnboarding } from '../../auth/onboarding';
 import { useFeatureNav } from '../../navigation/FeatureNavContext';
@@ -31,15 +40,33 @@ export const AppTutorialCoach = ({ visible, onComplete }: AppTutorialCoachProps)
   const tier = user?.tier ?? 0;
   const isUpgrade = isUpgradeOnboarding(user, tier);
 
+  const { width: windowWidth } = useWindowDimensions();
+  const cardWidth = windowWidth - Spacing.base * 2;
+
   const steps = useMemo(() => getAppTutorialSteps(tier, isUpgrade), [tier, isUpgrade]);
   const [index, setIndex] = useState(0);
   const [submitting, setSubmitting] = useState(false);
+  const listRef = useRef<FlatList<AppTutorialStep>>(null);
+  const indexRef = useRef(0);
 
   const step = steps[index];
   const isLast = index >= steps.length - 1;
 
+  const setStepIndex = useCallback((next: number) => {
+    const clamped = Math.max(0, Math.min(next, steps.length - 1));
+    if (clamped === indexRef.current) return;
+    indexRef.current = clamped;
+    setIndex(clamped);
+  }, [steps.length]);
+
   useEffect(() => {
-    if (visible) setIndex(0);
+    if (visible) {
+      indexRef.current = 0;
+      setIndex(0);
+      requestAnimationFrame(() => {
+        listRef.current?.scrollToOffset({ offset: 0, animated: false });
+      });
+    }
   }, [visible, tier]);
 
   useEffect(() => {
@@ -52,25 +79,17 @@ export const AppTutorialCoach = ({ visible, onComplete }: AppTutorialCoachProps)
     return () => clearTimeout(timer);
   }, [visible, index, step?.target, navigateHome, navigateAccount, openFeature]);
 
-  const goNext = async () => {
-    if (isLast) {
-      setSubmitting(true);
-      try {
-        await completeTierTutorial(tier);
-        onComplete();
-      } finally {
-        setSubmitting(false);
-      }
-      return;
-    }
-    setIndex((i) => i + 1);
+  useEffect(() => {
+    if (!visible) return;
+    listRef.current?.scrollToIndex({ index, animated: true });
+  }, [index, visible, cardWidth]);
+
+  const onSwipeEnd = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const i = Math.round(e.nativeEvent.contentOffset.x / cardWidth);
+    if (i >= 0 && i < steps.length) setStepIndex(i);
   };
 
-  const goBack = () => {
-    if (index > 0) setIndex((i) => i - 1);
-  };
-
-  const skip = async () => {
+  const finishTutorial = async () => {
     setSubmitting(true);
     try {
       await completeTierTutorial(tier);
@@ -80,9 +99,65 @@ export const AppTutorialCoach = ({ visible, onComplete }: AppTutorialCoachProps)
     }
   };
 
-  if (!step) return null;
+  const goNext = async () => {
+    if (submitting) return;
+    if (isLast) {
+      await finishTutorial();
+      return;
+    }
+    setStepIndex(index + 1);
+  };
 
-  const targetLabel = getTutorialTargetLabel(step.target, tier);
+  const goBack = () => {
+    if (submitting || index <= 0) return;
+    setStepIndex(index - 1);
+  };
+
+  const skip = async () => {
+    if (submitting) return;
+    await finishTutorial();
+  };
+
+  const renderStepPage = ({ item }: { item: AppTutorialStep }) => {
+    const targetLabel = getTutorialTargetLabel(item.target, tier);
+    return (
+      <View style={[styles.stepPage, { width: cardWidth }]}>
+        <ScrollView
+          style={styles.coachScroll}
+          contentContainerStyle={styles.coachScrollContent}
+          showsVerticalScrollIndicator={false}
+          nestedScrollEnabled
+        >
+          <T size="3xl" style={{ marginBottom: Spacing.xs }}>{item.emoji}</T>
+          <T size="lg" weight="bold" style={{ marginBottom: Spacing.xs }}>{item.title}</T>
+          <View style={[styles.targetChip, { backgroundColor: colors.bgDark }]}>
+            <T size="xs" weight="semibold" color={colors.primary}>
+              📍 {targetLabel} স্ক্রিন
+            </T>
+          </View>
+          <T size="sm" color={colors.textSecondary} style={{ marginTop: Spacing.sm, marginBottom: Spacing.sm }}>
+            {item.body}
+          </T>
+          {item.bullets?.map((b) => (
+            <Row key={b} gap={Spacing.sm} style={{ marginBottom: Spacing.xs }}>
+              <CheckIcon size={14} color={colors.primary} />
+              <T size="xs" style={{ flex: 1 }}>{b}</T>
+            </Row>
+          ))}
+          {item.screenPreview ? (
+            <View style={[styles.previewBox, { backgroundColor: colors.aiBg, borderColor: colors.border }]}>
+              <T size="xs" weight="semibold" color={colors.ai}>এই পেজে দেখবেন</T>
+              <T size="xs" color={colors.textSecondary} style={{ marginTop: 4 }}>
+                {item.screenPreview}
+              </T>
+            </View>
+          ) : null}
+        </ScrollView>
+      </View>
+    );
+  };
+
+  if (!step) return null;
 
   return (
     <Modal visible={visible} transparent animationType="fade" statusBarTranslucent>
@@ -98,48 +173,43 @@ export const AppTutorialCoach = ({ visible, onComplete }: AppTutorialCoachProps)
               </T>
             </View>
 
-            <ScrollView
-              style={styles.coachScroll}
-              contentContainerStyle={styles.coachScrollContent}
-              showsVerticalScrollIndicator={false}
-            >
-              <T size="3xl" style={{ marginBottom: Spacing.xs }}>{step.emoji}</T>
-              <T size="lg" weight="bold" style={{ marginBottom: Spacing.xs }}>{step.title}</T>
-              <View style={[styles.targetChip, { backgroundColor: colors.bgDark }]}>
-                <T size="xs" weight="semibold" color={colors.primary}>
-                  📍 {targetLabel} স্ক্রিন
-                </T>
-              </View>
-              <T size="sm" color={colors.textSecondary} style={{ marginTop: Spacing.sm, marginBottom: Spacing.sm }}>
-                {step.body}
-              </T>
-              {step.bullets?.map((b) => (
-                <Row key={b} gap={Spacing.sm} style={{ marginBottom: Spacing.xs }}>
-                  <CheckIcon size={14} color={colors.primary} />
-                  <T size="xs" style={{ flex: 1 }}>{b}</T>
-                </Row>
-              ))}
-              {step.screenPreview ? (
-                <View style={[styles.previewBox, { backgroundColor: colors.aiBg, borderColor: colors.border }]}>
-                  <T size="xs" weight="semibold" color={colors.ai}>এই পেজে দেখবেন</T>
-                  <T size="xs" color={colors.textSecondary} style={{ marginTop: 4 }}>
-                    {step.screenPreview}
-                  </T>
-                </View>
-              ) : null}
-            </ScrollView>
+            <FlatList
+              ref={listRef}
+              data={steps}
+              keyExtractor={(item) => item.id}
+              renderItem={renderStepPage}
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              bounces={false}
+              decelerationRate="fast"
+              snapToInterval={cardWidth}
+              snapToAlignment="start"
+              disableIntervalMomentum
+              onMomentumScrollEnd={onSwipeEnd}
+              getItemLayout={(_, i) => ({
+                length: cardWidth,
+                offset: cardWidth * i,
+                index: i,
+              })}
+              style={{ maxHeight: 360 }}
+            />
 
             <View style={[styles.coachFooter, { borderTopColor: colors.border }]}>
+              <T size="xs" color={colors.textTertiary} style={{ marginBottom: Spacing.xs, textAlign: 'center' }}>
+                ← ডানে সোয়াইপ: পরের ধাপ · বামে: আগের ধাপ →
+              </T>
               <Row gap={Spacing.xs} style={{ marginBottom: Spacing.sm, justifyContent: 'center' }}>
                 {steps.map((_, i) => (
-                  <View
-                    key={i}
-                    style={[
-                      styles.dot,
-                      { backgroundColor: i === index ? colors.primary : colors.border },
-                      i === index && styles.dotActive,
-                    ]}
-                  />
+                  <Pressable key={i} onPress={() => setStepIndex(i)} hitSlop={8}>
+                    <View
+                      style={[
+                        styles.dot,
+                        { backgroundColor: i === index ? colors.primary : colors.border },
+                        i === index && styles.dotActive,
+                      ]}
+                    />
+                  </Pressable>
                 ))}
               </Row>
               <Btn
@@ -190,6 +260,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: Radius.full,
   },
+  stepPage: { flexShrink: 0 },
   coachScroll: { maxHeight: 340 },
   coachScrollContent: { padding: Spacing.base, paddingTop: Spacing.sm },
   targetChip: {
