@@ -15,27 +15,27 @@ export const Motion = {
   slide: { damping: 18, stiffness: 280, mass: 0.8 },
 };
 
-/** Primary shades derived from #0e7490 (studio ramp) */
+/** Primary shades — exact values from antarious-theme-ocean.md */
 export const PrimaryShades = {
-  50: '#ecfeff',
-  100: '#cffafe',
-  200: '#a5f3fc',
-  300: '#67e8f9',
-  400: '#22d3ee',
+  50:  '#ecf4f6',
+  100: '#d4e6eb',
+  200: '#a3cad5',
+  300: '#6eacbc',
+  400: '#398da4',
   500: '#0e7490',
-  600: '#0891b2',
-  700: '#155e75',
-  800: '#164e63',
-  900: '#083344',
+  600: '#0d647d',
+  700: '#0b556b',
+  800: '#0a4558',
+  900: '#093748',
 };
 
-/** Brand shades — #27a7e1 (Antarious corporate blue, separate from ocean primary) */
+/** Brand shades — #27a7e1 exact values from antarious-theme-ocean.md */
 export const BrandShades = {
-  50:  '#f0f9ff',
+  50:  '#eef8fd',
   100: '#d8effa',
   200: '#addef4',
   300: '#7dcaed',
-  400: '#4fb8e8',
+  400: '#4eb7e6',
   500: '#27a7e1',
   600: '#228fc1',
   700: '#1c77a2',
