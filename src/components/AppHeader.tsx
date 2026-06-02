@@ -34,27 +34,13 @@ export const AppHeader = ({
       paddingBottom: Spacing.sm,
       paddingTop: insets.top + Spacing.sm,
     }}>
-      {showGreeting && user && (
-        <T size="sm" color={colors.textSecondary} style={{ marginBottom: 2 }}>
-          {getGreeting()}, {user.name.split(' ')[0]}
-        </T>
-      )}
-      <Row justify="space-between" align="flex-start">
-        <View style={{ flex: 1, minWidth: 0, paddingRight: Spacing.sm }}>
-          <Image
-            source={isDark ? LOGO_WHITE : LOGO_MAIN}
-            style={{ height: 28, width: 160 }}
-            resizeMode="contain"
-          />
-          {(title ?? user?.businessName) && (
-            <T size="sm" weight="semibold" style={{ marginTop: 4 }} numberOfLines={1}>
-              {title ?? user?.businessName}
-            </T>
-          )}
-          {displaySubtitle && (
-            <T size="xs" color={colors.textSecondary} style={{ marginTop: 2 }}>{displaySubtitle}</T>
-          )}
-        </View>
+      {/* Logo row */}
+      <Row justify="space-between" align="center">
+        <Image
+          source={isDark ? LOGO_WHITE : LOGO_MAIN}
+          style={{ height: 28, width: 160 }}
+          resizeMode="contain"
+        />
         <Pressable
           onPress={onNotificationPress}
           style={{
@@ -75,11 +61,27 @@ export const AppHeader = ({
           )}
         </Pressable>
       </Row>
-      {user && showGreeting && (
-        <View style={{ marginTop: Spacing.sm }}>
-          <TierBadge tier={user.tier} />
-        </View>
-      )}
+
+      {/* Greeting / title line */}
+      <View style={{ marginTop: Spacing.sm }}>
+        {showGreeting && user ? (
+          <T size="md" weight="semibold">
+            {getGreeting()}, {user.name.split(' ')[0]} 👋
+          </T>
+        ) : (title ?? user?.businessName) ? (
+          <T size="md" weight="semibold" numberOfLines={1}>
+            {title ?? user?.businessName}
+          </T>
+        ) : null}
+        {displaySubtitle && (
+          <T size="xs" color={colors.textSecondary} style={{ marginTop: 2 }}>{displaySubtitle}</T>
+        )}
+        {user && showGreeting && (
+          <View style={{ marginTop: Spacing.xs }}>
+            <TierBadge tier={user.tier} />
+          </View>
+        )}
+      </View>
     </View>
   );
 };
