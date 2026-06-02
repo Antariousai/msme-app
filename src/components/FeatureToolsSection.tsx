@@ -1,116 +1,130 @@
-import React, { useState } from 'react';
-import { View, Pressable } from 'react-native';
+import React from 'react';
+import { View, useWindowDimensions } from 'react-native';
 import { useAuth } from '../auth/AuthContext';
 import { useFeatureNav } from '../navigation/FeatureNavContext';
 import {
-  getHubFeatures,
-  getHubFeaturesByCategory,
   getFeaturesByCategory,
+  getHubFeaturesByCategory,
   FEATURE_CATEGORY_META,
   FeatureDef,
   FeatureCategory,
 } from '../navigation/features';
-import { T, Card, Row, SectionHeader } from './atoms';
-import { Spacing, Radius } from '../theme';
+import { T, Card, Row } from './atoms';
+import { Spacing, Radius, Shadow } from '../theme';
 import { useTheme } from '../theme/ThemeContext';
-import { EmojiIcon } from '../icons/emoji';
-import { ChevronDownIcon, ChevronRightIcon } from '../icons';
+import { EmojiIcon, CATEGORY_EMOJI } from '../icons/emoji';
 import { RipplePressable } from './motion';
 
 interface FeatureToolsSectionProps {
   defaultExpanded?: boolean;
   title?: string;
+  /** Grid tiles (home) vs chip list (hub collapsed) */
+  layout?: 'grid' | 'chips';
+  /** all accessible features vs hub-only */
+  scope?: 'all' | 'hub';
 }
 
 export const FeatureToolsSection = ({
-  defaultExpanded = false,
-  title = 'অন্যান্য সরঞ্জাম',
+  defaultExpanded = true,
+  title,
+  layout = 'grid',
+  scope = 'all',
 }: FeatureToolsSectionProps) => {
   const { user } = useAuth();
   const { openFeature } = useFeatureNav();
   const { colors } = useTheme();
-  const [expanded, setExpanded] = useState(defaultExpanded);
 
   if (!user) return null;
 
-  const hubFeatures = getHubFeatures(user.tier);
-  if (hubFeatures.length === 0) return null;
+  const grouped = scope === 'all'
+    ? getFeaturesByCategory(user.tier)
+    : getHubFeaturesByCategory(user.tier);
 
-  const grouped = getHubFeaturesByCategory(user.tier);
+  if (grouped.length === 0) return null;
+
+  if (layout === 'grid') {
+    return (
+      <View style={{ marginTop: Spacing.sm }}>
+        {title && (
+          <T size="md" weight="bold" style={{ marginBottom: Spacing.sm }}>{title}</T>
+        )}
+        {grouped.map(({ category, features }) => (
+          <CategoryGrid
+            key={category}
+            category={category}
+            features={features}
+            onOpen={openFeature}
+          />
+        ))}
+      </View>
+    );
+  }
 
   return (
     <View style={{ marginBottom: Spacing.base }}>
-      <Pressable onPress={() => setExpanded(!expanded)}>
-        <Row justify="space-between" style={{ marginBottom: expanded ? Spacing.sm : 0 }}>
-          <View style={{ flex: 1, minWidth: 0 }}>
-            <T size="md" weight="bold">{title}</T>
-            <T size="xs" color={colors.textTertiary}>
-              {hubFeatures.length}টি সরঞ্জাম · ব্যবসার প্রয়োজন অনুযায়ী
-            </T>
+      {title && <T size="md" weight="bold" style={{ marginBottom: Spacing.sm }}>{title}</T>}
+      {grouped.map(({ category, features }) => (
+        <View key={category} style={{ marginTop: Spacing.sm }}>
+          <T size="xs" color={colors.textSecondary} weight="semibold">{FEATURE_CATEGORY_META[category].title}</T>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.sm, marginTop: Spacing.xs }}>
+            {features.map((f) => (
+              <FeatureChip key={f.id} feature={f} onPress={() => openFeature(f.id)} />
+            ))}
           </View>
-          {expanded
-            ? <ChevronDownIcon size={20} color={colors.textTertiary} />
-            : <ChevronRightIcon size={20} color={colors.textTertiary} />}
-        </Row>
-      </Pressable>
-
-      {expanded && grouped.map(({ category, features }) => (
-        <CategoryGroup
-          key={category}
-          category={category}
-          features={features}
-          onOpen={openFeature}
-          compact
-        />
+        </View>
       ))}
-
-      {!expanded && (
-        <Row gap={Spacing.sm} wrap style={{ marginTop: Spacing.sm }}>
-          {hubFeatures.slice(0, 4).map((f) => (
-            <FeatureChip key={f.id} feature={f} onPress={() => openFeature(f.id)} compact />
-          ))}
-          {hubFeatures.length > 4 && (
-            <Pressable onPress={() => setExpanded(true)}>
-              <View style={{
-                paddingHorizontal: Spacing.md,
-                paddingVertical: Spacing.sm,
-                borderRadius: Radius.full,
-                backgroundColor: colors.bgDark,
-              }}>
-                <T size="xs" color={colors.primary} weight="semibold">+{hubFeatures.length - 4} আরও</T>
-              </View>
-            </Pressable>
-          )}
-        </Row>
-      )}
     </View>
   );
 };
 
-const CategoryGroup = ({
+const CategoryGrid = ({
   category,
   features,
   onOpen,
-  compact = false,
 }: {
   category: FeatureCategory;
   features: FeatureDef[];
   onOpen: (id: FeatureDef['id']) => void;
-  compact?: boolean;
 }) => {
   const { colors } = useTheme();
+  const { width } = useWindowDimensions();
+  const pad = Spacing.base * 2;
+  const gap = Spacing.sm;
+  const cols = 3;
+  const tileW = (width - pad - gap * (cols - 1)) / cols;
   const meta = FEATURE_CATEGORY_META[category];
+
   return (
-    <View style={{ marginTop: Spacing.sm }}>
-      <T size="xs" color={colors.textSecondary} weight="semibold" style={{ marginBottom: 2 }}>
-        {meta.title}
-      </T>
-      <T size="xs" color={colors.textTertiary} style={{ marginBottom: Spacing.xs }}>
+    <View style={{ marginBottom: Spacing.lg }}>
+      <Row gap={Spacing.sm} align="center" style={{ marginBottom: Spacing.xs }}>
+        <EmojiIcon emoji={CATEGORY_EMOJI[category]} size={20} />
+        <T size="md" weight="bold">{meta.title}</T>
+      </Row>
+      <T size="xs" color={colors.textSecondary} style={{ marginBottom: Spacing.sm }}>
         {meta.description}
       </T>
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.sm }}>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap }}>
         {features.map((f) => (
-          <FeatureChip key={f.id} feature={f} onPress={() => onOpen(f.id)} compact={compact} />
+          <RipplePressable
+            key={f.id}
+            onPress={() => onOpen(f.id)}
+            style={{
+              width: tileW,
+              backgroundColor: colors.surface,
+              borderRadius: Radius.lg,
+              paddingVertical: Spacing.md,
+              paddingHorizontal: Spacing.xs,
+              alignItems: 'center',
+              borderWidth: 1,
+              borderColor: colors.borderLight,
+              ...Shadow.sm,
+            }}
+          >
+            <EmojiIcon emoji={f.emoji} size={28} />
+            <T size="xs" weight="semibold" align="center" style={{ marginTop: Spacing.xs }} numberOfLines={2}>
+              {f.label}
+            </T>
+          </RipplePressable>
         ))}
       </View>
     </View>
@@ -120,11 +134,9 @@ const CategoryGroup = ({
 const FeatureChip = ({
   feature,
   onPress,
-  compact = false,
 }: {
   feature: FeatureDef;
   onPress: () => void;
-  compact?: boolean;
 }) => {
   const { colors } = useTheme();
   return (
@@ -133,15 +145,15 @@ const FeatureChip = ({
         flexDirection: 'row',
         alignItems: 'center',
         gap: Spacing.xs,
-        paddingHorizontal: compact ? Spacing.md : Spacing.base,
-        paddingVertical: compact ? Spacing.sm : Spacing.md,
+        paddingHorizontal: Spacing.md,
+        paddingVertical: Spacing.sm,
         borderRadius: Radius.lg,
         backgroundColor: colors.surface,
         borderWidth: 1,
         borderColor: colors.border,
       }}>
-        <EmojiIcon emoji={feature.emoji} size={compact ? 16 : 18} />
-        <T size={compact ? 'xs' : 'sm'} weight="medium">{feature.label}</T>
+        <EmojiIcon emoji={feature.emoji} size={16} />
+        <T size="xs" weight="medium">{feature.label}</T>
       </View>
     </RipplePressable>
   );
@@ -163,7 +175,10 @@ export const FeatureLauncherList = () => {
         const meta = FEATURE_CATEGORY_META[category];
         return (
           <View key={category} style={{ marginBottom: Spacing.base }}>
-            <SectionHeader title={meta.title} />
+            <Row gap={Spacing.sm} align="center" style={{ marginBottom: Spacing.xs }}>
+              <EmojiIcon emoji={CATEGORY_EMOJI[category]} size={18} />
+              <T size="md" weight="bold">{meta.title}</T>
+            </Row>
             <T size="xs" color={colors.textTertiary} style={{ marginBottom: Spacing.sm, marginTop: -Spacing.xs }}>
               {meta.description}
             </T>
@@ -173,7 +188,7 @@ export const FeatureLauncherList = () => {
                 <Card key={f.id} onPress={() => openFeature(f.id)} style={{ marginBottom: Spacing.sm }} padding={Spacing.md}>
                   <Row justify="space-between" align="center" fill>
                     <Row gap={Spacing.sm} style={{ flex: 1, minWidth: 0 }}>
-                      <EmojiIcon emoji={f.emoji} size={20} />
+                      <EmojiIcon emoji={f.emoji} size={22} />
                       <View style={{ flex: 1, minWidth: 0 }}>
                         <T size="sm" weight="semibold" numberOfLines={1}>{f.label}</T>
                         <T size="xs" color={colors.textTertiary} numberOfLines={2}>{f.subtitle}</T>

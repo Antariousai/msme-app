@@ -3,9 +3,12 @@ import { View, StyleSheet, Pressable } from 'react-native';
 import { AppHeader } from '../../components/AppHeader';
 import { T, Card, Row, ScreenScroll, SectionHeader, StatusPill, Chip, Btn, AISuggestion } from '../../components/atoms';
 import { FeatureToolsSection } from '../../components/FeatureToolsSection';
+import { ScreenFrame } from '../../components/ScreenFrame';
+import { HeroCard } from '../../components/HeroCard';
 import { Colors, Spacing } from '../../theme';
 import { FacebookIcon, InstagramIcon, AutoReplyIcon, EscalateIcon, OrderIcon, CheckIcon } from '../../icons';
 import { seedMessages, replyTemplates, Message } from '../../data/seed';
+import { toBn } from '../../utils/helpers';
 
 const platformIcon = (p: Message['platform']) =>
   p === 'facebook'
@@ -130,40 +133,26 @@ export const MessagesScreen = () => {
 export const Tier1Home = () => {
   const unread = seedMessages.filter((m) => m.unread).length;
   return (
-    <View style={styles.container}>
+    <ScreenFrame>
       <AppHeader showGreeting notificationCount={unread} />
       <ScreenScroll>
+        <HeroCard
+          title="স্টার্টার হোম"
+          titleEmoji="💬"
+          metric={toBn(unread)}
+          metricLabel="নতুন মেসেজ"
+          stats={[
+            { label: 'অর্ডার অপেক্ষমাণ', value: '২', emoji: '📋' },
+          ]}
+        />
         <AISuggestion
-          title="আজকের পরামর্শ"
+          title="🔥 আজকের পরামর্শ"
           message="সন্ধ্যা ৭–৯টায় সবচেয়ে বেশি মেসেজ আসে — এই সময়ে সক্রিয় থাকুন।"
           actionLabel="মেসেজ দেখুন"
         />
-        <Row gap={Spacing.sm} style={{ marginTop: Spacing.base, marginBottom: Spacing.base }}>
-          <Card style={{ flex: 1, minWidth: 0 }}>
-            <T size="xs" color={Colors.textTertiary}>নতুন মেসেজ</T>
-            <T size="2xl" weight="bold" color={Colors.primary}>{unread}</T>
-          </Card>
-          <Card style={{ flex: 1, minWidth: 0 }}>
-            <T size="xs" color={Colors.textTertiary}>অর্ডার অপেক্ষমাণ</T>
-            <T size="2xl" weight="bold" color={Colors.warning}>২</T>
-          </Card>
-        </Row>
-        <SectionHeader title="সাম্প্রতিক মেসেজ" />
-        {seedMessages.slice(0, 3).map((m) => (
-          <Card key={m.id} style={{ marginBottom: Spacing.sm }} padding={Spacing.md}>
-            <Row gap={Spacing.sm}>
-              {platformIcon(m.platform)}
-              <View style={{ flex: 1 }}>
-                <T size="sm" weight="semibold">{m.sender}</T>
-                <T size="xs" color={Colors.textSecondary} numberOfLines={1}>{m.preview}</T>
-              </View>
-            </Row>
-          </Card>
-        ))}
-
-        <FeatureToolsSection defaultExpanded />
+        <FeatureToolsSection layout="grid" scope="all" />
       </ScreenScroll>
-    </View>
+    </ScreenFrame>
   );
 };
 

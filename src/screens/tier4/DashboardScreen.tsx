@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View } from 'react-native';
 import { AppHeader } from '../../components/AppHeader';
 import { T, Card, Row, ScreenScroll, SectionHeader, StatCard, StatusPill, Chip, AISuggestion, Btn } from '../../components/atoms';
 import { FeatureToolsSection } from '../../components/FeatureToolsSection';
+import { HeroCard } from '../../components/HeroCard';
+import { ScreenFrame } from '../../components/ScreenFrame';
 import { Colors, Spacing } from '../../theme';
-import { ChartIcon, TrendUpIcon, TrendDownIcon, PeakIcon, ReportIcon, DownloadIcon } from '../../icons';
+import { TrendUpIcon, TrendDownIcon, PeakIcon, ReportIcon, DownloadIcon } from '../../icons';
 import { seedTransactions, seedComplaints, aiSuggestions, productSales, peakHours } from '../../data/seed';
 import { bnTaka, calcProfit, toBn } from '../../utils/helpers';
 import { useAuth } from '../../auth/AuthContext';
@@ -45,7 +47,7 @@ export const DashboardScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <ScreenFrame>
       <AppHeader title="ড্যাশবোর্ড" subtitle="ইনসাইট ও রিপোর্টিং" />
       <ScreenScroll>
         <Row gap={Spacing.sm} wrap style={{ marginBottom: Spacing.base }}>
@@ -118,12 +120,12 @@ export const DashboardScreen = () => {
           </View>
         ))}
       </ScreenScroll>
-    </View>
+    </ScreenFrame>
   );
 };
 
 export const ReportsScreen = () => (
-  <View style={styles.container}>
+  <ScreenFrame>
     <AppHeader title="রিপোর্ট" subtitle="দৈনিক · সাপ্তাহিক · মাসিক" />
     <ScreenScroll>
       {[
@@ -146,11 +148,11 @@ export const ReportsScreen = () => (
         </Card>
       ))}
     </ScreenScroll>
-  </View>
+  </ScreenFrame>
 );
 
 export const ComplaintsScreen = () => (
-  <View style={styles.container}>
+  <ScreenFrame>
     <AppHeader title="অভিযোগ" subtitle="ট্র্যাকিং ও সমাধান" />
     <ScreenScroll>
       <SectionHeader title="অভিযোগ তালিকা" />
@@ -168,44 +170,31 @@ export const ComplaintsScreen = () => (
         </Card>
       ))}
     </ScreenScroll>
-  </View>
+  </ScreenFrame>
 );
 
 export const Tier4Home = () => (
-  <View style={styles.container}>
+  <ScreenFrame>
     <AppHeader showGreeting />
     <ScreenScroll>
-      <Card style={{ marginBottom: Spacing.base, backgroundColor: Colors.tier4 + '15' }}>
-        <Row gap={Spacing.sm}>
-          <ChartIcon size={24} color={Colors.tier4} />
-          <View>
-            <T size="md" weight="bold">এন্টারপ্রাইজ ড্যাশবোর্ড</T>
-            <T size="sm" color={Colors.textSecondary}>সম্পূর্ণ ব্যবসা বিশ্লেষণ</T>
-          </View>
-        </Row>
-      </Card>
-      <Row gap={Spacing.sm} style={{ marginBottom: Spacing.base }}>
-        <Card style={{ flex: 1, minWidth: 0 }}>
-          <T size="xs" color={Colors.textTertiary}>আজকের আয়</T>
-          <T size="xl" weight="bold" color={Colors.success}>{bnTaka(3500)}</T>
-        </Card>
-        <Card style={{ flex: 1, minWidth: 0 }}>
-          <T size="xs" color={Colors.textTertiary}>খোলা অভিযোগ</T>
-          <T size="xl" weight="bold" color={Colors.error}>১</T>
-        </Card>
-      </Row>
+      <HeroCard
+        title="এন্টারপ্রাইজ ড্যাশবোর্ড"
+        titleEmoji="📊"
+        metric={bnTaka(83500)}
+        metricLabel="আজকের আয়"
+        stats={[
+          { label: 'খোলা অভিযোগ', value: '১', emoji: '⚠️' },
+          { label: 'অর্ডার', value: '৪', emoji: '📦' },
+        ]}
+      />
 
       <AISuggestion
-        title="লিড ক্লোজিং সাপোর্ট"
-        message="৩টি হট লিড অপেক্ষমাণ — আজ ফলো-আপ করলে ২টি রূপান্তর সম্ভব।"
+        title="🔥 লিড ক্লোজিং সাপোর্ট"
+        message="৩টি হট লিড অপেক্ষমাণ — আজ ফলো-আপ করলে ২টি রূপান্তর সম্ভব। 🚀"
         actionLabel="লিড দেখুন"
       />
 
-      <FeatureToolsSection defaultExpanded />
+      <FeatureToolsSection layout="grid" scope="all" />
     </ScreenScroll>
-  </View>
+  </ScreenFrame>
 );
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.bg },
-});

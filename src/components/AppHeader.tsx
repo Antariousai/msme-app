@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { T, Row, Badge, TierBadge } from '../components/atoms';
-import { Spacing, Radius } from '../theme';
+import { Spacing, Radius, TierConfig } from '../theme';
 import { useTheme } from '../theme/ThemeContext';
 import { getGreeting } from '../utils/helpers';
 import { useAuth } from '../auth/AuthContext';
@@ -22,6 +22,8 @@ export const AppHeader = ({
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
   const { colors } = useTheme();
+  const tierTagline = user ? TierConfig[user.tier].tagline : undefined;
+  const displaySubtitle = subtitle ?? (showGreeting && user ? tierTagline : undefined);
 
   return (
     <View style={{
@@ -33,14 +35,18 @@ export const AppHeader = ({
       borderBottomColor: colors.borderLight,
     }}>
       <Row justify="space-between" align="flex-start">
-        <View style={{ flex: 1 }}>
+        <View style={{ flex: 1, minWidth: 0, paddingRight: Spacing.sm }}>
           {showGreeting && user && (
             <T size="sm" color={colors.textSecondary}>{getGreeting()}, {user.name.split(' ')[0]}</T>
           )}
-          <T size="xl" weight="bold">{title ?? user?.businessName ?? 'Antarious'}</T>
-          {subtitle && <T size="sm" color={colors.textTertiary}>{subtitle}</T>}
-          {user && (
-            <View style={{ marginTop: Spacing.xs }}>
+          <T size="xl" weight="bold" numberOfLines={2}>
+            {title ?? user?.businessName ?? 'Antarious'}
+          </T>
+          {displaySubtitle && (
+            <T size="sm" color={colors.textSecondary} style={{ marginTop: 2 }}>{displaySubtitle}</T>
+          )}
+          {user && showGreeting && (
+            <View style={{ marginTop: Spacing.sm }}>
               <TierBadge tier={user.tier} compact />
             </View>
           )}
@@ -48,17 +54,17 @@ export const AppHeader = ({
         <Pressable
           onPress={onNotificationPress}
           style={{
-            width: 40,
-            height: 40,
+            width: 44,
+            height: 44,
             borderRadius: Radius.lg,
-            backgroundColor: colors.chip,
+            backgroundColor: colors.surface,
             alignItems: 'center',
             justifyContent: 'center',
             borderWidth: 1,
             borderColor: colors.borderLight,
           }}
         >
-          <T size="md">🔔</T>
+          <T size="lg">🔔</T>
           {notificationCount > 0 && (
             <View style={{ position: 'absolute', top: 2, right: 2 }}>
               <Badge count={notificationCount} />

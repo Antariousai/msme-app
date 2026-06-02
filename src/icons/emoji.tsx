@@ -1,6 +1,6 @@
 import React from 'react';
 import { Text, StyleSheet } from 'react-native';
-import { FeatureId } from '../navigation/features';
+import { FeatureId, FeatureCategory } from '../navigation/features';
 
 interface EmojiIconProps {
   size?: number;
@@ -10,35 +10,35 @@ interface EmojiIconProps {
 export const FEATURE_EMOJI: Record<FeatureId, string> = {
   bookkeeping: '📒',
   messages: '💬',
-  comments: '💭',
+  comments: '🗨️',
   calendar: '📅',
-  orders: '📦',
-  inventory: '📊',
-  courier: '🚚',
+  orders: '📋',
+  inventory: '📦',
+  courier: '🛵',
   website: '🌐',
-  leads: '👥',
-  dashboard: '📈',
+  leads: '🎯',
+  dashboard: '📊',
   reports: '📋',
   complaints: '⚠️',
 };
 
 export const NAV_EMOJI = {
   home: '🏠',
-  more: '✨',
+  more: '⚙️',
 };
 
-export const CATEGORY_EMOJI: Record<string, string> = {
+export const CATEGORY_EMOJI: Record<FeatureCategory, string> = {
   accounting: '💰',
-  sales: '🛒',
-  operations: '⚙️',
+  sales: '🛍️',
+  operations: '🚚',
   customers: '🤝',
-  insights: '🔮',
+  insights: '📊',
 };
 
 export function makeEmojiIcon(emoji: string) {
   return function EmojiIcon({ size = 22 }: EmojiIconProps) {
     return (
-      <Text style={[styles.emoji, { fontSize: Math.round(size * 0.92) }]} allowFontScaling={false}>
+      <Text style={[styles.emoji, { fontSize: Math.round(size * 0.95) }]} allowFontScaling={false}>
         {emoji}
       </Text>
     );
@@ -46,7 +46,7 @@ export function makeEmojiIcon(emoji: string) {
 }
 
 export const EmojiIcon = ({ emoji, size = 22 }: { emoji: string; size?: number }) => (
-  <Text style={[styles.emoji, { fontSize: Math.round(size * 0.92) }]} allowFontScaling={false}>
+  <Text style={[styles.emoji, { fontSize: Math.round(size * 0.95) }]} allowFontScaling={false}>
     {emoji}
   </Text>
 );

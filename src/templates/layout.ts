@@ -1,29 +1,29 @@
 import { TemplateContext } from './types';
 
-/** Ocean theme CSS tokens for HTML email/web templates */
+/** Antarious Blue CSS tokens for HTML email/web templates */
 export const OCEAN_CSS = {
-  primary: '#0e7490',
-  primary2: '#22b8cf',
-  accent: '#155e75',
-  income: '#14b8a6',
-  expense: '#fb7185',
-  bg: '#ecfeff',
-  bg2: '#f0fdfa',
+  primary: '#27a7e1',
+  primary2: '#6fc4ec',
+  accent: '#1f87b8',
+  income: '#16b886',
+  expense: '#ff5a78',
+  bg: '#eef8fd',
+  bg2: '#f3fbff',
   card: '#ffffff',
-  ink: '#083344',
-  muted: '#5f8a96',
-  chip: '#cffafe',
-  ai: '#0891b2',
+  ink: '#0f3a52',
+  muted: '#6b94a8',
+  chip: '#d3edfa',
+  ai: '#1f87b8',
   brand: '#27a7e1',
-  border: '#d4e6eb',
-  heroGradient: 'linear-gradient(135deg,#0e7490,#0891b2 55%,#22d3ee)',
+  border: '#addef4',
+  heroGradient: 'linear-gradient(135deg,#27a7e1,#4fb8e8 55%,#8fd2f0)',
   radius: '20px',
 };
 
 const BASE_STYLES = `
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    font-family: 'Tiro Bangla', 'Noto Sans Bengali', system-ui, sans-serif;
+    font-family: 'Baloo Da 2', 'Noto Sans Bengali', system-ui, sans-serif;
     background: ${OCEAN_CSS.bg};
     color: ${OCEAN_CSS.ink};
     line-height: 1.55;

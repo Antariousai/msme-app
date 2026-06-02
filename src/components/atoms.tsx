@@ -6,11 +6,21 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Spacing, Radius, Shadow, Typography } from '../theme';
 import { useTheme } from '../theme/ThemeContext';
-import { RipplePressable, PopIn } from './motion';
+import { RipplePressable, SlideIn } from './motion';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Gradients } from '../theme';
 
 type TextWeight = 'regular' | 'medium' | 'semibold' | 'bold';
 
-const fontForWeight = (_weight: TextWeight = 'regular') => Typography.fontFamily.regular;
+const fontForWeight = (weight: TextWeight = 'regular') => {
+  const map: Record<TextWeight, string> = {
+    regular: Typography.fontFamily.regular,
+    medium: Typography.fontFamily.medium,
+    semibold: Typography.fontFamily.semibold,
+    bold: Typography.fontFamily.bold,
+  };
+  return map[weight];
+};
 
 const weightToNumeric = (weight: TextWeight = 'regular') => {
   const map = { regular: '400', medium: '500', semibold: '600', bold: '700' };
@@ -42,7 +52,6 @@ export const T = ({
         fontFamily: fontForWeight(weight),
         fontSize: Typography.size[size],
         color: textColor,
-        fontWeight: weightToNumeric(weight),
         textAlign: align,
         lineHeight: Typography.size[size] * Typography.lineHeight.normal,
       }, style]}
@@ -115,28 +124,10 @@ export const Btn = ({
   };
 
   const vs = variantStyles[variant];
+  const useGradient = variant === 'primary' || variant === 'secondary';
 
-  return (
-    <RipplePressable
-      onPress={onPress}
-      disabled={disabled || loading}
-      bounce
-      style={[{
-        height: heights[size],
-        paddingHorizontal: size === 'sm' ? Spacing.md : Spacing.lg,
-        borderRadius: Radius.lg,
-        backgroundColor: vs.bg,
-        borderWidth: vs.border ? 1.5 : 0,
-        borderColor: vs.border,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: Spacing.xs,
-        ...(flex && { flex: 1, minWidth: 0, alignSelf: 'stretch' }),
-        ...(fullWidth && !flex && { width: '100%' }),
-        opacity: disabled ? 0.5 : 1,
-      }, style]}
-    >
+  const inner = (
+    <>
       {loading ? (
         <ActivityIndicator size="small" color={vs.text}/>
       ) : (
@@ -147,6 +138,44 @@ export const Btn = ({
           </T>
         </>
       )}
+    </>
+  );
+
+  const boxStyle: ViewStyle = {
+    height: heights[size],
+    paddingHorizontal: size === 'sm' ? Spacing.md : Spacing.lg,
+    borderRadius: Radius.lg,
+    backgroundColor: useGradient ? 'transparent' : vs.bg,
+    borderWidth: vs.border ? 1.5 : 0,
+    borderColor: vs.border,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.xs,
+    overflow: 'hidden',
+    ...(flex && { flex: 1, minWidth: 0, alignSelf: 'stretch' }),
+    ...(fullWidth && !flex && { width: '100%' }),
+    opacity: disabled ? 0.5 : 1,
+  };
+
+  return (
+    <RipplePressable
+      onPress={onPress}
+      disabled={disabled || loading}
+      bounce
+      style={[boxStyle, style]}
+    >
+      {useGradient && (
+        <LinearGradient
+          colors={variant === 'primary' ? [...Gradients.button] : [colors.accent, colors.primary2]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={StyleSheet.absoluteFillObject}
+        />
+      )}
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: Spacing.xs }}>
+        {inner}
+      </View>
     </RipplePressable>
   );
 };
@@ -441,7 +470,7 @@ export const TierBadge = ({ tier, compact = false }: TierBadgeProps) => {
     borderColor: tc + '44',
   }}>
     <T size="xs" color={tc} weight="bold">
-      {compact ? `T${tier}` : `টায়ার ${tier} — ${tierLabels[tier]}`}
+      {compact ? `👑 T${tier}` : `👑 টায়ার ${tier} — ${tierLabels[tier]}`}
     </T>
   </View>
   );
@@ -515,7 +544,7 @@ export const ScreenScroll = ({ children, style, contentPadding = true }: ScreenS
         style,
       ]}
     >
-      <PopIn>{children}</PopIn>
+      <SlideIn>{children}</SlideIn>
     </ScrollView>
   );
 };

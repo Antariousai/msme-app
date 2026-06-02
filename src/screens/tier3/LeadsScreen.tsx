@@ -3,6 +3,8 @@ import { View, StyleSheet, Modal, Pressable } from 'react-native';
 import { AppHeader } from '../../components/AppHeader';
 import { T, Card, Row, ScreenScroll, SectionHeader, StatusPill, Btn, Input, AISuggestion } from '../../components/atoms';
 import { FeatureToolsSection } from '../../components/FeatureToolsSection';
+import { ScreenFrame } from '../../components/ScreenFrame';
+import { HeroCard } from '../../components/HeroCard';
 import { Colors, Spacing, Radius } from '../../theme';
 import { LeadIcon, PhoneIcon, LocationIcon, StarIcon, UpsellIcon, PlusIcon } from '../../icons';
 import { seedLeads, Lead, aiSuggestions } from '../../data/seed';
@@ -161,37 +163,26 @@ export const LeadsScreen = () => {
 export const Tier3Home = () => {
   const hotLeads = seedLeads.filter((l) => l.score >= 70).length;
   return (
-    <View style={styles.container}>
+    <ScreenFrame>
       <AppHeader showGreeting />
       <ScreenScroll>
-        <Row gap={Spacing.sm} style={{ marginBottom: Spacing.base }}>
-          <Card style={{ flex: 1, minWidth: 0 }}>
-            <T size="xs" color={Colors.textTertiary}>মোট লিড</T>
-            <T size="2xl" weight="bold" color={Colors.tier3}>{seedLeads.length}</T>
-          </Card>
-          <Card style={{ flex: 1, minWidth: 0 }}>
-            <T size="xs" color={Colors.textTertiary}>হট লিড</T>
-            <T size="2xl" weight="bold" color={Colors.success}>{hotLeads}</T>
-          </Card>
-        </Row>
+        <HeroCard
+          title="প্রো ড্যাশবোর্ড"
+          titleEmoji="🎯"
+          metric={toBn(seedLeads.length)}
+          metricLabel="মোট লিড"
+          stats={[
+            { label: 'হট লিড', value: toBn(hotLeads), emoji: '🔥' },
+          ]}
+        />
         <AISuggestion
-          title="লিড ক্লোজিং"
-          message="আয়েশা সিদ্দিকা (স্কোর ৯২) — আজ কল করলে রূপান্তর সম্ভাবনা ৮৫%।"
+          title="🔥 লিড ক্লোজিং"
+          message="আয়েশা সিদ্দিকা (স্কোর ৯২) — আজ কল করলে রূপান্তর সম্ভাবনা ৮৫%। 🚀"
           actionLabel="লিড দেখুন"
         />
-        <SectionHeader title="শীর্ষ লিড" />
-        {seedLeads.filter((l) => l.score >= 70).map((l) => (
-          <Card key={l.id} style={{ marginBottom: Spacing.sm }} padding={Spacing.md}>
-            <Row justify="space-between">
-              <T size="sm" weight="semibold">{l.name}</T>
-              <T size="sm" weight="bold" color={Colors.success}>{toBn(l.score)}</T>
-            </Row>
-          </Card>
-        ))}
-
-        <FeatureToolsSection defaultExpanded />
+        <FeatureToolsSection layout="grid" scope="all" />
       </ScreenScroll>
-    </View>
+    </ScreenFrame>
   );
 };
 

@@ -7,39 +7,40 @@ import Animated, {
   withTiming,
   withRepeat,
   withSequence,
-  FadeIn,
+  FadeInRight,
 } from 'react-native-reanimated';
 import { useTheme } from '../theme/ThemeContext';
 import { Motion } from '../theme';
 
-const popSpring = { damping: 14, stiffness: 420, mass: 0.65 };
+const pressSpring = { damping: 16, stiffness: 360, mass: 0.7 };
 
-interface PopInProps {
+interface SlideInProps {
   children: React.ReactNode;
   delay?: number;
   style?: StyleProp<ViewStyle>;
 }
 
-/** Entrance: pop scale-in */
-export const PopIn = ({ children, delay = 0, style }: PopInProps) => (
+/** Entrance: slide-in from right */
+export const SlideIn = ({ children, delay = 0, style }: SlideInProps) => (
   <Animated.View
-    entering={FadeIn.delay(delay).duration(Motion.duration).springify().damping(14).stiffness(420)}
+    entering={FadeInRight.delay(delay).duration(Motion.duration).springify().damping(18).stiffness(280)}
     style={style}
   >
     {children}
   </Animated.View>
 );
 
+/** @deprecated use SlideIn */
+export const PopIn = SlideIn;
+
 interface RipplePressableProps {
   children: React.ReactNode;
   onPress?: () => void;
   disabled?: boolean;
   style?: StyleProp<ViewStyle>;
-  /** Subtle bounce on press */
   bounce?: boolean;
 }
 
-/** Tap ripple + optional bounce */
 export const RipplePressable = ({
   children, onPress, disabled, style, bounce = true,
 }: RipplePressableProps) => {
@@ -63,11 +64,11 @@ export const RipplePressable = ({
       onPressIn={() => {
         if (disabled) return;
         ripple.value = withTiming(1, { duration: Motion.rippleIn });
-        if (bounce) scale.value = withSpring(0.97, popSpring);
+        if (bounce) scale.value = withSpring(0.97, pressSpring);
       }}
       onPressOut={() => {
         ripple.value = withTiming(0, { duration: Motion.rippleOut });
-        if (bounce) scale.value = withSpring(1, popSpring);
+        if (bounce) scale.value = withSpring(1, pressSpring);
       }}
     >
       <Animated.View style={[style, animStyle]}>
@@ -91,7 +92,6 @@ interface PulseProps {
   active?: boolean;
 }
 
-/** Gentle pulse for playful accents */
 export const Pulse = ({ children, style, active = true }: PulseProps) => {
   const scale = useSharedValue(1);
 
@@ -117,5 +117,5 @@ export const Pulse = ({ children, style, active = true }: PulseProps) => {
   return <Animated.View style={[style, animStyle]}>{children}</Animated.View>;
 };
 
-/** Stagger delay helper for lists */
-export const popDelay = (index: number) => index * Motion.stagger;
+export const slideDelay = (index: number) => index * Motion.stagger;
+export const popDelay = slideDelay;

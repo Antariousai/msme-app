@@ -3,6 +3,8 @@ import { View, StyleSheet, Modal, Pressable } from 'react-native';
 import { AppHeader } from '../../components/AppHeader';
 import { T, Card, Row, ScreenScroll, SectionHeader, StatusPill, Btn, Input } from '../../components/atoms';
 import { FeatureToolsSection } from '../../components/FeatureToolsSection';
+import { ScreenFrame } from '../../components/ScreenFrame';
+import { HeroCard } from '../../components/HeroCard';
 import { Colors, Spacing, Radius } from '../../theme';
 import { OrderIcon, WebsiteIcon, FacebookIcon, InstagramIcon } from '../../icons';
 import { seedOrders, Order } from '../../data/seed';
@@ -132,38 +134,22 @@ export const WebsiteScreen = () => (
 );
 
 export const Tier2Home = () => (
-  <View style={styles.container}>
+  <ScreenFrame>
     <AppHeader showGreeting />
     <ScreenScroll>
-      <Row gap={Spacing.sm} style={{ marginBottom: Spacing.base }}>
-        <Card style={{ flex: 1, minWidth: 0 }}>
-          <T size="xs" color={Colors.textTertiary}>ওয়েব অর্ডার</T>
-          <T size="2xl" weight="bold" color={Colors.tier2}>১</T>
-        </Card>
-        <Card style={{ flex: 1, minWidth: 0 }}>
-          <T size="xs" color={Colors.textTertiary}>কম স্টক</T>
-          <T size="2xl" weight="bold" color={Colors.warning}>১</T>
-        </Card>
-        <Card style={{ flex: 1, minWidth: 0 }}>
-          <T size="xs" color={Colors.textTertiary}>কুরিয়ারে</T>
-          <T size="2xl" weight="bold" color={Colors.accent}>২</T>
-        </Card>
-      </Row>
-
-      <SectionHeader title="সাম্প্রতিক অর্ডার" />
-      {seedOrders.slice(0, 2).map((o) => (
-        <Card key={o.id} style={{ marginBottom: Spacing.sm }} padding={Spacing.md}>
-          <Row justify="space-between">
-            <T size="sm" weight="semibold">{o.customer}</T>
-            <T size="sm" color={Colors.primary}>{bnTaka(o.amount)}</T>
-          </Row>
-          <T size="xs" color={Colors.textTertiary}>{o.items}</T>
-        </Card>
-      ))}
-
-      <FeatureToolsSection defaultExpanded />
+      <HeroCard
+        title="গ্রোথ ড্যাশবোর্ড"
+        titleEmoji="📦"
+        metric="৩"
+        metricLabel="সক্রিয় অর্ডার"
+        stats={[
+          { label: 'কম স্টক', value: '১', emoji: '⚠️' },
+          { label: 'কুরিয়ারে', value: '২', emoji: '🛵' },
+        ]}
+      />
+      <FeatureToolsSection layout="grid" scope="all" />
     </ScreenScroll>
-  </View>
+  </ScreenFrame>
 );
 
 const styles = StyleSheet.create({

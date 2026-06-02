@@ -39,7 +39,7 @@ export const LoginScreen = () => {
         <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
           <OceanGradient style={styles.hero}>
             <View style={styles.logoWrap}>
-              <T size="3xl">🌊</T>
+              <T size="3xl">💙</T>
             </View>
             <T size="3xl" weight="bold" align="center" color={Colors.textInverse}>Antarious</T>
             <T size="sm" color="rgba(255,255,255,0.9)" align="center" style={{ marginTop: Spacing.xs }}>
@@ -103,7 +103,7 @@ export const LoginScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Colors.bg },
+  safe: { flex: 1, backgroundColor: '#eef8fd' },
   container: { paddingBottom: Spacing['4xl'] },
   hero: {
     alignItems: 'center',
