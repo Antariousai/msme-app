@@ -1,13 +1,13 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useCallback } from 'react';
 import {
   View,
   StyleSheet,
   Modal,
   Pressable,
   ScrollView,
+  SectionList,
+  Linking,
   useWindowDimensions,
-  NativeSyntheticEvent,
-  NativeScrollEvent,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppHeader } from '../../components/AppHeader';
@@ -20,15 +20,11 @@ import { seedLeads, Lead, aiSuggestions } from '../../data/seed';
 import { toBn, generateId } from '../../utils/helpers';
 
 const WIDE_BREAKPOINT = 720;
-const MOBILE_COL_GAP = Spacing.sm;
+const TAB_BAR = 68;
 
-const scoreColor = (score: number) => {
-  if (score >= 80) return Colors.success;
-  if (score >= 50) return Colors.warning;
-  return Colors.textTertiary;
-};
+type StageDef = { key: Lead['status']; label: string; emoji: string; color: string };
 
-const STAGES: { key: Lead['status']; label: string; emoji: string; color: string }[] = [
+const STAGES: StageDef[] = [
   { key: 'new', label: 'নতুন', emoji: '🆕', color: Colors.primary },
   { key: 'contacted', label: 'যোগাযোগ', emoji: '📞', color: Colors.warning },
   { key: 'qualified', label: 'যোগ্য', emoji: '✅', color: Colors.success },
@@ -44,13 +40,26 @@ const statusPillType: Record<Lead['status'], 'success' | 'warning' | 'error' | '
   lost: 'error',
 };
 
+const stageIndex = (status: Lead['status']) => STAGES.findIndex((s) => s.key === status);
+
 const nextStage = (status: Lead['status']): Lead['status'] | null => {
-  const i = STAGES.findIndex((s) => s.key === status);
-  if (i < 0 || i >= STAGES.length - 2) return null; // skip advancing into 'lost' via quick action
+  const i = stageIndex(status);
+  if (i < 0 || i >= STAGES.length - 2) return null;
   return STAGES[i + 1].key;
 };
 
-// ─── Move lead sheet (mobile-friendly) ─────────────────────────────────────────
+const prevStage = (status: Lead['status']): Lead['status'] | null => {
+  const i = stageIndex(status);
+  if (i <= 0) return null;
+  return STAGES[i - 1].key;
+};
+
+const dialPhone = (phone: string) => {
+  const digits = phone.replace(/\D/g, '');
+  if (digits) Linking.openURL(`tel:${digits}`);
+};
+
+// ─── Move lead sheet ───────────────────────────────────────────────────────────
 
 const MoveLeadSheet = ({
   visible,
@@ -70,91 +79,287 @@ const MoveLeadSheet = ({
     <Modal visible={visible} transparent animationType="slide">
       <Pressable style={styles.overlay} onPress={onClose}>
         <Pressable style={styles.sheet} onPress={(e) => e.stopPropagation()}>
-          <T size="lg" weight="bold" style={{ marginBottom: 4 }}>{lead.name}</T>
-          <T size="xs" color={Colors.textSecondary} style={{ marginBottom: Spacing.lg }}>
+          <View style={styles.sheetHandle} />
+          <T size="lg" weight="bold">{lead.name}</T>
+          <T size="xs" color={Colors.textSecondary} style={{ marginTop: 4, marginBottom: Spacing.lg }}>
             বর্তমান: {current.emoji} {current.label}
           </T>
-          <T size="sm" weight="semibold" style={{ marginBottom: Spacing.sm }}>স্তর বেছে নিন</T>
-          {STAGES.filter((s) => s.key !== lead.status).map((s) => (
-            <Pressable
-              key={s.key}
-              onPress={() => { onMove(lead.id, s.key); onClose(); }}
-              style={[styles.moveRow, { borderLeftColor: s.color }]}
-            >
-              <T size="md">{s.emoji}</T>
-              <T size="sm" weight="semibold" style={{ flex: 1, marginLeft: Spacing.sm }}>{s.label}</T>
-              <T size="lg" color={Colors.textTertiary}>›</T>
-            </Pressable>
-          ))}
+          <View style={styles.stageGrid}>
+            {STAGES.filter((s) => s.key !== lead.status).map((s) => (
+              <Pressable
+                key={s.key}
+                onPress={() => { onMove(lead.id, s.key); onClose(); }}
+                style={[styles.stageGridBtn, { borderColor: s.color, backgroundColor: s.color + '14' }]}
+              >
+                <T size="2xl">{s.emoji}</T>
+                <T size="sm" weight="semibold" style={{ marginTop: 4 }}>{s.label}</T>
+              </Pressable>
+            ))}
+          </View>
+          <Btn label="বাতিল" onPress={onClose} variant="ghost" fullWidth style={{ marginTop: Spacing.md }} />
         </Pressable>
       </Pressable>
     </Modal>
   );
 };
 
-// ─── Kanban card ───────────────────────────────────────────────────────────────
+// ─── Mobile lead card ──────────────────────────────────────────────────────────
 
-const KanbanCard = ({
+const MobileLeadCard = ({
   lead,
-  mobile,
   onMovePress,
-  onQuickAdvance,
+  onMove,
 }: {
   lead: Lead;
-  mobile?: boolean;
   onMovePress: (lead: Lead) => void;
-  onQuickAdvance?: (lead: Lead) => void;
+  onMove: (id: string, status: Lead['status']) => void;
 }) => {
   const stage = STAGES.find((s) => s.key === lead.status)!;
-  const advance = nextStage(lead.status);
-  const advanceStage = advance ? STAGES.find((s) => s.key === advance) : null;
+  const next = nextStage(lead.status);
+  const prev = prevStage(lead.status);
+  const nextDef = next ? STAGES.find((s) => s.key === next) : null;
 
   return (
-    <Card
-      style={[styles.kanbanCard, { borderLeftColor: stage.color }]}
-      padding={mobile ? Spacing.md : Spacing.sm}
-    >
-      <Row justify="space-between" align="flex-start" style={{ marginBottom: Spacing.xs }}>
-        <View style={{ flex: 1, minWidth: 0, paddingRight: Spacing.sm }}>
-          <T size={mobile ? 'md' : 'sm'} weight="semibold" numberOfLines={2}>{lead.name}</T>
-          <T size="xs" color={Colors.textSecondary} style={{ marginTop: 2 }} numberOfLines={1}>
-            📞 {lead.phone}
-          </T>
-          {lead.address ? (
-            <T size="xs" color={Colors.textTertiary} numberOfLines={1}>📍 {lead.address}</T>
-          ) : null}
-        </View>
-        <View style={styles.scoreBadge}>
-          <T size="xs" weight="bold" color={scoreColor(lead.score)}>⭐ {toBn(lead.score)}</T>
-        </View>
-      </Row>
-      <T size="xs" color={Colors.textTertiary}>{lead.source} · {lead.lastContact}</T>
+    <View style={[styles.mobileCard, { borderColor: stage.color + '55' }]}>
+      <View style={[styles.mobileCardStripe, { backgroundColor: stage.color }]} />
 
-      {mobile && (
-        <Row gap={Spacing.sm} style={{ marginTop: Spacing.md }}>
-          {advanceStage && onQuickAdvance && (
-            <Btn
-              label={`${advanceStage.emoji} ${advanceStage.label}`}
-              onPress={() => onQuickAdvance(lead)}
-              size="sm"
-              variant="primary"
-              flex
-            />
-          )}
-          <Btn
-            label="স্তর পরিবর্তন"
-            onPress={() => onMovePress(lead)}
-            size="sm"
-            variant="outline"
-            flex={!advanceStage}
-          />
+      <View style={styles.mobileCardBody}>
+        <Row justify="space-between" align="flex-start">
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <T size="md" weight="bold" numberOfLines={2}>{lead.name}</T>
+            <Pressable onPress={() => dialPhone(lead.phone)} style={styles.phoneRow}>
+              <T size="sm" color={Colors.primary} weight="medium">📞 {lead.phone}</T>
+            </Pressable>
+            {lead.address ? (
+              <T size="xs" color={Colors.textTertiary} numberOfLines={1} style={{ marginTop: 2 }}>
+                📍 {lead.address}
+              </T>
+            ) : null}
+          </View>
+          <View style={[styles.scorePill, { borderColor: scoreColor(lead.score) }]}>
+            <T size="sm" weight="bold" color={scoreColor(lead.score)}>⭐{toBn(lead.score)}</T>
+          </View>
         </Row>
-      )}
-    </Card>
+
+        <T size="xs" color={Colors.textTertiary} style={{ marginTop: Spacing.xs }}>
+          {lead.source} · {lead.lastContact}
+        </T>
+
+        <View style={styles.actionBar}>
+          <Pressable style={styles.actionBtn} onPress={() => dialPhone(lead.phone)}>
+            <T size="lg">📞</T>
+            <T size="xs" weight="semibold" style={{ marginTop: 2 }}>কল</T>
+          </Pressable>
+
+          {prev && (
+            <Pressable
+              style={styles.actionBtn}
+              onPress={() => onMove(lead.id, prev)}
+            >
+              <T size="lg">◀</T>
+              <T size="xs" weight="semibold" style={{ marginTop: 2 }} numberOfLines={1}>
+                {STAGES.find((s) => s.key === prev)!.label}
+              </T>
+            </Pressable>
+          )}
+
+          {nextDef && (
+            <Pressable
+              style={[styles.actionBtn, styles.actionBtnPrimary, { backgroundColor: nextDef.color + '22' }]}
+              onPress={() => onMove(lead.id, next!)}
+            >
+              <T size="lg">{nextDef.emoji}</T>
+              <T size="xs" weight="bold" color={nextDef.color} style={{ marginTop: 2 }}>
+                {nextDef.label}
+              </T>
+            </Pressable>
+          )}
+
+          <Pressable style={styles.actionBtn} onPress={() => onMovePress(lead)}>
+            <T size="lg">⋯</T>
+            <T size="xs" weight="semibold" style={{ marginTop: 2 }}>আরও</T>
+          </Pressable>
+        </View>
+      </View>
+    </View>
   );
 };
 
-// ─── Desktop column ────────────────────────────────────────────────────────────
+const scoreColor = (score: number) => {
+  if (score >= 80) return Colors.success;
+  if (score >= 50) return Colors.warning;
+  return Colors.textTertiary;
+};
+
+// ─── Mobile: vertical pipeline (single scroll) ─────────────────────────────────
+
+type PipelineSection = { stage: StageDef; data: Lead[] };
+
+const MobilePipelineKanban = ({
+  leads,
+  onMovePress,
+  onMove,
+}: {
+  leads: Lead[];
+  onMovePress: (lead: Lead) => void;
+  onMove: (id: string, status: Lead['status']) => void;
+}) => {
+  const insets = useSafeAreaInsets();
+  const listRef = useRef<SectionList<Lead, PipelineSection>>(null);
+  const [jumpIndex, setJumpIndex] = useState(0);
+
+  const sections: PipelineSection[] = useMemo(
+    () => STAGES.map((stage) => ({
+      stage,
+      data: leads.filter((l) => l.status === stage.key),
+    })),
+    [leads],
+  );
+
+  const totalByStage = useMemo(() => {
+    const m: Record<string, number> = {};
+    STAGES.forEach((s) => { m[s.key] = leads.filter((l) => l.status === s.key).length; });
+    return m;
+  }, [leads]);
+
+  const scrollToStage = (index: number) => {
+    setJumpIndex(index);
+    listRef.current?.scrollToLocation({
+      sectionIndex: index,
+      itemIndex: 0,
+      viewOffset: 8,
+      animated: true,
+    });
+  };
+
+  const renderSectionHeader = useCallback(({ section }: { section: PipelineSection }) => {
+    const { stage } = section;
+    const count = section.data.length;
+    return (
+      <View style={[styles.sectionHeader, { borderLeftColor: stage.color }]}>
+        <View style={[styles.sectionIcon, { backgroundColor: stage.color + '22' }]}>
+          <T size="lg">{stage.emoji}</T>
+        </View>
+        <View style={{ flex: 1 }}>
+          <T size="md" weight="bold">{stage.label}</T>
+          <T size="xs" color={Colors.textSecondary}>
+            {count === 0 ? 'কোনো লিড নেই' : `${toBn(count)} লিড`}
+          </T>
+        </View>
+        <View style={[styles.sectionCount, { backgroundColor: stage.color }]}>
+          <T size="sm" weight="bold" color="#fff">{toBn(count)}</T>
+        </View>
+      </View>
+    );
+  }, []);
+
+  const renderItem = useCallback(({ item }: { item: Lead }) => (
+    <MobileLeadCard lead={item} onMovePress={onMovePress} onMove={onMove} />
+  ), [onMovePress, onMove]);
+
+  const renderSectionFooter = useCallback(({ section }: { section: PipelineSection }) => {
+    if (section.data.length > 0) return <View style={{ height: Spacing.sm }} />;
+    return (
+      <View style={styles.emptySection}>
+        <T size="sm" color={Colors.textTertiary}>এখানে লিড নেই</T>
+        <T size="xs" color={Colors.textTertiary} style={{ marginTop: 4 }}>
+          অন্য স্তর থেকে «আরও» দিয়ে সরান
+        </T>
+      </View>
+    );
+  }, []);
+
+  return (
+    <View style={styles.mobilePipeline}>
+      {/* Tap-to-jump pipeline strip */}
+      <View style={styles.pipelineStripWrap}>
+        <T size="xs" color={Colors.textTertiary} style={styles.pipelineHint}>
+          স্তরে যেতে ট্যাপ করুন · নিচে স্ক্রল করুন
+        </T>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.pipelineStrip}
+        >
+          {STAGES.map((stage, i) => {
+            const active = jumpIndex === i;
+            const count = totalByStage[stage.key];
+            return (
+              <Pressable
+                key={stage.key}
+                onPress={() => scrollToStage(i)}
+                style={[
+                  styles.pipelineStep,
+                  active && { backgroundColor: stage.color, borderColor: stage.color },
+                ]}
+              >
+                <T size="md">{stage.emoji}</T>
+                <T
+                  size="xs"
+                  weight="semibold"
+                  color={active ? '#fff' : Colors.textPrimary}
+                  numberOfLines={1}
+                  style={{ marginTop: 2, maxWidth: 56 }}
+                >
+                  {stage.label}
+                </T>
+                {count > 0 && (
+                  <View style={[
+                    styles.pipelineStepBadge,
+                    active ? { backgroundColor: 'rgba(255,255,255,0.35)' } : { backgroundColor: stage.color },
+                  ]}>
+                    <T size="xs" weight="bold" color="#fff">{toBn(count)}</T>
+                  </View>
+                )}
+              </Pressable>
+            );
+          })}
+        </ScrollView>
+      </View>
+
+      <SectionList
+        ref={listRef}
+        sections={sections}
+        keyExtractor={(item) => item.id}
+        renderItem={renderItem}
+        renderSectionHeader={renderSectionHeader}
+        renderSectionFooter={renderSectionFooter}
+        stickySectionHeadersEnabled
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{
+          paddingHorizontal: Spacing.base,
+          paddingBottom: TAB_BAR + insets.bottom + Spacing.xl,
+        }}
+        onScrollToIndexFailed={() => {}}
+        onViewableItemsChanged={undefined}
+      />
+    </View>
+  );
+};
+
+// ─── Desktop Kanban card / column ──────────────────────────────────────────────
+
+const DesktopKanbanCard = ({
+  lead,
+  onMovePress,
+}: {
+  lead: Lead;
+  onMovePress: (lead: Lead) => void;
+}) => {
+  const stage = STAGES.find((s) => s.key === lead.status)!;
+  return (
+    <Pressable onPress={() => onMovePress(lead)}>
+      <Card style={[styles.desktopCard, { borderLeftColor: stage.color }]} padding={Spacing.sm}>
+        <T size="sm" weight="semibold" numberOfLines={1}>{lead.name}</T>
+        <T size="xs" color={Colors.textSecondary} numberOfLines={1}>📞 {lead.phone}</T>
+        <Row justify="space-between" style={{ marginTop: 4 }}>
+          <T size="xs" color={Colors.textTertiary}>{lead.source}</T>
+          <T size="xs" weight="bold" color={scoreColor(lead.score)}>⭐{toBn(lead.score)}</T>
+        </Row>
+      </Card>
+    </Pressable>
+  );
+};
 
 const KanbanColumn = ({
   stage,
@@ -163,7 +368,7 @@ const KanbanColumn = ({
   colHeight,
   onMovePress,
 }: {
-  stage: typeof STAGES[number];
+  stage: StageDef;
   leads: Lead[];
   colWidth: number;
   colHeight: number;
@@ -176,187 +381,17 @@ const KanbanColumn = ({
         <T size="xs" weight="bold" color="#fff">{leads.length}</T>
       </View>
     </View>
-    <ScrollView
-      nestedScrollEnabled
-      showsVerticalScrollIndicator={false}
-      contentContainerStyle={{ paddingBottom: Spacing.sm }}
-    >
+    <ScrollView nestedScrollEnabled showsVerticalScrollIndicator={false}>
       {leads.length === 0 ? (
-        <T size="xs" color={Colors.textTertiary} style={styles.emptyCol}>
-          কোনো লিড নেই
-        </T>
+        <T size="xs" color={Colors.textTertiary} style={styles.emptyCol}>কোনো লিড নেই</T>
       ) : (
         leads.map((lead) => (
-          <Pressable key={lead.id} onPress={() => onMovePress(lead)}>
-            <KanbanCard lead={lead} onMovePress={onMovePress} />
-          </Pressable>
+          <DesktopKanbanCard key={lead.id} lead={lead} onMovePress={onMovePress} />
         ))
       )}
     </ScrollView>
   </View>
 );
-
-// ─── Mobile: stage tabs + paged columns ────────────────────────────────────────
-
-const MobileKanban = ({
-  leads,
-  onMovePress,
-  onQuickAdvance,
-}: {
-  leads: Lead[];
-  onMovePress: (lead: Lead) => void;
-  onQuickAdvance: (lead: Lead) => void;
-}) => {
-  const { width } = useWindowDimensions();
-  const insets = useSafeAreaInsets();
-  const scrollRef = useRef<ScrollView>(null);
-  const [activeIndex, setActiveIndex] = useState(0);
-
-  const counts = useMemo(() => {
-    const m: Record<Lead['status'], number> = {} as Record<Lead['status'], number>;
-    STAGES.forEach((s) => { m[s.key] = leads.filter((l) => l.status === s.key).length; });
-    return m;
-  }, [leads]);
-
-  const pageWidth = width - Spacing.base * 2;
-  const boardHeight = 420;
-
-  const goToStage = (index: number) => {
-    setActiveIndex(index);
-    scrollRef.current?.scrollTo({ x: index * (pageWidth + MOBILE_COL_GAP), animated: true });
-  };
-
-  const onScrollEnd = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const x = e.nativeEvent.contentOffset.x;
-    const index = Math.round(x / (pageWidth + MOBILE_COL_GAP));
-    setActiveIndex(Math.max(0, Math.min(index, STAGES.length - 1)));
-  };
-
-  const activeStage = STAGES[activeIndex];
-
-  return (
-    <View style={styles.mobileKanban}>
-      {/* Stage tabs */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.stageTabs}
-      >
-        {STAGES.map((stage, i) => (
-          <Pressable
-            key={stage.key}
-            onPress={() => goToStage(i)}
-            style={[
-              styles.stageTab,
-              activeIndex === i && { backgroundColor: stage.color, borderColor: stage.color },
-            ]}
-          >
-            <T
-              size="xs"
-              weight="semibold"
-              color={activeIndex === i ? '#fff' : Colors.textPrimary}
-              numberOfLines={1}
-            >
-              {stage.emoji} {stage.label}
-            </T>
-            <View style={[
-              styles.stageTabCount,
-              activeIndex === i
-                ? { backgroundColor: 'rgba(255,255,255,0.35)' }
-                : { backgroundColor: stage.color + '22' },
-            ]}>
-              <T size="xs" weight="bold" color={activeIndex === i ? '#fff' : stage.color}>
-                {counts[stage.key]}
-              </T>
-            </View>
-          </Pressable>
-        ))}
-      </ScrollView>
-
-      {/* Dot indicator */}
-      <Row justify="center" gap={6} style={{ marginBottom: Spacing.sm }}>
-        {STAGES.map((_, i) => (
-          <View
-            key={i}
-            style={[
-              styles.dot,
-              activeIndex === i && { backgroundColor: STAGES[i].color, width: 18 },
-            ]}
-          />
-        ))}
-      </Row>
-
-      {/* One column per swipe page */}
-      <ScrollView
-        ref={scrollRef}
-        horizontal
-        pagingEnabled={false}
-        decelerationRate="fast"
-        snapToInterval={pageWidth + MOBILE_COL_GAP}
-        snapToAlignment="start"
-        disableIntervalMomentum
-        onMomentumScrollEnd={onScrollEnd}
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{
-          paddingHorizontal: Spacing.base,
-          gap: MOBILE_COL_GAP,
-          paddingBottom: insets.bottom + Spacing.lg,
-        }}
-        style={{ maxHeight: boardHeight }}
-      >
-        {STAGES.map((stage) => {
-          const stageLeads = leads.filter((l) => l.status === stage.key);
-          return (
-            <View
-              key={stage.key}
-              style={[
-                styles.mobileCol,
-                { width: pageWidth, borderTopColor: stage.color },
-              ]}
-            >
-              <View style={[styles.mobileColHeader, { backgroundColor: stage.color + '18' }]}>
-                <T size="sm" weight="bold">{stage.emoji} {stage.label}</T>
-                <T size="xs" color={Colors.textSecondary}>{stageLeads.length} লিড</T>
-              </View>
-              <ScrollView
-                showsVerticalScrollIndicator={false}
-                nestedScrollEnabled
-                contentContainerStyle={{ padding: Spacing.sm, paddingBottom: Spacing.md }}
-              >
-                {stageLeads.length === 0 ? (
-                  <Card padding={Spacing.lg}>
-                    <T size="sm" color={Colors.textTertiary} style={{ textAlign: 'center' }}>
-                      এই স্তরে কোনো লিড নেই
-                    </T>
-                    <T size="xs" color={Colors.textTertiary} style={{ textAlign: 'center', marginTop: Spacing.xs }}>
-                      অন্য স্তর থেকে সরান অথবা নতুন লিড যোগ করুন
-                    </T>
-                  </Card>
-                ) : (
-                  stageLeads.map((lead) => (
-                    <KanbanCard
-                      key={lead.id}
-                      lead={lead}
-                      mobile
-                      onMovePress={onMovePress}
-                      onQuickAdvance={onQuickAdvance}
-                    />
-                  ))
-                )}
-              </ScrollView>
-            </View>
-          );
-        })}
-      </ScrollView>
-
-      <T size="xs" color={Colors.textTertiary} style={styles.swipeHint}>
-        ← সোয়াইপ করুন ({activeStage.emoji} {activeStage.label}) →
-      </T>
-    </View>
-  );
-};
-
-// ─── Desktop board ─────────────────────────────────────────────────────────────
 
 const DesktopKanban = ({
   leads,
@@ -367,19 +402,15 @@ const DesktopKanban = ({
 }) => {
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
-  const colWidth = Math.floor(
-    (width - Spacing.base * 2 - MOBILE_COL_GAP * (STAGES.length - 1)) / STAGES.length,
-  );
-  const colHeight = Math.min(height * 0.55, 520);
+  const gap = Spacing.sm;
+  const colWidth = Math.floor((width - Spacing.base * 2 - gap * (STAGES.length - 1)) / STAGES.length);
+  const colHeight = Math.min(height * 0.52, 500);
 
   return (
     <ScrollView
       horizontal
       style={{ flex: 1 }}
-      contentContainerStyle={[
-        styles.kanbanBoard,
-        { paddingBottom: insets.bottom + Spacing.lg },
-      ]}
+      contentContainerStyle={[styles.kanbanBoard, { paddingBottom: insets.bottom + Spacing.lg }]}
       showsHorizontalScrollIndicator={false}
     >
       {STAGES.map((stage) => (
@@ -407,20 +438,15 @@ const KanbanBoard = ({
   const isWide = width >= WIDE_BREAKPOINT;
   const [moveLead, setMoveLead] = useState<Lead | null>(null);
 
-  const handleQuickAdvance = (lead: Lead) => {
-    const next = nextStage(lead.status);
-    if (next) onMove(lead.id, next);
-  };
-
   return (
     <>
       {isWide ? (
         <DesktopKanban leads={leads} onMovePress={setMoveLead} />
       ) : (
-        <MobileKanban
+        <MobilePipelineKanban
           leads={leads}
           onMovePress={setMoveLead}
-          onQuickAdvance={handleQuickAdvance}
+          onMove={onMove}
         />
       )}
       <MoveLeadSheet
@@ -433,7 +459,7 @@ const KanbanBoard = ({
   );
 };
 
-// ─── Main LeadsScreen ──────────────────────────────────────────────────────────
+// ─── LeadsScreen ───────────────────────────────────────────────────────────────
 
 export const LeadsScreen = () => {
   const [leads, setLeads] = useState<Lead[]>(seedLeads);
@@ -449,7 +475,7 @@ export const LeadsScreen = () => {
 
   const addLead = () => {
     if (!name || !phone) return;
-    const newLead: Lead = {
+    setLeads([{
       id: generateId(),
       name,
       phone,
@@ -458,8 +484,7 @@ export const LeadsScreen = () => {
       source: 'Manual',
       status: 'new',
       lastContact: 'আজ',
-    };
-    setLeads([newLead, ...leads]);
+    }, ...leads]);
     setModalVisible(false);
     setName('');
     setPhone('');
@@ -475,7 +500,7 @@ export const LeadsScreen = () => {
       <View style={styles.toolbar}>
         <Row gap={Spacing.xs}>
           <Chip label="📋 তালিকা" active={view === 'list'} onPress={() => setView('list')} />
-          <Chip label="🗂 Kanban" active={view === 'kanban'} onPress={() => setView('kanban')} />
+          <Chip label="🗂 পাইপলাইন" active={view === 'kanban'} onPress={() => setView('kanban')} />
         </Row>
         <Btn label="➕ লিড" onPress={() => setModalVisible(true)} size="sm" />
       </View>
@@ -491,7 +516,6 @@ export const LeadsScreen = () => {
               <AISuggestion title={s.title} message={s.message} actionLabel="কাজ করুন" />
             </View>
           ))}
-
           <SectionHeader title="⭐ লিড র‍্যাঙ্কিং" />
           {sorted.map((lead) => {
             const stage = STAGES.find((s) => s.key === lead.status)!;
@@ -502,25 +526,14 @@ export const LeadsScreen = () => {
                   <T size="sm" weight="bold" color={scoreColor(lead.score)}>⭐ {toBn(lead.score)}</T>
                 </Row>
                 <View style={{ marginTop: Spacing.sm, gap: 3 }}>
-                  <T size="xs" color={Colors.textSecondary}>📞 {lead.phone}</T>
-                  {lead.address ? (
-                    <T size="xs" color={Colors.textSecondary}>📍 {lead.address}</T>
-                  ) : null}
+                  <Pressable onPress={() => dialPhone(lead.phone)}>
+                    <T size="xs" color={Colors.primary}>📞 {lead.phone}</T>
+                  </Pressable>
+                  {lead.address ? <T size="xs" color={Colors.textSecondary}>📍 {lead.address}</T> : null}
                 </View>
                 <Row justify="space-between" align="center" style={{ marginTop: Spacing.md }}>
                   <StatusPill label={`${stage.emoji} ${stage.label}`} type={statusPillType[lead.status]} />
                   <T size="xs" color={Colors.textTertiary}>{lead.source} · {lead.lastContact}</T>
-                </Row>
-                <Row gap={Spacing.sm} wrap style={{ marginTop: Spacing.sm }}>
-                  {STAGES.filter((s) => s.key !== lead.status).slice(0, 3).map((s) => (
-                    <Btn
-                      key={s.key}
-                      label={`${s.emoji} ${s.label}`}
-                      onPress={() => moveLead(lead.id, s.key)}
-                      size="sm"
-                      variant="outline"
-                    />
-                  ))}
                 </Row>
               </Card>
             );
@@ -531,6 +544,7 @@ export const LeadsScreen = () => {
       <Modal visible={modalVisible} transparent animationType="slide">
         <Pressable style={styles.overlay} onPress={() => setModalVisible(false)}>
           <Pressable style={styles.sheet} onPress={(e) => e.stopPropagation()}>
+            <View style={styles.sheetHandle} />
             <T size="lg" weight="bold" style={{ marginBottom: Spacing.base }}>লিড ক্যাপচার</T>
             <Input label="নাম" value={name} onChangeText={setName} placeholder="গ্রাহকের নাম" style={{ marginBottom: Spacing.md }} />
             <Input label="ফোন" value={phone} onChangeText={setPhone} keyboardType="phone-pad" placeholder="01XXXXXXXXX" style={{ marginBottom: Spacing.md }} />
@@ -581,62 +595,120 @@ const styles = StyleSheet.create({
     borderBottomColor: Colors.border,
   },
   kanbanWrap: { flex: 1, minHeight: 0 },
-  mobileKanban: { flex: 1 },
-  stageTabs: {
+
+  mobilePipeline: { flex: 1 },
+  pipelineStripWrap: {
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+    backgroundColor: Colors.surface,
+  },
+  pipelineHint: {
+    paddingHorizontal: Spacing.base,
+    paddingTop: Spacing.sm,
+    textAlign: 'center',
+  },
+  pipelineStrip: {
     paddingHorizontal: Spacing.base,
     paddingVertical: Spacing.sm,
     gap: Spacing.xs,
   },
-  stageTab: {
-    flexDirection: 'row',
+  pipelineStep: {
     alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: 8,
-    borderRadius: Radius.full,
+    width: 72,
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.xs,
+    borderRadius: Radius.lg,
     borderWidth: 1.5,
     borderColor: Colors.border,
-    backgroundColor: Colors.surface,
+    backgroundColor: Colors.bg,
     marginRight: Spacing.xs,
   },
-  stageTabCount: {
+  pipelineStepBadge: {
+    marginTop: 4,
     borderRadius: 999,
-    minWidth: 22,
-    height: 22,
+    minWidth: 20,
+    height: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 6,
+    paddingHorizontal: 5,
   },
-  dot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: Colors.border,
-  },
-  mobileCol: {
-    borderRadius: Radius.lg,
-    backgroundColor: Colors.surface,
-    overflow: 'hidden',
-    borderTopWidth: 3,
-    maxHeight: 400,
-  },
-  mobileColHeader: {
+
+  sectionHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
+    gap: Spacing.sm,
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.sm,
+    marginTop: Spacing.sm,
+    backgroundColor: Colors.surface,
+    borderRadius: Radius.lg,
+    borderLeftWidth: 4,
+    ...StyleSheet.flatten({ shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 4, shadowOffset: { width: 0, height: 2 }, elevation: 1 }),
   },
-  swipeHint: {
-    textAlign: 'center',
-    paddingVertical: Spacing.sm,
-    paddingHorizontal: Spacing.base,
+  sectionIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: Radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  kanbanBoard: {
+  sectionCount: {
+    minWidth: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 8,
+  },
+  emptySection: {
+    padding: Spacing.lg,
+    marginBottom: Spacing.sm,
+    backgroundColor: Colors.bg,
+    borderRadius: Radius.lg,
+    alignItems: 'center',
+  },
+
+  mobileCard: {
     flexDirection: 'row',
-    padding: Spacing.base,
-    gap: MOBILE_COL_GAP,
+    backgroundColor: Colors.surface,
+    borderRadius: Radius.lg,
+    borderWidth: 1,
+    marginBottom: Spacing.sm,
+    overflow: 'hidden',
   },
+  mobileCardStripe: { width: 5 },
+  mobileCardBody: { flex: 1, padding: Spacing.md },
+  phoneRow: { marginTop: Spacing.xs, paddingVertical: 2 },
+  scorePill: {
+    borderWidth: 1.5,
+    borderRadius: Radius.full,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 4,
+    marginLeft: Spacing.sm,
+  },
+  actionBar: {
+    flexDirection: 'row',
+    marginTop: Spacing.md,
+    paddingTop: Spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: Colors.border,
+    gap: Spacing.xs,
+  },
+  actionBtn: {
+    flex: 1,
+    minHeight: 56,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: Colors.bg,
+    borderRadius: Radius.md,
+    paddingVertical: Spacing.sm,
+  },
+  actionBtnPrimary: {
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+
+  kanbanBoard: { flexDirection: 'row', padding: Spacing.base, gap: Spacing.sm },
   kanbanCol: {
     borderRadius: Radius.lg,
     backgroundColor: Colors.surface,
@@ -650,31 +722,30 @@ const styles = StyleSheet.create({
     padding: Spacing.sm,
     borderTopWidth: 3,
   },
-  kanbanBadge: {
-    borderRadius: 999,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-  },
-  kanbanCard: {
-    marginBottom: Spacing.sm,
-    borderLeftWidth: 3,
-  },
-  scoreBadge: {
-    backgroundColor: Colors.bg,
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: 4,
-    borderRadius: Radius.sm,
-  },
+  kanbanBadge: { borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 },
+  desktopCard: { margin: Spacing.xs, marginBottom: Spacing.sm, borderLeftWidth: 3 },
   emptyCol: { textAlign: 'center', marginTop: Spacing.md, padding: Spacing.sm },
-  moveRow: {
+
+  stageGrid: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.sm,
+  },
+  stageGridBtn: {
+    width: '47%',
+    minHeight: 88,
     alignItems: 'center',
-    paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.md,
-    marginBottom: Spacing.sm,
-    backgroundColor: Colors.bg,
-    borderRadius: Radius.md,
-    borderLeftWidth: 4,
+    justifyContent: 'center',
+    borderRadius: Radius.lg,
+    borderWidth: 2,
+  },
+  sheetHandle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: Colors.border,
+    alignSelf: 'center',
+    marginBottom: Spacing.md,
   },
   overlay: { flex: 1, backgroundColor: Colors.overlay, justifyContent: 'flex-end' },
   sheet: {
@@ -682,6 +753,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: Radius['2xl'],
     borderTopRightRadius: Radius['2xl'],
     padding: Spacing.xl,
-    paddingBottom: Spacing.xl + 8,
+    paddingBottom: Spacing.xl + 16,
+    maxHeight: '85%',
   },
 });
