@@ -9,6 +9,7 @@ import { Spacing, Colors } from '../../theme';
 import { seedTransactions } from '../../data/seed';
 import { bnTaka, calcProfit, toBn } from '../../utils/helpers';
 import { useFeatureNav } from '../../navigation/FeatureNavContext';
+import { DashboardCreditScoreCard } from '../shared/CreditScoreScreen';
 
 export { AccountingScreen as BookkeepingScreen } from '../accounting/AccountingScreen';
 
@@ -31,21 +32,23 @@ export const Tier0Home = () => {
           metricLabel="মোট আয়"
           stats={[
             { label: 'মোট ব্যয়', value: bnTaka(expense) },
-            { label: 'নিট লাভ',  value: bnTaka(profit)  },
+            { label: 'মোট লাভ',  value: bnTaka(profit)  },
             { label: 'লেনদেন',   value: `${toBn(txCount)} টি` },
           ]}
         />
 
+        <DashboardCreditScoreCard onPress={() => openFeature('creditScore')} />
+
         {/* Quick actions */}
         <Row gap={Spacing.sm} style={{ marginBottom: Spacing.base }}>
           <Btn
-            label="➕ আয় যোগ"
+            label="➕ আয়"
             onPress={() => openFeature('bookkeeping')}
             variant="primary"
             flex
           />
           <Btn
-            label="➖ খরচ যোগ"
+            label="➖ খরচ"
             onPress={() => openFeature('bookkeeping')}
             variant="secondary"
             flex
@@ -53,7 +56,7 @@ export const Tier0Home = () => {
         </Row>
 
         {/* Inventory quick summary */}
-        <Card style={{ marginBottom: Spacing.base }}>
+        <Card style={{ marginBottom: Spacing.base }} onPress={() => openFeature('inventory')}>
           <Row justify="space-between" align="center">
             <View>
               <T size="sm" weight="bold">📦 পণ্য মজুদ</T>

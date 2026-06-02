@@ -196,7 +196,7 @@ export const FeatureLauncherList = () => {
                       </View>
                     </Row>
                     <T size="xs" color={inTab ? colors.accent : colors.textTertiary} style={{ flexShrink: 0, marginLeft: Spacing.sm }}>
-                      {inTab ? 'ট্যাব' : 'খুলুন'}
+                      {inTab ? 'ট্যাবে যান' : 'খুলুন'}
                     </T>
                   </Row>
                 </Card>

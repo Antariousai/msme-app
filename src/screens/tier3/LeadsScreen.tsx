@@ -17,6 +17,8 @@ import { HeroCard } from '../../components/HeroCard';
 import { Colors, Spacing, Radius } from '../../theme';
 import { seedLeads, Lead, aiSuggestions } from '../../data/seed';
 import { toBn, generateId } from '../../utils/helpers';
+import { useFeatureNav } from '../../navigation/FeatureNavContext';
+import { DashboardCreditScoreCard } from '../shared/CreditScoreScreen';
 
 const WIDE_BREAKPOINT = 720;
 const TAB_BAR = 68;
@@ -517,7 +519,7 @@ export const LeadsScreen = () => {
             <T size="lg" weight="bold" style={{ marginBottom: Spacing.base }}>লিড ক্যাপচার</T>
             <Input label="নাম" value={name} onChangeText={setName} placeholder="গ্রাহকের নাম" style={{ marginBottom: Spacing.md }} />
             <Input label="ফোন" value={phone} onChangeText={setPhone} keyboardType="phone-pad" placeholder="01XXXXXXXXX" style={{ marginBottom: Spacing.md }} />
-            <Input label="ঠিকানা" value={address} onChangeText={setAddress} placeholder="জেলা, এলাকা" style={{ marginBottom: Spacing.xl }} />
+            <Input label="ঠিকানা" value={address} onChangeText={setAddress} placeholder="যেমন: আগ্রাবাদ, চট্টগ্রাম" style={{ marginBottom: Spacing.xl }} />
             <Btn label="সংরক্ষণ" onPress={addLead} fullWidth />
           </Pressable>
         </Pressable>
@@ -527,6 +529,7 @@ export const LeadsScreen = () => {
 };
 
 export const Tier3Home = () => {
+  const { openFeature } = useFeatureNav();
   const hotLeads = seedLeads.filter((l) => l.score >= 70).length;
   const converted = seedLeads.filter((l) => l.status === 'converted').length;
   return (
@@ -542,6 +545,7 @@ export const Tier3Home = () => {
             { label: 'রূপান্তর ✅', value: toBn(converted) },
           ]}
         />
+        <DashboardCreditScoreCard onPress={() => openFeature('creditScore')} />
         <AISuggestion
           title="🔥 লিড ক্লোজিং"
           message="আয়েশা সিদ্দিকা (স্কোর ৯২) — আজ কল করলে রূপান্তর সম্ভাবনা ৮৫%। 🚀"

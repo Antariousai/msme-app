@@ -93,15 +93,15 @@ export const AccountingScreen = () => {
         </Row>
 
         <HeroCard
-          title="💚 নিট লাভ"
+          title="💚 মোট লাভ"
           metric={bnTaka(profit)}
           metricLabel=""
           colors={profit >= 0 ? ['#16b886', '#5ed8a8', '#c2f0df'] : ['#ff5a78', '#ff8fa5', '#ffd0d9']}
         />
 
         <Row gap={Spacing.base} style={{ marginBottom: Spacing.base }}>
-          <Btn label="➕ আয় যোগ" onPress={() => openAdd('income')} variant="secondary" flex />
-          <Btn label="➕ খরচ যোগ" onPress={() => openAdd('expense')} variant="danger" flex />
+          <Btn label="➕ আয়" onPress={() => openAdd('income')} variant="secondary" flex />
+          <Btn label="➖ খরচ" onPress={() => openAdd('expense')} variant="danger" flex />
         </Row>
 
         {isFull && (

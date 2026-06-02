@@ -7,6 +7,9 @@ import { Colors, Spacing, Radius } from '../../theme';
 import { useTheme } from '../../theme/ThemeContext';
 import { calendarEvents, CalendarEvent } from '../../data/seed';
 import { toBn } from '../../utils/helpers';
+import { useAuth } from '../../auth/AuthContext';
+import { useFeatureNav } from '../../navigation/FeatureNavContext';
+import { getFeatureForCalendarEventType } from '../../navigation/features';
 
 const DAYS   = ['রবি', 'সোম', 'মঙ্গ', 'বুধ', 'বৃহঃ', 'শুক্র', 'শনি'];
 const MONTHS = ['জানুয়ারি','ফেব্রুয়ারি','মার্চ','এপ্রিল','মে','জুন',
@@ -36,8 +39,11 @@ const fmtISO = (iso: string) => {
 };
 
 export const CalendarScreen = () => {
+  const { user } = useAuth();
+  const { openFeature } = useFeatureNav();
   const { colors } = useTheme();
   const { width } = useWindowDimensions();
+  const tier = user?.tier ?? 0;
   const today = todayISO();
   const now = new Date();
 
@@ -185,10 +191,16 @@ export const CalendarScreen = () => {
               <Card key={ev.id} style={{ marginBottom: Spacing.sm, paddingLeft: 0, overflow: 'hidden' }} padding={0}>
                 <Row gap={0} align="stretch">
                   <View style={{ width: 4, backgroundColor: TYPE_COLOR[ev.type] }} />
-                  <View style={{ flex: 1, padding: Spacing.md }}>
+                  <Pressable
+                    style={{ flex: 1, padding: Spacing.md }}
+                    onPress={() => openFeature(getFeatureForCalendarEventType(ev.type, tier))}
+                  >
                     <T size="sm" weight="semibold">{ev.title}</T>
                     <T size="xs" color={colors.textSecondary}>{TYPE_LABEL[ev.type]}</T>
-                  </View>
+                    <T size="xs" color={colors.primary} style={{ marginTop: 4 }}>
+                      সংশ্লিষ্ট স্ক্রিনে যেতে ট্যাপ করুন →
+                    </T>
+                  </Pressable>
                   <Pressable
                     onPress={() => deleteEvent(ev.id)}
                     style={{ paddingHorizontal: Spacing.md, alignItems: 'center', justifyContent: 'center' }}

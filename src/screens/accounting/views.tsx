@@ -171,7 +171,7 @@ export const BalanceSheetView = ({ income, expense }: { income: number; expense:
         <BSRow label="চলতি দায়:" />
         <BSRow label="বকেয়া দায় (সরলীকৃত)" amount={0} indent color={Colors.textSecondary} />
         <BSRow label="মালিকের মূলধন:" />
-        <BSRow label="নিট লাভ/ক্ষতি" amount={netCash} indent bold color={balanced ? Colors.success : Colors.error} />
+        <BSRow label="মোট লাভ/ক্ষতি" amount={netCash} indent bold color={balanced ? Colors.success : Colors.error} />
         <Divider />
         <BSRow label="মোট দায় + মূলধন" amount={netCash} bold color={balanced ? Colors.success : Colors.error} />
       </Card>

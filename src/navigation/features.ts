@@ -268,3 +268,22 @@ export function getHubFeaturesByCategory(
 export function isInPrimaryTabs(tier: UserTier, featureId: FeatureId): boolean {
   return getPrimaryTabIds(tier).includes(featureId);
 }
+
+/** Calendar event type → feature screen (tier-aware where needed) */
+export function getFeatureForCalendarEventType(
+  type: 'market' | 'inventory' | 'promo' | 'finance',
+  tier: UserTier,
+): FeatureId {
+  switch (type) {
+    case 'inventory':
+      return 'inventory';
+    case 'market':
+      return tier >= 2 ? 'orders' : 'bookkeeping';
+    case 'promo':
+      return tier >= 2 ? 'website' : 'messages';
+    case 'finance':
+      return 'bookkeeping';
+    default:
+      return 'bookkeeping';
+  }
+}

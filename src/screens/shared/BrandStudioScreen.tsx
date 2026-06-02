@@ -113,7 +113,12 @@ export const BrandStudioScreen = ({ onBack }: { onBack: () => void }) => {
 
         <SectionHeader title="ওয়েব টেমপ্লেট" />
         {WEB_TEMPLATES.map((tpl) => (
-          <Card key={tpl.id} style={{ marginBottom: Spacing.sm }} padding={Spacing.md}>
+          <Card
+            key={tpl.id}
+            style={{ marginBottom: Spacing.sm }}
+            padding={Spacing.md}
+            onPress={() => setPreviewId(tpl.id)}
+          >
             <Row justify="space-between" align="center">
               <Row gap={Spacing.sm} style={{ flex: 1, minWidth: 0 }}>
                 <WebsiteIcon size={20} color={Colors.brandStudio} />

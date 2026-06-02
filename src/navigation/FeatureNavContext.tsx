@@ -1,10 +1,29 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+  RefObject,
+} from 'react';
 import { Modal, View, StyleSheet, Pressable } from 'react-native';
+import { NavigationContainerRef } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../auth/AuthContext';
-import { FeatureId, getFeatureById, getHubFeatures, getPrimaryTabIds } from './features';
+import {
+  FeatureId,
+  getFeatureById,
+  getHubFeatures,
+  getPrimaryTabIds,
+  isInPrimaryTabs,
+} from './features';
 import { Colors, Spacing, Radius } from '../theme';
 import { XIcon } from '../icons';
+
+export type RootTabParamList = {
+  Home: undefined;
+  Account: undefined;
+} & Partial<Record<FeatureId, undefined>>;
 
 interface FeatureNavContextType {
   openFeature: (id: FeatureId) => void;
@@ -22,7 +41,12 @@ const FeatureNavContext = createContext<FeatureNavContextType>({
 
 export const useFeatureNav = () => useContext(FeatureNavContext);
 
-export const FeatureNavProvider = ({ children }: { children: ReactNode }) => {
+interface FeatureNavProviderProps {
+  children: ReactNode;
+  navigationRef: RefObject<NavigationContainerRef<RootTabParamList> | null>;
+}
+
+export const FeatureNavProvider = ({ children, navigationRef }: FeatureNavProviderProps) => {
   const { user } = useAuth();
   const tier = user?.tier ?? 0;
   const [activeFeature, setActiveFeature] = useState<FeatureId | null>(null);
@@ -30,7 +54,22 @@ export const FeatureNavProvider = ({ children }: { children: ReactNode }) => {
   const hubFeatures = getHubFeatures(tier);
   const tabFeatureIds = getPrimaryTabIds(tier);
 
-  const openFeature = (id: FeatureId) => setActiveFeature(id);
+  const navigateToTab = (id: FeatureId) => {
+    const nav = navigationRef.current;
+    if (!nav?.isReady()) return false;
+    nav.navigate(id);
+    return true;
+  };
+
+  const openFeature = (id: FeatureId) => {
+    if (isInPrimaryTabs(tier, id)) {
+      setActiveFeature(null);
+      navigateToTab(id);
+      return;
+    }
+    setActiveFeature(id);
+  };
+
   const closeFeature = () => setActiveFeature(null);
 
   useEffect(() => {

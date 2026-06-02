@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { View, StyleSheet, Modal } from 'react-native';
 import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -14,7 +14,8 @@ import { Tier1Home } from '../screens/tier1/MessagesScreen';
 import { Tier2Home } from '../screens/tier2/OrdersScreen';
 import { Tier3Home } from '../screens/tier3/LeadsScreen';
 import { Tier4Home } from '../screens/tier4/DashboardScreen';
-import { FeatureNavProvider } from './FeatureNavContext';
+import { FeatureNavProvider, RootTabParamList } from './FeatureNavContext';
+import type { NavigationContainerRef } from '@react-navigation/native';
 import { getPrimaryTabIds, getFeatureById } from './features';
 import { T } from '../components/atoms';
 import { Spacing } from '../theme';
@@ -133,6 +134,7 @@ export const AppNavigator = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [showTierSelect, setShowTierSelect] = useState(false);
   const [showBrandStudio, setShowBrandStudio] = useState(false);
+  const navigationRef = useRef<NavigationContainerRef<RootTabParamList>>(null);
   const navTheme = buildNavTheme(mode, colors);
 
   const openTierFromSettings = () => {
@@ -164,8 +166,8 @@ export const AppNavigator = () => {
   }
 
   return (
-    <FeatureNavProvider>
-      <NavigationContainer theme={navTheme}>
+    <FeatureNavProvider navigationRef={navigationRef}>
+      <NavigationContainer ref={navigationRef} theme={navTheme}>
         <MainTabs onOpenSettings={() => setShowSettings(true)} />
       </NavigationContainer>
 

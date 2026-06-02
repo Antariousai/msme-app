@@ -11,10 +11,13 @@ import { TrendUpIcon, TrendDownIcon, ReportIcon } from '../../icons';
 import { seedTransactions, seedComplaints, aiSuggestions, productSales, peakHours } from '../../data/seed';
 import { bnTaka, calcProfit, toBn } from '../../utils/helpers';
 import { useAuth } from '../../auth/AuthContext';
+import { useFeatureNav } from '../../navigation/FeatureNavContext';
+import { DashboardCreditScoreCard } from '../shared/CreditScoreScreen';
 import { buildBusinessReport, shareReport, periodLabel, ReportPeriod } from '../../utils/report';
 
 export const DashboardScreen = () => {
   const { user } = useAuth();
+  const { openFeature } = useFeatureNav();
   const [period, setPeriod] = useState<'daily' | 'weekly' | 'monthly'>('daily');
   const income = seedTransactions.filter((t) => t.type === 'income').reduce((s, t) => s + t.amount, 0);
   const expense = seedTransactions.filter((t) => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
@@ -73,6 +76,8 @@ export const DashboardScreen = () => {
             { label: 'লাভ', value: bnTaka(profit) },
           ]}
         />
+
+        <DashboardCreditScoreCard onPress={() => openFeature('creditScore')} />
 
         <SectionHeader title="🏆 বেস্ট ও ওয়ার্স সেলিং" />
         <Row gap={Spacing.sm} style={{ marginBottom: Spacing.base }}>
@@ -166,7 +171,10 @@ export const ComplaintsScreen = () => (
   </ScreenFrame>
 );
 
-export const Tier4Home = () => (
+export const Tier4Home = () => {
+  const { openFeature } = useFeatureNav();
+
+  return (
   <ScreenFrame>
     <AppHeader showGreeting />
     <ScreenScroll>
@@ -180,6 +188,8 @@ export const Tier4Home = () => (
         ]}
       />
 
+      <DashboardCreditScoreCard onPress={() => openFeature('creditScore')} />
+
       <AISuggestion
         title="🔥 লিড ক্লোজিং সাপোর্ট"
         message="৩টি হট লিড অপেক্ষমাণ — আজ ফলো-আপ করলে ২টি রূপান্তর সম্ভব। 🚀"
@@ -189,4 +199,5 @@ export const Tier4Home = () => (
       <FeatureToolsSection layout="grid" scope="all" />
     </ScreenScroll>
   </ScreenFrame>
-);
+  );
+};

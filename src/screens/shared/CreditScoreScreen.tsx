@@ -167,6 +167,35 @@ export const CreditScoreSummaryCard = ({ onPress }: { onPress: () => void }) => 
   <AccountCreditScoreRow onPress={onPress} />
 );
 
+/** Credit score summary for home / dashboard screens */
+export const DashboardCreditScoreCard = ({ onPress }: { onPress: () => void }) => {
+  const { colors } = useTheme();
+  const profile = useMemo(() => computeBusinessCreditScore(), []);
+  const color = creditScoreColor(profile.score);
+
+  return (
+    <Card onPress={onPress} style={{ marginBottom: Spacing.base }} padding={Spacing.md}>
+      <Row justify="space-between" align="center">
+        <Row gap={Spacing.sm} style={{ flex: 1, minWidth: 0 }}>
+          <View style={[styles.miniRing, { borderColor: color }]}>
+            <T size="md" weight="bold" color={color}>{toBn(profile.score)}</T>
+          </View>
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <T size="sm" weight="bold">🏦 ক্রেডিট স্কোর</T>
+            <T size="xs" color={colors.textSecondary} numberOfLines={1}>
+              {profile.gradeEmoji} {profile.gradeLabel}
+            </T>
+          </View>
+        </Row>
+        <T size="xs" color={colors.primary} style={{ flexShrink: 0 }}>বিস্তারিত ›</T>
+      </Row>
+      <View style={[styles.creditBarDash, { backgroundColor: colors.bg }]}>
+        <View style={[styles.creditBarDashFill, { width: `${profile.score}%`, backgroundColor: color }]} />
+      </View>
+    </Card>
+  );
+};
+
 const styles = StyleSheet.create({
   scoreHero: {
     borderRadius: Radius.lg,
@@ -228,5 +257,15 @@ const styles = StyleSheet.create({
   creditBarMiniFill: {
     height: 6,
     borderRadius: 3,
+  },
+  creditBarDash: {
+    height: 8,
+    borderRadius: 4,
+    overflow: 'hidden',
+    marginTop: Spacing.sm,
+  },
+  creditBarDashFill: {
+    height: 8,
+    borderRadius: 4,
   },
 });

@@ -86,7 +86,7 @@ export function computeBusinessCreditScore(): BusinessCreditProfile {
       emoji: '💵',
       points: cashFlowPoints,
       weight: 0.28,
-      detail: `লাভ মার্জিন ${toBn(Math.round(marginPct))}% · ${bnTaka(profit)} নিট`,
+      detail: `লাভ মার্জিন ${toBn(Math.round(marginPct))}% · ${bnTaka(profit)} মোট লাভ`,
       tip: marginPct < 15 ? 'খরচ কমিয়ে বা আয় বাড়িয়ে মার্জিন উন্নত করুন' : undefined,
     },
     {

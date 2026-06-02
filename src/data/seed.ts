@@ -146,10 +146,10 @@ export const seedOrders: Order[] = [
 ];
 
 export const seedLeads: Lead[] = [
-  { id: 'L001', name: 'আয়েশা সিদ্দিকা', phone: '01611223344', address: 'মিরপুর-১০, ঢাকা', score: 92, source: 'Facebook Ad', status: 'qualified', lastContact: 'আজ' },
-  { id: 'L002', name: 'রুবেল হোসেন', phone: '01722334455', address: 'আgrabad, Ctg', score: 78, source: 'Website', status: 'contacted', lastContact: 'গতকাল' },
-  { id: 'L003', name: 'মাহমুদা বegum', phone: '01833445566', address: 'Zindabazar, Sylhet', score: 55, source: 'Instagram DM', status: 'new', lastContact: '২ দিন আগে' },
-  { id: 'L004', name: 'সোহেল রানা', phone: '01944556677', address: 'Boalia, Rajshahi', score: 34, source: 'Facebook', status: 'lost', lastContact: '১ সপ্তাহ আগে' },
+  { id: 'L001', name: 'আয়েশা সিদ্দিকা', phone: '01611223344', address: 'মিরপুর ১০, ঢাকা', score: 92, source: 'Facebook Ad', status: 'qualified', lastContact: 'আজ' },
+  { id: 'L002', name: 'রুবেল হোসেন', phone: '01722334455', address: 'আগ্রাবাদ, চট্টগ্রাম', score: 78, source: 'Website', status: 'contacted', lastContact: 'গতকাল' },
+  { id: 'L003', name: 'রোকসানা পারভিন', phone: '01833445566', address: 'জিন্দাবাজার, সিলেট', score: 55, source: 'Instagram DM', status: 'new', lastContact: '২ দিন আগে' },
+  { id: 'L004', name: 'সোহেল রানা', phone: '01944556677', address: 'বোয়ালিয়া, রাজশাহী', score: 34, source: 'Facebook', status: 'lost', lastContact: '১ সপ্তাহ আগে' },
 ];
 
 export const INVENTORY_CATEGORIES = ['পোশাক', 'অ্যাকসেসরিজ', 'হোম ডেকোর', 'ইলেকট্রনিক্স', 'অন্যান্য'] as const;
@@ -213,14 +213,14 @@ export interface CalendarEvent {
 }
 
 export const calendarEvents: CalendarEvent[] = [
-  { id: 'e1', title: 'হাট দিবস — মিরপুর', date: '2026-05-28', type: 'market' },
+  { id: 'e1', title: 'হাট দিবস — মিরপুর, ঢাকা', date: '2026-05-28', type: 'market' },
   { id: 'e2', title: 'স্টক রিফিল', date: '2026-05-29', type: 'inventory' },
   { id: 'e3', title: 'FB লাইভ সেল', date: '2026-05-30', type: 'promo' },
   { id: 'e4', title: 'মাসিক হিসাব', date: '2026-05-31', type: 'finance' },
   { id: 'e5', title: 'নতুন স্টক আনা', date: '2026-06-03', type: 'inventory' },
   { id: 'e6', title: 'ঈদ প্রস্তুতি লাইভ', date: '2026-06-05', type: 'promo' },
   { id: 'e7', title: 'সাপ্তাহিক হিসাব', date: '2026-06-07', type: 'finance' },
-  { id: 'e8', title: 'হাট দিবস — গাজীপুর', date: '2026-06-10', type: 'market' },
+  { id: 'e8', title: 'হাট দিবস — গাজীপুর, ঢাকা', date: '2026-06-10', type: 'market' },
   { id: 'e9', title: 'অর্ডার রিভিউ', date: '2026-06-14', type: 'finance' },
   { id: 'e10', title: 'ইনস্টাগ্রাম রিল', date: '2026-06-18', type: 'promo' },
 ];

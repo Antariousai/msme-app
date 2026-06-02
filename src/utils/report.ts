@@ -32,7 +32,7 @@ export function buildBusinessReport(input: ReportInput): string {
     '────────────────────',
     `মোট আয়:   ${bnTaka(income)}`,
     `মোট ব্যয়:  ${bnTaka(expense)}`,
-    `নিট লাভ:   ${bnTaka(profit)}`,
+    `মোট লাভ:   ${bnTaka(profit)}`,
     `লাভ মার্জিন: ${toBn(margin)}%`,
   ];
 
