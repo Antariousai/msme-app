@@ -2,6 +2,7 @@ import React from 'react';
 import { View } from 'react-native';
 import { AppHeader } from '../../components/AppHeader';
 import { T, Card, Row, ScreenScroll, Btn, AISuggestion } from '../../components/atoms';
+import { IncomeExpenseQuickActions } from '../../components/IncomeExpenseQuickActions';
 import { FeatureToolsSection } from '../../components/FeatureToolsSection';
 import { ScreenFrame } from '../../components/ScreenFrame';
 import { HeroCard } from '../../components/HeroCard';
@@ -35,21 +36,7 @@ export const Tier0Home = () => {
           ]}
         />
 
-        {/* Quick actions */}
-        <Row gap={Spacing.sm} style={{ marginBottom: Spacing.base }}>
-          <Btn
-            label="➕ আয়"
-            onPress={() => openFeature('bookkeeping')}
-            variant="primary"
-            flex
-          />
-          <Btn
-            label="➖ খরচ"
-            onPress={() => openFeature('bookkeeping')}
-            variant="secondary"
-            flex
-          />
-        </Row>
+        <IncomeExpenseQuickActions />
 
         {/* Inventory quick summary */}
         <Card style={{ marginBottom: Spacing.base }} onPress={() => openFeature('inventory')}>

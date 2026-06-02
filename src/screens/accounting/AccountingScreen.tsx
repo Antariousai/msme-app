@@ -3,6 +3,7 @@ import { View, StyleSheet, Modal, Pressable } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { AppHeader } from '../../components/AppHeader';
 import { T, Card, Row, Btn, ScreenScroll, StatCard, Input, BtnRow, Chip } from '../../components/atoms';
+import { IncomeExpenseQuickActions } from '../../components/IncomeExpenseQuickActions';
 import { HeroCard } from '../../components/HeroCard';
 import { ScreenFrame } from '../../components/ScreenFrame';
 import { Colors, Spacing, Radius } from '../../theme';
@@ -99,10 +100,10 @@ export const AccountingScreen = () => {
           colors={profit >= 0 ? ['#16b886', '#5ed8a8', '#c2f0df'] : ['#ff5a78', '#ff8fa5', '#ffd0d9']}
         />
 
-        <Row gap={Spacing.base} style={{ marginBottom: Spacing.base }}>
-          <Btn label="➕ আয়" onPress={() => openAdd('income')} variant="secondary" flex />
-          <Btn label="➖ খরচ" onPress={() => openAdd('expense')} variant="danger" flex />
-        </Row>
+        <IncomeExpenseQuickActions
+          onIncome={() => openAdd('income')}
+          onExpense={() => openAdd('expense')}
+        />
 
         {isFull && (
           <Row gap={Spacing.sm} wrap style={{ marginBottom: Spacing.base }}>

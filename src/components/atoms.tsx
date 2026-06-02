@@ -109,8 +109,8 @@ export const Card = ({ children, style, onPress, elevated = false, padding = Spa
 interface BtnProps {
   label: string;
   onPress: () => void;
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
-  size?: 'sm' | 'md' | 'lg';
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'income' | 'expense';
+  size?: 'sm' | 'md' | 'lg' | 'xl';
   fullWidth?: boolean;
   /** Equal-width button inside a horizontal row (use instead of fullWidth in rows) */
   flex?: boolean;
@@ -125,7 +125,7 @@ export const Btn = ({
   fullWidth = false, flex = false, loading = false, disabled = false, icon, style,
 }: BtnProps) => {
   const { colors } = useTheme();
-  const heights = { sm: 36, md: 50, lg: 56 };
+  const heights = { sm: 36, md: 50, lg: 56, xl: 68 };
 
   const variantStyles: Record<string, { bg: string; text: string; border?: string }> = {
     primary: { bg: colors.primary, text: colors.textInverse },
@@ -133,6 +133,8 @@ export const Btn = ({
     outline: { bg: 'transparent', text: colors.primary, border: colors.primary },
     ghost: { bg: colors.chip, text: colors.chipInk },
     danger: { bg: colors.expense, text: colors.textInverse },
+    income: { bg: colors.income, text: colors.textInverse },
+    expense: { bg: colors.expense, text: colors.textInverse },
   };
 
   const vs = variantStyles[variant];
@@ -145,7 +147,12 @@ export const Btn = ({
       ) : (
         <>
           {icon}
-          <T size={size === 'sm' ? 'sm' : 'md'} color={vs.text} weight="bold" numberOfLines={1}>
+          <T
+            size={size === 'sm' ? 'sm' : size === 'xl' || size === 'lg' ? 'lg' : 'md'}
+            color={vs.text}
+            weight="bold"
+            numberOfLines={1}
+          >
             {label}
           </T>
         </>
@@ -153,9 +160,11 @@ export const Btn = ({
     </>
   );
 
+  const isMoneyAction = variant === 'income' || variant === 'expense';
+
   const boxStyle: ViewStyle = {
     height: heights[size],
-    paddingHorizontal: size === 'sm' ? Spacing.md : Spacing.lg,
+    paddingHorizontal: size === 'xl' ? Spacing.xl : size === 'sm' ? Spacing.md : Spacing.lg,
     borderRadius: Radius.btn,
     backgroundColor: useGradient ? 'transparent' : vs.bg,
     borderWidth: vs.border ? 1.5 : 0,
@@ -168,6 +177,7 @@ export const Btn = ({
     ...(flex && { flex: 1, minWidth: 0, alignSelf: 'stretch' }),
     ...(fullWidth && !flex && { width: '100%' }),
     opacity: disabled ? 0.5 : 1,
+    ...(isMoneyAction ? Shadow.md : {}),
   };
 
   return (

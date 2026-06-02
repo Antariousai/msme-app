@@ -4,6 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { AppHeader } from '../../components/AppHeader';
 import { T, Card, Row, ScreenScroll, SectionHeader, StatCard, StatusPill, Chip, AISuggestion, Btn } from '../../components/atoms';
 import { FeatureToolsSection } from '../../components/FeatureToolsSection';
+import { IncomeExpenseQuickActions } from '../../components/IncomeExpenseQuickActions';
 import { HeroCard } from '../../components/HeroCard';
 import { ScreenFrame } from '../../components/ScreenFrame';
 import { Colors, Spacing, Gradients } from '../../theme';
@@ -73,6 +74,8 @@ export const DashboardScreen = () => {
             { label: 'মোট লাভ', value: bnTaka(profit) },
           ]}
         />
+
+        <IncomeExpenseQuickActions />
 
         <SectionHeader title="🏆 বেস্ট ও ওয়ার্স সেলিং" />
         <Row gap={Spacing.sm} style={{ marginBottom: Spacing.base }}>
@@ -179,6 +182,8 @@ export const Tier4Home = () => (
           { label: 'অর্ডার', value: '৪ 📦' },
         ]}
       />
+
+      <IncomeExpenseQuickActions />
 
       <AISuggestion
         title="🔥 লিড ক্লোজিং সাপোর্ট"

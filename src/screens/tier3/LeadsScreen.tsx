@@ -12,6 +12,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppHeader } from '../../components/AppHeader';
 import { T, Card, Row, ScreenScroll, SectionHeader, StatusPill, Btn, Input, AISuggestion, Chip } from '../../components/atoms';
 import { FeatureToolsSection } from '../../components/FeatureToolsSection';
+import { IncomeExpenseQuickActions } from '../../components/IncomeExpenseQuickActions';
 import { ScreenFrame } from '../../components/ScreenFrame';
 import { HeroCard } from '../../components/HeroCard';
 import { Colors, Spacing, Radius } from '../../theme';
@@ -542,6 +543,7 @@ export const Tier3Home = () => {
             { label: 'রূপান্তর ✅', value: toBn(converted) },
           ]}
         />
+        <IncomeExpenseQuickActions />
         <AISuggestion
           title="🔥 লিড ক্লোজিং"
           message="আয়েশা সিদ্দিকা (স্কোর ৯২) — আজ কল করলে রূপান্তর সম্ভাবনা ৮৫%। 🚀"

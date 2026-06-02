@@ -3,6 +3,7 @@ import { View, StyleSheet, Modal, Pressable, ScrollView } from 'react-native';
 import { AppHeader } from '../../components/AppHeader';
 import { T, Card, Row, ScreenScroll, SectionHeader, StatusPill, Btn, Chip } from '../../components/atoms';
 import { FeatureToolsSection } from '../../components/FeatureToolsSection';
+import { IncomeExpenseQuickActions } from '../../components/IncomeExpenseQuickActions';
 import { ScreenFrame } from '../../components/ScreenFrame';
 import { HeroCard } from '../../components/HeroCard';
 import { Colors, Spacing, Radius } from '../../theme';
@@ -312,6 +313,7 @@ export const Tier2Home = () => (
           { label: 'কুরিয়ারে', value: '২ 🛵' },
         ]}
       />
+      <IncomeExpenseQuickActions />
       <FeatureToolsSection layout="grid" scope="all" />
     </ScreenScroll>
   </ScreenFrame>

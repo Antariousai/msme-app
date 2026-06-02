@@ -3,6 +3,7 @@ import { View, StyleSheet, Pressable } from 'react-native';
 import { AppHeader } from '../../components/AppHeader';
 import { T, Card, Row, ScreenScroll, SectionHeader, StatusPill, Chip, Btn, AISuggestion } from '../../components/atoms';
 import { FeatureToolsSection } from '../../components/FeatureToolsSection';
+import { IncomeExpenseQuickActions } from '../../components/IncomeExpenseQuickActions';
 import { ScreenFrame } from '../../components/ScreenFrame';
 import { HeroCard } from '../../components/HeroCard';
 import { Colors, Spacing } from '../../theme';
@@ -144,6 +145,7 @@ export const Tier1Home = () => {
             { label: 'অর্ডার অপেক্ষমাণ', value: '২ 📋' },
           ]}
         />
+        <IncomeExpenseQuickActions />
         <AISuggestion
           title="🔥 আজকের পরামর্শ"
           message="সন্ধ্যা ৭–৯টায় সবচেয়ে বেশি মেসেজ আসে — এই সময়ে সক্রিয় থাকুন।"
